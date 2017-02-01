@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateOnlineUsersTable extends Migration
+class CreateVpnServersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,11 @@ class CreateOnlineUsersTable extends Migration
      */
     public function up()
     {
-        Schema::create('online_users', function (Blueprint $table) {
-            $table->string('username');
-            $table->string('server_domain');
-            $table->double('byte_sent')->nullable();
-            $table->double('byte_received')->nullable();
+        Schema::create('vpn_servers', function (Blueprint $table) {
+            $table->string('server_domain')->unique();
+            $table->string('server_name');
+            $table->ipAddress('server_ip');
+            $table->tinyInteger('is_active')->unsigned();
             $table->timestamps();
         });
     }
@@ -29,6 +29,6 @@ class CreateOnlineUsersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('online_users');
+        Schema::dropIfExists('vpn_servers');
     }
 }

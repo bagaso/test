@@ -42,8 +42,8 @@ class VpnUser extends Command
         foreach($logs as $log)
         {
             $update_online = \App\OnlineUser::find($log['CommonName']);
-            $update_online->byte_sent = 1;//intval($log['BytesSent']);
-            $update_online->byte_received = 1;//intval($log['BytesReceived']);
+            $update_online->byte_sent = intval($log['BytesSent']);
+            $update_online->byte_received = intval($log['BytesReceived']);
             $update_online->touch();
             $update_online->save();
         }
@@ -57,8 +57,8 @@ class VpnUser extends Command
         $handle = @fopen($log, "r");
 
         if($handle) {
-            while (!feof($handle)) {
-                $buffer = fgets($handle, 4096);
+            while (!@feof($handle)) {
+                $buffer = @fgets($handle, 4096);
 
                 unset($match);
 
@@ -85,7 +85,7 @@ class VpnUser extends Command
                 }
 
             }
-            fclose($handle);
+            @fclose($handle);
         }
         return $status;
     }
