@@ -19,7 +19,7 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->string('fullname');
             $table->string('password');
-            $table->integer('credits');
+            $table->integer('credits')->default(0)->unsigned();
             $table->integer('user_group_id')->unsigned();
             $table->integer('status_id')->unsigned();
             $table->integer('parent_id')->default(1);
