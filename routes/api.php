@@ -1,8 +1,6 @@
 <?php
 
-use App\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +18,75 @@ Route::get('/account', function (Request $request) {
     return $account;
 })->middleware('auth:api');
 
+Route::get('/vpn_auth', function (Request $request) {
+    $username = $request->username;
+    $password = $request->password;
+    if(Auth::attempt(['username' => $username, 'password' => $password])) {
+        Auth::user()->timestamps = false;
+        Auth::logout();
+        return '1';
+    }
+    else
+        return '0';
+});
+
+Route::get('/vpn_auth_after', function (Request $request) {
+    $username = trim($request->username);
+
+    if($username == '') return '0';
+
+    $user = App\User::where([['username', '=', $username]])->first();
+
+    if(count($user) == 0) return '0';
+
+    if($user->isAdmin()) return '1';
+
+    $current = Carbon\Carbon::now();
+    $dt = Carbon\Carbon::parse($user->getOriginal('expired_at'));
+    
+    if($user->status_id == 1 && $current->lte($dt))
+        return '1';
+    else
+        return '0';
+});
+
+
+Route::get('/log', function () {
+
+    $val = '';
+
+    $fp = stream_socket_client("tcp://188.166.242.96:8000", $errno, $errstr, 30);
+    if (!$fp) {
+        echo "$errstr ($errno)<br />\n";
+    } else {
+        fwrite($fp, "status\r\n");
+        $ctr = 0;
+        while (!feof($fp)) {
+            $val .= fgets($fp, 1024);
+            if($ctr >= 20) {
+                fclose($fp);
+                break;
+            }
+            $ctr++;
+        }
+        echo $val;
+        //fclose($fp);
+    }
+//    $socket = fsockopen('sg2.smartyvpn.com', '8000', $errno, $errstr);
+//    $val = '';
+//    if($socket)
+//    {
+//        $val =  "Connected";
+//        //fputs($socket, "smartyvpn\n");
+//        //fputs($socket, "kill {$row['user_name']}\n");
+//        fputs($socket, "status\n");
+//        echo fgets($socket, 4096);
+//        fputs($socket, "quit\n");
+//    }
+//    fclose($socket);
+});
+
+
 Route::post('/account/update', 'UpdateAccount@update');
 Route::post('/account/password', 'UpdateAccountPassword@update');
 Route::get('/manage-user/all', 'ManageUserController@allUser');
@@ -33,5 +100,7 @@ Route::get('/manage-user/security/{id}', 'ManageUserController@viewSecurity');
 Route::post('/manage-user/security/{id}', 'ManageUserController@updateSecurity');
 Route::get('/manage-user/permission/{id}', 'ManageUserController@viewPermission');
 Route::get('/manage-user/permission/{id}/{p_code}', 'ManageUserController@updatePermission');
+Route::get('/manage-user/duration/{id}', 'ManageUserController@viewDuration');
+Route::post('/manage-user/duration/{id}', 'ManageUserController@updateDuration');
 Route::get('/manage-user/create', 'ManageUserController@viewCreate');
 Route::post('/manage-user/create', 'ManageUserController@create');

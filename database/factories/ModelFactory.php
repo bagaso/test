@@ -12,6 +12,7 @@
 */
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 
 $factory->define(App\User::class, function (Faker\Generator $faker) {
@@ -24,6 +25,7 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
         'fullname' => $faker->firstName . ' ' . $faker->lastName,
         'user_group_id' => 5,
         'status_id' => 1,
+        'expired_at' => Carbon::now(),
         'remember_token' => str_random(10),
     ];
 });

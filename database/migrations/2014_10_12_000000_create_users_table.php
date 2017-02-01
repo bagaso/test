@@ -19,14 +19,17 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->string('fullname');
             $table->string('password');
+            $table->integer('credits');
             $table->integer('user_group_id')->unsigned();
             $table->integer('status_id')->unsigned();
             $table->integer('parent_id')->default(1);
+            $table->dateTime('expired_at');
             $table->rememberToken();
             $table->timestamps();
             $table->index('user_group_id');
             $table->index('status_id');
             $table->index('parent_id');
+            $table->index('expired_at');
         });
     }
 

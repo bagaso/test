@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -143,11 +144,11 @@ class ManageUserController extends Controller
 
         if($account->isAdmin()) {
             $data = User::where('user_group_id', '=', 5)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-            $columns = User::$columns;
         } else {
             $data = User::where([['parent_id', '=', $account->id], ['user_group_id', '=', 5]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-            $columns = User::$columns;
         }
+
+        $columns = User::$columns;
 
         return response()->json([
             'model' => $data,
@@ -334,9 +335,9 @@ class ManageUserController extends Controller
 
     } // end function update security
 
-    public function viewPermission(Request $request, $id)
+    public function viewPermission($id)
     {
-        if(!$request->user()->isAdmin()) {
+        if(!auth()->user()->isAdmin()) {
             return response()->json(['message' => 'No permission to access this page.'], 403);
         }
 
@@ -353,11 +354,48 @@ class ManageUserController extends Controller
     public function updatePermission(Request $request, $id, $p_code)
     {
         $user = User::findorfail($id);
-        if(!$request->user()->isAdmin() || (in_array($p_code, [7,8,9,10,12]) && $user->user_group_id != 2)) {
+        if(!auth()->user()->isAdmin() || (in_array($p_code, [7,8,9,10,12]) && $user->user_group_id != 2)) {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
         $user->roles()->toggle($p_code);
         return response()->json('', 200);
     } // end function update permission
+
+    public function viewDuration($id)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return response()->json(['message' => 'No permission to access this page.'], 403);
+        }
+
+        $user = User::findOrFail($id);
+
+        return response()->json([
+            'user' => $user
+        ], 200);
+    } // end function view duration
+
+    public function updateDuration(Request $request, $id)
+    {
+        $user = User::findorfail($id);
+        if(!auth()->user()->isAdmin()) {
+            return response()->json(['message' => 'Action not allowed.'], 403);
+        }
+
+        $this->validate($request, [
+            'days' => 'bail|required|integer|between:-30,30',
+            'hours' => 'bail|required|integer|between:-24,24'
+        ]);
+
+        $current = Carbon::now();
+        $dt = Carbon::parse($user->getOriginal('expired_at'));
+        if($current->lt($dt)) {
+            $user->expired_at = $dt->addDays($request->days)->addHours($request->hours);
+        } else {
+            $user->expired_at = $current->addDays($request->days)->addHours($request->hours);
+        }
+
+        $user->save();
+        return response()->json(['user' => $user], 200);
+    } // end function update duration
         
 }

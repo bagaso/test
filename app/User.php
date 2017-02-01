@@ -19,11 +19,11 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'username', 'password', 'email', 'fullname', 'user_group_id', 'status_id', 'parent_id',
+        'username', 'password', 'email', 'fullname', 'user_group_id', 'status_id', 'parent_id', 'expired_at',
     ];
 
     public static $columns = [
-        'id', 'username', 'email', 'user_group_id', 'status_id', 'created_at',
+        'id', 'username', 'email', 'user_group_id', 'status_id', 'expired_at',
     ];
 
     /**
@@ -33,6 +33,10 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password', 'remember_token',
+    ];
+
+    protected $dates = [
+        'expired_at'
     ];
 
     protected $operators = [
@@ -88,6 +92,21 @@ class User extends Authenticatable
 
     public function getUpdatedAtAttribute($value) {
         $dt = Carbon::parse($value);
+        if ($dt->diffInDays(Carbon::now()) > 1)
+            return $dt->format('Y-M-d');
+        else
+            return $dt->diffForHumans();
+    }
+
+    public function getExpiredAtAttribute($value) {
+        $current = Carbon::now();
+        $dt = Carbon::parse($value);
+        if($this->isAdmin()) {
+            return 'No Limit';
+        }
+        if($current->gte($dt)) {
+            return 'Expired';
+        }
         if ($dt->diffInDays(Carbon::now()) > 1)
             return $dt->format('Y-M-d');
         else
