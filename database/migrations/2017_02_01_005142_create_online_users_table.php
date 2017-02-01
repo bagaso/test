@@ -15,9 +15,9 @@ class CreateOnlineUsersTable extends Migration
     {
         Schema::create('online_users', function (Blueprint $table) {
             $table->string('username');
-            $table->string('received_byte');
-            $table->string('sent_byte');
             $table->string('server');
+            $table->string('byte_sent');
+            $table->string('byte_received');
             $table->timestamp('time_update')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
             $table->timestamp('created_at')->useCurrent();
             $table->integer('counter');

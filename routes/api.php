@@ -1,5 +1,6 @@
 <?php
 
+use App\OnlineUser;
 use Illuminate\Http\Request;
 
 /*
@@ -45,7 +46,11 @@ Route::get('/vpn_auth_after', function (Request $request) {
     $dt = Carbon\Carbon::parse($user->getOriginal('expired_at'));
     
     if($user->status_id == 1 && $current->lte($dt))
-        return '1';
+        if(OnlineUser::create(['username' => $username, 'server' => 'sample', 'byte_sent' => $request->bytes_sent, 'byte_received' => $request->bytes_received, 'counter' => 1])) {
+            return '1';
+        } else {
+            return '0';
+        }
     else
         return '0';
 });
