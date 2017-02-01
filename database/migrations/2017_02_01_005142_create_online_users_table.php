@@ -19,6 +19,7 @@ class CreateOnlineUsersTable extends Migration
             $table->double('byte_sent')->nullable();
             $table->double('byte_received')->nullable();
             $table->timestamps();
+            $table->primary('username');
         });
     }
 
