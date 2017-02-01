@@ -56,10 +56,8 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
 Route::get('/vpn_auth_disconnect', function (Request $request) {
     $username = trim($request->username);
-
-    $delete = OnlineUser::where('username', '=', $username)->delete();
-    $delete->save();
-
+    $delete = OnlineUser::find($username);
+    $delete->delete();
     return '1';
 });
 
