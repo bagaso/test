@@ -1,6 +1,7 @@
 <?php
 
 use App\OnlineUser;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 /*
@@ -40,19 +41,17 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
     if(count($user) == 0) return '0';
 
-    if($user->isAdmin()) return '1';
-
-    $current = Carbon\Carbon::now();
-    $dt = Carbon\Carbon::parse($user->getOriginal('expired_at'));
+    $current = Carbon::now();
+    $dt = Carbon::parse($user->getOriginal('expired_at'));
     
-    if($user->status_id == 1 && $current->lte($dt))
-        if(OnlineUser::create(['username' => $username, 'server' => 'sample', 'byte_sent' => $request->bytes_sent, 'byte_received' => $request->bytes_received, 'counter' => 1])) {
+    if($user->isAdmin() || ($user->status_id == 1 && $current->lte($dt))) {
+        $new_online = new OnlineUser();
+        if($new_online->create($request->all())) {
             return '1';
-        } else {
-            return '0';
         }
-    else
         return '0';
+    }
+    return '0';
 });
 
 Route::get('/vpn_auth_disconnect', function (Request $request) {
