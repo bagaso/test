@@ -31,7 +31,7 @@ Route::get('/vpn_auth', function (Request $request) {
         return '0';
 });
 
-Route::get('/vpn_auth_after', function (Request $request) {
+Route::get('/vpn_auth_connect', function (Request $request) {
     $username = trim($request->username);
 
     if($username == '') return '0';
@@ -53,6 +53,15 @@ Route::get('/vpn_auth_after', function (Request $request) {
         }
     else
         return '0';
+});
+
+Route::get('/vpn_auth_disconnect', function (Request $request) {
+    $username = trim($request->username);
+
+    $delete = OnlineUser::where('username', '=', $username)->delete();
+    $delete->save();
+
+    return '1';
 });
 
 
