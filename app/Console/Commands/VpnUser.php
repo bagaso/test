@@ -44,7 +44,7 @@ class VpnUser extends Command
             $update_online = \App\OnlineUser::find($log['CommonName']);
             $update_online->byte_sent = 1;//intval($log['BytesSent']);
             $update_online->byte_received = 1;//intval($log['BytesReceived']);
-            //$update_online->timestamps = true;
+            $update_online->timestamps = true;
             $update_online->save();
         }
     }
