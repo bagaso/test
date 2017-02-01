@@ -39,16 +39,12 @@ class VpnUser extends Command
     public function handle()
     {
         $logs = $this->parseLog('http://sg2.smartyvpn.com/logs/logs.log', 'tcp');
-        var_dump($logs);
         foreach($logs as $log)
         {
-            //$content .= "," . $log['CommonName'] . ",|" . $log['BytesSent'] . "|" . $log['Since'] . "\n";
-            //$time = time();
-            //$conn->query("INSERT INTO online_users (`user_name`, `bandw`, `proto`, `ip`) VALUES ('{$log['CommonName']}', '{$log['BytesSent']}', 'OPENVPN', '{$ip}') ON DUPLICATE KEY UPDATE bandw='{$log['BytesSent']}', ctr=ctr+1, time_login=IF(time_login='0000-00-00 00:00:00', time_update, time_login)");
             $update_online = \App\OnlineUser::find($log['CommonName']);
-            print_r($update_online);
             $update_online->byte_sent = intval($log['BytesSent']);
             $update_online->byte_received = intval($log['BytesReceived']);
+            $update_online->timestamps = true;
             $update_online->save();
         }
     }
