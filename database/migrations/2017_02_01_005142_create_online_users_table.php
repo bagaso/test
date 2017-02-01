@@ -18,8 +18,8 @@ class CreateOnlineUsersTable extends Migration
             $table->string('received_byte');
             $table->string('sent_byte');
             $table->string('server');
-            $table->timestamp('time_update');
-            $table->timestamp('created_at');
+            $table->timestamp('time_update')->default(Carbon\Carbon::now());
+            $table->timestamp('created_at')->default(Carbon\Carbon::now());
             $table->integer('counter');
         });
     }
