@@ -21,5 +21,7 @@ class OnlineUser extends Model
      */
     public $incrementing = false;
 
-    protected $fillable = ['username', 'server', 'byte_sent', 'byte_received', 'counter'];
+    protected $fillable = [
+        'username', 'server', 'byte_sent', 'byte_received',
+    ];
 }

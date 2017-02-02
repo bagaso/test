@@ -14,11 +14,12 @@ class CreateVpnServersTable extends Migration
     public function up()
     {
         Schema::create('vpn_servers', function (Blueprint $table) {
-            $table->string('server_domain')->unique();
-            $table->string('server_name');
             $table->ipAddress('server_ip');
+            $table->string('server_domain');
+            $table->string('server_name');
             $table->tinyInteger('is_active')->unsigned();
             $table->timestamps();
+            $table->primary('server_ip');
         });
     }
 

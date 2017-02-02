@@ -15,7 +15,7 @@ class CreateOnlineUsersTable extends Migration
     {
         Schema::create('online_users', function (Blueprint $table) {
             $table->string('username');
-            $table->string('server_domain');
+            $table->string('server_name');
             $table->double('byte_sent')->nullable();
             $table->double('byte_received')->nullable();
             $table->timestamps();
