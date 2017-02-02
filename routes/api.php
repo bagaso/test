@@ -48,7 +48,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
         $server_logged_in = \App\VpnServer::find($request->server_ip);
         $new_online = new OnlineUser();
         $new_online->username = $username;
-        $server_logged_in = \App\VpnServer::find($request->server_ip);
+        $new_online->server_name = $server_logged_in->server_name;
         if($new_online->save()) {
             return '1';
         }
