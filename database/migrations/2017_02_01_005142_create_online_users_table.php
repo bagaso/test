@@ -14,12 +14,12 @@ class CreateOnlineUsersTable extends Migration
     public function up()
     {
         Schema::create('online_users', function (Blueprint $table) {
-            $table->string('username');
+            $table->string('user_id');
             $table->string('server_name');
             $table->double('byte_sent')->nullable();
             $table->double('byte_received')->nullable();
             $table->timestamps();
-            $table->primary('username');
+            $table->primary('user_id');
         });
     }
 

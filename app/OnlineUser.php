@@ -12,7 +12,7 @@ class OnlineUser extends Model
      * @var integer
      * @access protected
      */
-    protected $primaryKey = 'username';
+    protected $primaryKey = 'user_id';
 
     /**
      * Indicates if the IDs are auto-incrementing.
@@ -24,4 +24,9 @@ class OnlineUser extends Model
     protected $fillable = [
         'username', 'server', 'byte_sent', 'byte_received',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo('App\User');
+    }
 }

@@ -81,6 +81,10 @@ class User extends Authenticatable
     {
         $this->attributes['parent_id'] = auth()->user()->id;
     }
+    
+    public function vpn_online() {
+        return $this->hasOne('App\OnlineUser');
+    }
 
     public function getCreatedAtAttribute($value) {
         $dt = Carbon::parse($value);
