@@ -28,4 +28,10 @@ class VpnServer extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function onlineuser()
+    {
+        return $this->hasMany('App\OnlineUser', 'server_ip', 'server_ip');
+    }
+    
 }

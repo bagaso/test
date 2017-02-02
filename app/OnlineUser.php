@@ -29,4 +29,9 @@ class OnlineUser extends Model
     {
         return $this->belongsTo('App\User');
     }
+
+    public function vpnserver()
+    {
+        return $this->belongsTo('App\VpnServer', 'server_ip');
+    }
 }

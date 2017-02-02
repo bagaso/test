@@ -46,7 +46,6 @@ class AutoKickUser extends Command
                     $socket = fsockopen('sg2.smartyvpn.com', '8000', $errno, $errstr);
                     if($socket)
                     {
-                        echo $online_user->user->username;
                         //echo "Connected";
                         //fputs($socket, "smartyvpn\n");
                         fputs($socket, "kill {$online_user->user->username}\n");
