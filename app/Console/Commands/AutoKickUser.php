@@ -42,6 +42,7 @@ class AutoKickUser extends Command
             if(!$online_user->user->isAdmin()) {
                 $current = \Carbon\Carbon::now();
                 $dt = \Carbon\Carbon::parse($online_user->user->getOriginal('expired_at'));
+                if($online_user->user->status_id != 1 || $current->gte($dt)) {
                     $socket = fsockopen('sg2.smartyvpn.com', '8000', $errno, $errstr);
                     if($socket)
                     {
