@@ -45,6 +45,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
     $dt = Carbon::parse($user->getOriginal('expired_at'));
     
     if($user->isAdmin() || ($user->status_id == 1 && $current->lte($dt))) {
+        $server_logged_in = \App\VpnServer::find($request->server_ip);
         $new_online = new OnlineUser();
         $new_online->username = $username;
         $server_logged_in = \App\VpnServer::find($request->server_ip);

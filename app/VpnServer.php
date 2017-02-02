@@ -22,7 +22,7 @@ class VpnServer extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'server_domain', 'server_name', 'server_ip', 'is_active',
+        'server_ip', 'server_domain', 'server_name', 'is_active',
     ];
 
     protected $casts = [
