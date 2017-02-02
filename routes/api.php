@@ -45,13 +45,13 @@ Route::get('/vpn_auth_connect', function (Request $request) {
     $dt = Carbon::parse($user->getOriginal('expired_at'));
     
     if($user->isAdmin() || ($user->status_id == 1 && $current->lte($dt))) {
-        $server_logged_in = \App\VpnServer::find($request->server_ip);
-        if(!$server_logged_in->is_active) {
+        $server = \App\VpnServer::where('server_ip', $request->server_ip)->first();
+        if(count($server) == 0 || !$server->is_active) {
             return '0';
         }
         $new_online = new OnlineUser();
         $new_online->user_id = $user->id;
-        $new_online->server_ip = $server_logged_in->server_ip;
+        $new_online->vpn_server_id = $server->id;
         $new_online->byte_sent = 0;
         $new_online->byte_received = 0;
         if($new_online->save()) {

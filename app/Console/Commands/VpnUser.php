@@ -38,15 +38,18 @@ class VpnUser extends Command
      */
     public function handle()
     {
-        $logs = $this->parseLog('http://sg2.smartyvpn.com/logs/logs.log', 'tcp');
-        foreach($logs as $log)
-        {
-            $update_online = \App\User::where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF')->first();
-            if(count($update_online) > 0) {
-                $update_online->onlineuser->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
-                $update_online->onlineuser->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
-                $update_online->onlineuser->touch();
-                $update_online->onlineuser->save();
+        $servers = \App\VpnServer::where('is_active', 1)->get();
+        foreach ($servers as $server) {
+            $logs = $this->parseLog('http://' . strtolower($server->server_domain) . '/logs/logs.log', 'tcp');
+            foreach($logs as $log)
+            {
+                $update_online = \App\User::where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF')->first();
+                if(count($update_online) > 0) {
+                    $update_online->onlineuser->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
+                    $update_online->onlineuser->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
+                    $update_online->onlineuser->touch();
+                    $update_online->onlineuser->save();
+                }
             }
         }
     }

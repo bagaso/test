@@ -22,7 +22,7 @@ class OnlineUser extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'username', 'server', 'byte_sent', 'byte_received',
+        'user_id', 'vpn_server_id', 'byte_sent', 'byte_received',
     ];
 
     public function user()
@@ -32,6 +32,6 @@ class OnlineUser extends Model
 
     public function vpnserver()
     {
-        return $this->belongsTo('App\VpnServer', 'server_ip');
+        return $this->belongsTo('App\VpnServer');
     }
 }

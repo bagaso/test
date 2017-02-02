@@ -14,12 +14,13 @@ class CreateOnlineUsersTable extends Migration
     public function up()
     {
         Schema::create('online_users', function (Blueprint $table) {
-            $table->integer('user_id');
-            $table->ipAddress('server_ip');
-            $table->double('byte_sent')->nullable();
-            $table->double('byte_received')->nullable();
+            $table->integer('user_id')->unsigned();
+            $table->integer('vpn_server_id')->unsigned();
+            $table->double('byte_sent')->default(0)->unsigned();
+            $table->double('byte_received')->default(0)->unsigned();
             $table->timestamps();
             $table->primary('user_id');
+            $table->index('vpn_server_id');
         });
     }
 
