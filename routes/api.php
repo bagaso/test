@@ -37,7 +37,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
     if($username == '') return '0';
 
-    $user = App\User::where([['username', '=', $username]])->first();
+    $user = \App\User::where('username', $username)->first();
 
     if(count($user) == 0) return '0';
 
@@ -52,6 +52,8 @@ Route::get('/vpn_auth_connect', function (Request $request) {
         $new_online = new OnlineUser();
         $new_online->user_id = $user->id;
         $new_online->server_name = $server_logged_in->server_name;
+        $new_online->byte_sent = 0;
+        $new_online->byte_received = 0;
         if($new_online->save()) {
             return '1';
         }
@@ -62,11 +64,10 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
 Route::get('/vpn_auth_disconnect', function (Request $request) {
     $username = trim($request->username);
-    $delete = OnlineUser::find($username);
-    $delete->delete();
+    $delete = \App\User::where('username', $username)->first();
+    $delete->onlineuser->delete();
     return '1';
 });
-
 
 Route::get('/log', function () {
 

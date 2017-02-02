@@ -14,7 +14,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         'App\Console\Commands\VpnUser',
-        'App\Console\Commands\VpnOnlineUserDelete'
+        'App\Console\Commands\VpnOnlineUserDelete',
+        'App\Console\Commands\AutoKickUser',
     ];
 
     /**
@@ -29,6 +30,7 @@ class Kernel extends ConsoleKernel
         //          ->hourly();
         $schedule->command('vpnuser')->everyMinute();
         $schedule->command('vpnonlinedelete')->everyMinute();
+        $schedule->command('autokickuser')->everyMinute();
     }
 
     /**

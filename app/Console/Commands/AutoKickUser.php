@@ -39,16 +39,16 @@ class AutoKickUser extends Command
     {
         $online_users = \App\OnlineUser::all();
         foreach ($online_users as $online_user) {
-            if(!$online_user->user()->isAdmin()) {
+            if(!$online_user->user->isAdmin()) {
                 $current = \Carbon\Carbon::now();
-                $dt = \Carbon\Carbon::parse($online_user->user()->getOriginal('expired_at'));
-                if($online_user->user()->status_id != 1 || $current->lte($dt)) {
+                $dt = \Carbon\Carbon::parse($online_user->user->getOriginal('expired_at'));
                     $socket = fsockopen('sg2.smartyvpn.com', '8000', $errno, $errstr);
                     if($socket)
                     {
+                        echo $online_user->user->username;
                         //echo "Connected";
                         //fputs($socket, "smartyvpn\n");
-                        fputs($socket, "kill {$online_user->user()->username}\n");
+                        fputs($socket, "kill {$online_user->user->username}\n");
                         fputs($socket, "quit\n");
                     }
                     fclose($socket);
