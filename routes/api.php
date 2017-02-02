@@ -64,7 +64,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
 Route::get('/wew', function (Request $request) {
     $user = OnlineUser::find(1);
-    return $user->user->username . ' ' . $user->vpnserver->server_name;
+    return $user->vpnserver;
 });
 
 Route::get('/vpn_auth_disconnect', function (Request $request) {
