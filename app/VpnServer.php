@@ -16,7 +16,7 @@ class VpnServer extends Model
 
     public function onlineuser()
     {
-        return $this->hasMany('App\OnlineUser');
+        return $this->hasMany('App\OnlineUser', 'vpn_server_id', 'id');
     }
     
 }
