@@ -42,8 +42,8 @@ class VpnUser extends Command
         foreach($logs as $log)
         {
             $update_online = \App\OnlineUser::find($log['CommonName']);
-            $update_online->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
-            $update_online->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
+            $update_online->byte_sent = intval($log['BytesSent']);
+            $update_online->byte_received = intval($log['BytesReceived']);
             $update_online->touch();
             $update_online->save();
         }
