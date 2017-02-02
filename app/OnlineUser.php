@@ -32,6 +32,6 @@ class OnlineUser extends Model
 
     public function vpnserver()
     {
-        return $this->belongsTo('App\VpnServer', 'id', 'vpn_server_id');
+        return $this->belongsTo('App\VpnServer', 'vpn_server_id', 'id');
     }
 }
