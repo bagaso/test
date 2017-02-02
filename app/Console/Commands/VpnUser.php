@@ -41,11 +41,13 @@ class VpnUser extends Command
         $logs = $this->parseLog('http://sg2.smartyvpn.com/logs/logs.log', 'tcp');
         foreach($logs as $log)
         {
-            $update_online = \App\OnlineUser::find($log['CommonName']);
-            $update_online->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
-            $update_online->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
-            $update_online->touch();
-            $update_online->save();
+            $update_online = \App\OnlineUser::find($log['CommonName'] ? $log['CommonName'] : 'UNDEF');
+            if(count($update_online) > 0) {
+                $update_online->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
+                $update_online->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
+                $update_online->touch();
+                $update_online->save();
+            }
         }
     }
 
