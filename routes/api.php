@@ -46,6 +46,9 @@ Route::get('/vpn_auth_connect', function (Request $request) {
     
     if($user->isAdmin() || ($user->status_id == 1 && $current->lte($dt))) {
         $server_logged_in = \App\VpnServer::find($request->server_ip);
+        if(!$server_logged_in->is_active) {
+            return '0';
+        }
         $new_online = new OnlineUser();
         $new_online->username = $username;
         $new_online->server_name = $server_logged_in->server_name;
