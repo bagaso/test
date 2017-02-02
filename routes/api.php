@@ -62,11 +62,6 @@ Route::get('/vpn_auth_connect', function (Request $request) {
     return '0';
 });
 
-Route::get('/wew', function (Request $request) {
-    $user = OnlineUser::find(1);
-    return $user->vpnserver;
-});
-
 Route::get('/vpn_auth_disconnect', function (Request $request) {
     $username = trim($request->username);
     $delete = \App\User::where('username', $username)->first();
