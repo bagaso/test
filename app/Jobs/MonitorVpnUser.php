@@ -34,8 +34,8 @@ class MonitorVpnUser implements ShouldQueue
             if(!$online_user->user->isAdmin()) {
                 $current = \Carbon\Carbon::now();
                 $dt = \Carbon\Carbon::parse($online_user->user->getOriginal('expired_at'));
-                if($online_user->user->status_id != 1 || $current->gte($dt)) {
-                    Log:info('I was here. ' . $online_user->user);
+                Log:info('I was here. ' . $dt);
+                if($online_user->user->status_id != 1 || $current->lte($dt)) {
                     $job = (new DisconnectVpnUser($online_user))->delay(\Carbon\Carbon::now()->addSeconds(10))->onQueue('disconnectvpnuser');
                     dispatch($job);
 //                    $socket = @fsockopen($online_user->vpnserver->server_domain, '8000', $errno, $errstr);
