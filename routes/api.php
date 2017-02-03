@@ -1,6 +1,5 @@
 <?php
 
-use App\Jobs\MonitorVpnUser;
 use App\OnlineUser;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -46,6 +45,9 @@ Route::get('/vpn_auth_connect', function (Request $request) {
     $dt = Carbon::parse($user->getOriginal('expired_at'));
     
     if($user->isAdmin() || ($user->status_id == 1 && $current->lte($dt))) {
+        if($user->onlineuser) {
+            return '0';
+        }
         $server = \App\VpnServer::where('server_ip', $request->server_ip)->first();
         if(count($server) == 0 || !$server->is_active) {
             return '0';
