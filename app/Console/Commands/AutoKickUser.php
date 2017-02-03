@@ -2,6 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\DisconnectVpnUser;
+use App\Jobs\MonitorVpnUser;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class AutoKickUser extends Command
@@ -37,24 +40,27 @@ class AutoKickUser extends Command
      */
     public function handle()
     {
-        $online_users = \App\OnlineUser::all();
-        foreach ($online_users as $online_user) {
-            if(!$online_user->user->isAdmin()) {
-                $current = \Carbon\Carbon::now();
-                $dt = \Carbon\Carbon::parse($online_user->user->getOriginal('expired_at'));
-                if($online_user->user->status_id != 1 || $current->gte($dt)) {
-                    $socket = @fsockopen($online_user->vpnserver->server_domain, '8000', $errno, $errstr);
-                    if($socket)
-                    {
-                        //echo "Connected";
-                        //fputs($socket, "smartyvpn\n");
-                        @fputs($socket, "kill {$online_user->user->username}\n");
-                        @fputs($socket, "quit\n");
-                    }
-                    @fclose($socket);
-
-                }
-            }
-        }
+        $job = (new MonitorVpnUser())->delay(Carbon::now()->addSeconds(10))->onQueue('monitorvpnuser');
+        dispatch($job);
+//        $online_users = \App\OnlineUser::all();
+//        foreach ($online_users as $online_user) {
+//            if(!$online_user->user->isAdmin()) {
+//                $current = \Carbon\Carbon::now();
+//                $dt = \Carbon\Carbon::parse($online_user->user->getOriginal('expired_at'));
+//                if($online_user->user->status_id != 1 || $current->gte($dt)) {
+//                    $job = (new DisconnectVpnUser($online_user))->delay(60);
+//                    dispatch($job);
+////                    $socket = @fsockopen($online_user->vpnserver->server_domain, '8000', $errno, $errstr);
+////                    if($socket)
+////                    {
+////                        //echo "Connected";
+////                        //fputs($socket, "smartyvpn\n");
+////                        @fputs($socket, "kill {$online_user->user->username}\n");
+////                        @fputs($socket, "quit\n");
+////                    }
+////                    @fclose($socket);
+//                }
+//            }
+//        }
     }
 }
