@@ -18,7 +18,7 @@ class MonitorVpnUser implements ShouldQueue
      */
     public function __construct()
     {
-        //
+        //$this->user = $user;
     }
 
     /**

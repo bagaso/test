@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\MonitorVpnUser;
 use App\OnlineUser;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -67,41 +68,6 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
     $delete = \App\User::where('username', $username)->first();
     $delete->onlineuser->delete();
     return '1';
-});
-
-Route::get('/log', function () {
-
-    $val = '';
-
-    $fp = stream_socket_client("tcp://188.166.242.96:8000", $errno, $errstr, 30);
-    if (!$fp) {
-        echo "$errstr ($errno)<br />\n";
-    } else {
-        fwrite($fp, "status\r\n");
-        $ctr = 0;
-        while (!feof($fp)) {
-            $val .= fgets($fp, 1024);
-            if($ctr >= 20) {
-                fclose($fp);
-                break;
-            }
-            $ctr++;
-        }
-        echo $val;
-        //fclose($fp);
-    }
-//    $socket = fsockopen('sg2.smartyvpn.com', '8000', $errno, $errstr);
-//    $val = '';
-//    if($socket)
-//    {
-//        $val =  "Connected";
-//        //fputs($socket, "smartyvpn\n");
-//        //fputs($socket, "kill {$row['user_name']}\n");
-//        fputs($socket, "status\n");
-//        echo fgets($socket, 4096);
-//        fputs($socket, "quit\n");
-//    }
-//    fclose($socket);
 });
 
 
