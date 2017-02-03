@@ -45,7 +45,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
     $dt = Carbon::parse($user->getOriginal('expired_at'));
     
     if($user->isAdmin() || ($user->status_id == 1 && $current->lte($dt))) {
-        if($user->vpn->count() > 0) {
+        if($user->vpn) {
             return '0';
         }
         $server = \App\VpnServer::where('server_ip', $request->server_ip)->first();
