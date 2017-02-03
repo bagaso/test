@@ -43,20 +43,6 @@ class VpnUser extends Command
             $job = (new JobVpnUpdateUsers($server))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('vpnupdateusers');
             dispatch($job);
         }
-//        $servers = \App\VpnServer::where('is_active', 1)->get();
-//        foreach ($servers as $server) {
-//            $logs = $this->parseLog('http://' . strtolower($server->server_domain) . '/logs/logs.log', 'tcp');
-//            foreach($logs as $log)
-//            {
-//                $user = \App\User::where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF')->first();
-//                if($user->count() > 0 && $user->onlineuser->count() > 0) {
-//                    $user->onlineuser->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
-//                    $user->onlineuser->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
-//                    $user->onlineuser->touch();
-//                    $user->onlineuser->save();
-//                }
-//            }
-//        }
     }
     
 }

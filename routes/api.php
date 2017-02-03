@@ -45,7 +45,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
     $dt = Carbon::parse($user->getOriginal('expired_at'));
     
     if($user->isAdmin() || ($user->status_id == 1 && $current->lte($dt))) {
-        if($user->onlineuser) {
+        if($user->vpn->count() > 0) {
             return '0';
         }
         $server = \App\VpnServer::where('server_ip', $request->server_ip)->first();
@@ -68,7 +68,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 Route::get('/vpn_auth_disconnect', function (Request $request) {
     $username = trim($request->username);
     $delete = \App\User::where('username', $username)->first();
-    $delete->onlineuser->delete();
+    $delete->vpn->delete();
     return '1';
 });
 

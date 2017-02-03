@@ -33,13 +33,13 @@ class JobVpnUpdateUsers implements ShouldQueue
         $logs = $this->parseLog('http://' . strtolower($this->server->server_domain) . '/logs/logs.log', 'tcp');
         foreach($logs as $log)
         {
-            $user = $this->server->users->where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF')->first();
-            if($user->onlineuser->count() > 0)
+            $users = $this->server->users->has('vpn')->where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF');
+            foreach($users as $user)
             {
-                $user->onlineuser->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
-                $user->onlineuser->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
-                $user->onlineuser->touch();
-                $user->onlineuser->save();
+                $user->vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
+                $user->vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
+                $user->vpn->touch();
+                $user->vpn->save();
             }
 //            $user = \App\User::where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF')->first();
 //            if($user->count() > 0 && $user->onlineuser->count() > 0) {

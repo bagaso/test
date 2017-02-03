@@ -82,7 +82,7 @@ class User extends Authenticatable
         $this->attributes['parent_id'] = auth()->user()->id;
     }
     
-    public function onlineuser() {
+    public function vpn() {
         return $this->hasOne('App\OnlineUser');
     }
 

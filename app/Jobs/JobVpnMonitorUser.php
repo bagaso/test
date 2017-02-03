@@ -11,16 +11,16 @@ class JobVpnMonitorUser implements ShouldQueue
 {
     use InteractsWithQueue, Queueable, SerializesModels;
     
-    protected $onlineUsers;
+    protected $server;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($onlineUsers)
+    public function __construct(\App\VpnServer $server)
     {
-        $this->onlineUsers = $onlineUsers;
+        $this->server = $server;
     }
 
     /**
@@ -30,12 +30,12 @@ class JobVpnMonitorUser implements ShouldQueue
      */
     public function handle()
     {
-        foreach ($this->onlineUsers as $online_user) {
-            if(!$online_user->user->isAdmin()) {
+        foreach ($this->server->users as $user) {
+            if(!$user->isAdmin()) {
                 $current = \Carbon\Carbon::now();
-                $dt = \Carbon\Carbon::parse($online_user->user->getOriginal('expired_at'));
-                if($online_user->user->status_id != 1 || $current->gte($dt)) {
-                    $job = (new JobVpnDisconnectUser($online_user))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                $dt = \Carbon\Carbon::parse($user->getOriginal('expired_at'));
+                if($user->status_id != 1 || $current->gte($dt)) {
+                    $job = (new JobVpnDisconnectUser($user, $this->server))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                     dispatch($job);
                 }
             }
