@@ -40,8 +40,11 @@ class AutoKickUser extends Command
      */
     public function handle()
     {
-        $job = (new MonitorVpnUser())->delay(Carbon::now()->addSeconds(10))->onQueue('monitorvpnuser');
-        dispatch($job);
+        $online_users = \App\OnlineUser::all()->count();
+        if($online_users > 0) {
+            $job = (new MonitorVpnUser())->delay(Carbon::now()->addSeconds(5))->onQueue('monitorvpnuser');
+            dispatch($job);
+        }
 //        $online_users = \App\OnlineUser::all();
 //        foreach ($online_users as $online_user) {
 //            if(!$online_user->user->isAdmin()) {
