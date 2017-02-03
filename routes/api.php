@@ -52,12 +52,12 @@ Route::get('/vpn_auth_connect', function (Request $request) {
         if(count($server) == 0 || !$server->is_active) {
             return '0';
         }
-        $new_online = new OnlineUser();
-        $new_online->user_id = $user->id;
-        $new_online->vpn_server_id = $server->id;
-        $new_online->byte_sent = 0;
-        $new_online->byte_received = 0;
-        if($new_online->save()) {
+        $vpn = new OnlineUser();
+        $vpn->user_id = $user->id;
+        $vpn->vpn_server_id = $server->id;
+        $vpn->byte_sent = 0;
+        $vpn->byte_received = 0;
+        if($vpn->save()) {
             return '1';
         }
         return '0';

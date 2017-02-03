@@ -14,9 +14,9 @@ class VpnServer extends Model
         'is_active' => 'boolean',
     ];
 
-    public function onlineuser()
+    public function online_users()
     {
-        return $this->hasMany('App\OnlineUser', 'id', 'vpn_server_id');
+        return $this->hasMany('App\OnlineUser');
     }
     
 }
