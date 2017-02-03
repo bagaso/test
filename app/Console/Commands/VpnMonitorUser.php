@@ -41,7 +41,7 @@ class VpnMonitorUser extends Command
     {
         $servers = \App\VpnServer::where('is_active', 1)->get();
         foreach ($servers as $server) {
-            if($server->online_users) {
+            if($server->online_users->count() > 0) {
                 $job = (new JobVpnMonitorUser($server->online_users))->delay(Carbon::now()->addSeconds(5))->onQueue('monitorvpnuser');
                 dispatch($job);
             }
