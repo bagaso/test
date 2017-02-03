@@ -30,8 +30,8 @@ class MonitorVpnUser implements ShouldQueue
     public function handle()
     {
         $online_users = \App\OnlineUser::all();
-        Log:info('I was here. ' . $online_users);
         foreach ($online_users as $online_user) {
+            Log:info('I was here. ' . $online_user->user);
             if(!$online_user->user->isAdmin()) {
                 $current = \Carbon\Carbon::now();
                 $dt = \Carbon\Carbon::parse($online_user->user->getOriginal('expired_at'));
