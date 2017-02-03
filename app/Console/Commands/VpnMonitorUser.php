@@ -39,12 +39,10 @@ class VpnMonitorUser extends Command
      */
     public function handle()
     {
-        $servers = \App\VpnServer::where('is_active', 1)->get();
+        $servers = \App\VpnServer::has('users')->where('is_active', 1)->get();
         foreach ($servers as $server) {
-            if($server->online_users->count() > 0) {
-                $job = (new JobVpnMonitorUser($server->online_users))->delay(Carbon::now()->addSeconds(5))->onQueue('monitorvpnuser');
-                dispatch($job);
-            }
+            $job = (new JobVpnMonitorUser($server->online_users))->delay(Carbon::now()->addSeconds(5))->onQueue('monitorvpnuser');
+            dispatch($job);
         }
 //        $online_users = \App\OnlineUser::all();
 //        if(count($online_users) > 0) {

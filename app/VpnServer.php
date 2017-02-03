@@ -18,5 +18,12 @@ class VpnServer extends Model
     {
         return $this->hasMany('App\OnlineUser');
     }
-    
+
+    public function users()
+    {
+        return $this->hasManyThrough(
+            'App\User', 'App\OnlineUser',
+            'vpn_server_id', 'id', 'id'
+        );
+    }
 }
