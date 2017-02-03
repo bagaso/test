@@ -37,7 +37,7 @@ class VpnDeleteIdleUser extends Command
      */
     public function handle()
     {
-        $auto_delete = \App\OnlineUser::where('updated_at', '<=', \Carbon\Carbon::now()->subMinutes(5));
-        $auto_delete->delete();
+        $delete_idle = \App\OnlineUser::where('updated_at', '<=', \Carbon\Carbon::now()->subMinutes(5));
+        $delete_idle->delete();
     }
 }
