@@ -33,21 +33,14 @@ class JobVpnUpdateUsers implements ShouldQueue
         $logs = $this->parseLog('http://' . strtolower($this->server->server_domain) . '/logs/logs.log', 'tcp');
         foreach($logs as $log)
         {
-            $users = $this->server->has('online_users')->users->where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF')->get();
-            foreach($users as $user)
+            $user = $this->server->users->where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF');
+            foreach($user->vpn as $vpn)
             {
-                $user->vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
-                $user->vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
-                $user->vpn->touch();
-                $user->vpn->save();
+                $vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
+                $vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
+                $vpn->touch();
+                $vpn->save();
             }
-//            $user = \App\User::where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF')->first();
-//            if($user->count() > 0 && $user->onlineuser->count() > 0) {
-//                $user->onlineuser->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
-//                $user->onlineuser->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
-//                $user->onlineuser->touch();
-//                $user->onlineuser->save();
-//            }
         }
     }
 
