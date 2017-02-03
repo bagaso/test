@@ -2,13 +2,12 @@
 
 namespace App\Jobs;
 
-use App\OnlineUser;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class DisconnectVpnUser implements ShouldQueue
+class JobVpnDisconnectUser implements ShouldQueue
 {
     use InteractsWithQueue, Queueable, SerializesModels;
 
@@ -19,7 +18,7 @@ class DisconnectVpnUser implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(OnlineUser $onlineUser)
+    public function __construct(\App\OnlineUser $onlineUser)
     {
         $this->onlineUser = $onlineUser;
     }

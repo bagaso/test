@@ -4,14 +4,14 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
-class VpnOnlineUserDelete extends Command
+class VpnDeleteIdleUser extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'vpnonlinedelete';
+    protected $signature = 'vpn:deleteidle';
 
     /**
      * The console command description.

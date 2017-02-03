@@ -14,8 +14,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         'App\Console\Commands\VpnUser',
-        'App\Console\Commands\VpnOnlineUserDelete',
-        'App\Console\Commands\AutoKickUser',
+        'App\Console\Commands\VpnDeleteIdleUser',
+        'App\Console\Commands\VpnMonitorUser',
     ];
 
     /**
@@ -29,8 +29,8 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')
         //          ->hourly();
         $schedule->command('vpnuser')->everyMinute();
-        $schedule->command('vpnonlinedelete')->everyMinute();
-        $schedule->command('autokickuser')->everyMinute();
+        $schedule->command('vpn:deleteidle')->everyMinute();
+        $schedule->command('vpn:monitoruser')->everyMinute();
     }
 
     /**
