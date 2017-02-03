@@ -33,13 +33,13 @@ class JobVpnUpdateUsers implements ShouldQueue
         $logs = $this->parseLog('http://' . strtolower($this->server->server_domain) . '/logs/logs.log', 'tcp');
         foreach($logs as $log)
         {
-            $user = $this->server->users->where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF');
-            foreach($user->vpn as $vpn)
+            $users = $this->server->users->where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF');
+            foreach($users as $user)
             {
-                $vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
-                $vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
-                $vpn->touch();
-                $vpn->save();
+                $user->vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
+                $user->vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
+                $user->vpn->touch();
+                $user->vpn->save();
             }
         }
     }
