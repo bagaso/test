@@ -67,11 +67,11 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
 Route::get('/vpn_auth_disconnect', function (Request $request) {
     $username = trim($request->username);
-    $delete = \App\User::has('vpn')->where('username', $username)->first();
+    $delete = \App\User::where('username', $username)->first();
     if($delete->vpn) {
-    $delete->delete();
+        $delete->delete();
+    }
     return '1';
-}
 });
 
 
