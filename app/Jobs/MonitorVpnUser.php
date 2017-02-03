@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
 
 class MonitorVpnUser implements ShouldQueue
 {
@@ -29,6 +30,7 @@ class MonitorVpnUser implements ShouldQueue
     public function handle()
     {
         $online_users = \App\OnlineUser::all();
+        Log:info('I was here. ' . $online_users);
         foreach ($online_users as $online_user) {
             if(!$online_user->user->isAdmin()) {
                 $current = \Carbon\Carbon::now();
