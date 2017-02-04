@@ -30,18 +30,16 @@ class JobVpnMonitorUser implements ShouldQueue
      */
     public function handle()
     {
-        if($this->server) {
-            foreach ($this->server->users as $user) {
-                if(!$this->server->is_active) {
+        foreach ($this->server->users as $user) {
+            if(!$this->server->is_active) {
+                $job = (new JobVpnDisconnectUser($user, $this->server))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                dispatch($job);
+            } else if(!$user->isAdmin()) {
+                $current = \Carbon\Carbon::now();
+                $dt = \Carbon\Carbon::parse($user->getOriginal('expired_at'));
+                if($user->status_id != 1 || $current->gte($dt)) {
                     $job = (new JobVpnDisconnectUser($user, $this->server))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                     dispatch($job);
-                } else if(!$user->isAdmin()) {
-                    $current = \Carbon\Carbon::now();
-                    $dt = \Carbon\Carbon::parse($user->getOriginal('expired_at'));
-                    if($user->status_id != 1 || $current->gte($dt)) {
-                        $job = (new JobVpnDisconnectUser($user, $this->server))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
-                        dispatch($job);
-                    }
                 }
             }
         }
