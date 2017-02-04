@@ -16,6 +16,7 @@ class CreateVpnServersTable extends Migration
         Schema::create('vpn_servers', function (Blueprint $table) {
             $table->increments('id');
             $table->ipAddress('server_ip');
+            $table->string('server_port');
             $table->string('server_domain');
             $table->string('server_name');
             $table->tinyInteger('is_active')->unsigned();

@@ -11,17 +11,18 @@ class JobVpnDisconnectUser implements ShouldQueue
 {
     use InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $user, $server;
+    protected $username, $server, $port;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(\App\User $user, \App\VpnServer $server)
+    public function __construct($username, $server, $port)
     {
-        $this->user = $user;
+        $this->username = $username;
         $this->server = $server;
+        $this->port = $port;
     }
 
     /**
@@ -31,12 +32,12 @@ class JobVpnDisconnectUser implements ShouldQueue
      */
     public function handle()
     {
-        $socket = @fsockopen($this->server->server_domain, '8000', $errno, $errstr);
+        $socket = @fsockopen($this->server, $this->port, $errno, $errstr);
         if($socket)
         {
             //echo "Connected";
             //fputs($socket, "smartyvpn\n");
-            @fputs($socket, "kill {$this->user->username}\n");
+            @fputs($socket, "kill {$this->username}\n");
             @fputs($socket, "quit\n");
         }
         @fclose($socket);

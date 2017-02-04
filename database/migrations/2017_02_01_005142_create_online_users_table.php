@@ -16,6 +16,8 @@ class CreateOnlineUsersTable extends Migration
         Schema::create('online_users', function (Blueprint $table) {
             $table->integer('user_id')->unsigned();
             $table->integer('vpn_server_id')->unsigned();
+            $table->ipAddress('server_ip');
+            $table->string('server_port');
             $table->double('byte_sent')->default(0)->unsigned();
             $table->double('byte_received')->default(0)->unsigned();
             $table->timestamps();
