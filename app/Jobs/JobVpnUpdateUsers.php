@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
 
 class JobVpnUpdateUsers implements ShouldQueue
 {
@@ -36,6 +37,7 @@ class JobVpnUpdateUsers implements ShouldQueue
             $users = $this->server->users->where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF');
             foreach($users as $user)
             {
+                Log::info('wew ' . \Carbon\Carbon::now());
                 if($user->has('vpn')) {
                     $user->vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
                     $user->vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
