@@ -34,18 +34,15 @@ class JobVpnUpdateUsers implements ShouldQueue
         $logs = $this->parseLog('http://' . strtolower($this->server->server_domain) . '/logs/logs.log', 'tcp');
         foreach($logs as $log)
         {
-            $users = $this->server->users->where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF');
-            foreach($users->get() as $user)
-            {
-                if($user->has('vpn')) {
-                    $user->vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
-                    $user->vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
-                    $user->vpn->touch();
-                    $user->vpn->save();
-                } else {
-                    $job = (new JobVpnDisconnectUser($user->username, $this->server->server_ip, $this->server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
-                    dispatch($job);
-                }
+            $user = $this->server->users->where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF')->first();
+            if(count($user) > 0) {
+                $user->vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
+                $user->vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
+                $user->vpn->touch();
+                $user->vpn->save();
+            } else {
+                $job = (new JobVpnDisconnectUser($user->username, $this->server->server_ip, $this->server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                dispatch($job);
             }
         }
     }
