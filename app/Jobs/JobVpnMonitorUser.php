@@ -30,7 +30,7 @@ class JobVpnMonitorUser implements ShouldQueue
      */
     public function handle()
     {
-        if($this->server->count() > 0) {
+        if($this->server) {
             foreach ($this->server->users as $user) {
                 if(!$this->server->is_active) {
                     $job = (new JobVpnDisconnectUser($user, $this->server))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
