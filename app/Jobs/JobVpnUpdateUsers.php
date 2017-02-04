@@ -34,7 +34,7 @@ class JobVpnUpdateUsers implements ShouldQueue
         foreach($logs as $log)
         {
             $users = $this->server->users->where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF');
-            $job = (new JobVpnDisconnectUser($log['CommonName'], $this->server->server_ip, $this->server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+            $job = (new JobVpnDisconnectUser($users->first()->username, $this->server->server_ip, $this->server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
             dispatch($job);
             foreach($users as $user)
             {
