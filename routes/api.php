@@ -68,7 +68,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 Route::get('/vpn_auth_disconnect', function (Request $request) {
     $username = trim($request->username);
     $delete = \App\User::where('username', $username);
-    if($delete->vpn->count() > 0) {
+    if($delete->vpn) {
         $delete->first()->vpn->delete();
     }
     return '1';
