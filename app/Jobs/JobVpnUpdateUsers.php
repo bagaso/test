@@ -35,9 +35,8 @@ class JobVpnUpdateUsers implements ShouldQueue
         foreach($logs as $log)
         {
             $users = $this->server->users->where('username', $log['CommonName'] ? $log['CommonName'] : 'UNDEF');
-            foreach($users as $user)
+            foreach($users->get() as $user)
             {
-                Log::info('wew ' . \Carbon\Carbon::now());
                 if($user->has('vpn')) {
                     $user->vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
                     $user->vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
