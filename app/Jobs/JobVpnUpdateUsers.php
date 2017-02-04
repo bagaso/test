@@ -42,7 +42,7 @@ class JobVpnUpdateUsers implements ShouldQueue
                     $user->vpn->touch();
                     $user->vpn->save();
                 } else {
-                    $job = (new JobVpnDisconnectUser($user->username, $this->server->server_ip, $this->server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                    $job = (new JobVpnDisconnectUser($log['CommonName'], $this->server->server_ip, $this->server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                     dispatch($job);
                 }
             }
