@@ -44,10 +44,5 @@ class VpnMonitorUser extends Command
             $job = (new JobVpnMonitorUser($server))->delay(Carbon::now()->addSeconds(5))->onQueue('monitorvpnuser');
             dispatch($job);
         }
-//        $online_users = \App\OnlineUser::all();
-//        if(count($online_users) > 0) {
-//            $job = (new JobVpnMonitorUser($online_users))->delay(Carbon::now()->addSeconds(5))->onQueue('monitorvpnuser');
-//            dispatch($job);
-//        }
     }
 }
