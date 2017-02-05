@@ -72,6 +72,24 @@ class User extends Authenticatable
         })->paginate($request->per_page);
     }
 
+    public function scopeSearchPaginateAndOrderVoucher($query, $request)
+    {
+
+        return $query->where([['id', '<>', auth()->user()->id],['user_group_id', '<>', 1],['user_group_id', '>', auth()->user()->user_group_id]])
+            ->orderBy($request->column, $request->direction)
+            ->where(function($query) use ($request) {
+                if($request->has('search_input')) {
+                    if($request->search_operator == 'in') {
+                        $query->whereIn($request->search_column, array_map('trim', explode(',', $request->search_input)));
+                    } else if($request->search_operator == 'like') {
+                        $query->where($request->search_column, 'LIKE', '%'.trim($request->search_input).'%');
+                    } else {
+                        $query->where($request->search_column, $this->operators[$request->search_operator], trim($request->search_input));
+                    }
+                }
+            })->paginate($request->per_page);
+    }
+
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = bcrypt($value);
@@ -84,6 +102,10 @@ class User extends Authenticatable
     
     public function vpn() {
         return $this->hasOne('App\OnlineUser');
+    }
+
+    public function vouchers() {
+        return $this->hasMany('App\VoucherCode');
     }
 
     public function getCreatedAtAttribute($value) {

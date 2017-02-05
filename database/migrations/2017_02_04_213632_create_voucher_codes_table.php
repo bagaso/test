@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateVpnServersTable extends Migration
+class CreateVoucherCodesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,11 @@ class CreateVpnServersTable extends Migration
      */
     public function up()
     {
-        Schema::create('vpn_servers', function (Blueprint $table) {
+        Schema::create('voucher_codes', function (Blueprint $table) {
             $table->increments('id');
-            $table->ipAddress('server_ip');
-            $table->string('server_port');
-            $table->string('vpn_secret');
-            $table->string('server_domain');
-            $table->string('server_name');
-            $table->tinyInteger('is_active')->unsigned();
+            $table->string('code')->unique();
+            $table->unsignedInteger('user_id');
+            $table->unsignedInteger('duration');
             $table->timestamps();
         });
     }
@@ -32,6 +29,6 @@ class CreateVpnServersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('vpn_servers');
+        Schema::dropIfExists('voucher_codes');
     }
 }

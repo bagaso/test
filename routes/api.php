@@ -15,6 +15,11 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::get('/wew', function (Request $request) {
+    $account = \App\User::findorfail(99);
+    return $account->vouchers()->where('code', '12345')->paginate(1);
+});
+
 Route::get('/account', function (Request $request) {
     $account = $request->user();
     return $account;
@@ -92,5 +97,9 @@ Route::get('/manage-user/permission/{id}', 'ManageUserController@viewPermission'
 Route::get('/manage-user/permission/{id}/{p_code}', 'ManageUserController@updatePermission');
 Route::get('/manage-user/duration/{id}', 'ManageUserController@viewDuration');
 Route::post('/manage-user/duration/{id}', 'ManageUserController@updateDuration');
+Route::get('/manage-user/credits/{id}', 'ManageUserController@viewCredits');
+Route::post('/manage-user/credits/{id}', 'ManageUserController@updateCredits');
+Route::get('/manage-user/voucher/{id}', 'ManageUserController@viewVoucher');
+Route::post('/manage-user/voucher/{id}', 'ManageUserController@applyVoucher');
 Route::get('/manage-user/create', 'ManageUserController@viewCreate');
 Route::post('/manage-user/create', 'ManageUserController@create');

@@ -50,28 +50,27 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('update-user-profile', function ($user, $id) {
             $data = User::findorfail($id);
-            if($data->user_group_id <= $user->user_group_id) {
+            if($data->user_group_id <= $user->user_group_id || $user->id == $id) {
                 return false;
             }
-            if($data->isDownline() && in_array('PCODE_002', json_decode($user->roles->pluck('code')))) {
+            if($data->isDownline() && in_array($user->user_group_id, [2,3,4]) && in_array('PCODE_002', json_decode($user->roles->pluck('code')))) {
                 return true;
             }
 
-            if(!$data->isDownline() && $user->user_group_id == 2 && in_array('PCODE_007', json_decode($user->roles->pluck('code')))) {
+            if(!$data->isDownline() && in_array($user->user_group_id, [2]) && in_array('PCODE_007', json_decode($user->roles->pluck('code')))) {
                 return true;
             }
             return false;
         });
 
         Gate::define('update-user-security', function ($user, $id) {
-            if($user->id == $id) return false;
             $data = User::findorfail($id);
             //if user is a downline
-            if($data->isDownline() && in_array('PCODE_003', json_decode($user->roles->pluck('code')))) {
+            if($data->isDownline() && in_array($user->user_group_id, [2,3,4]) && in_array('PCODE_003', json_decode($user->roles->pluck('code')))) {
                 return true;
             }
             //if user group is Ultimate (group_id = 2) and has a permission to manage other account code PCODE_007)
-            if(!$data->isDownline() && $user->user_group_id == 2 && in_array('PCODE_008', json_decode($user->roles->pluck('code')))) {
+            if(!$data->isDownline() && in_array($user->user_group_id, [2]) && in_array('PCODE_008', json_decode($user->roles->pluck('code')))) {
                 return true;
             }
             return false;
@@ -90,12 +89,11 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('update-user-usergroup', function ($user, $id) {
             $data = User::findorfail($id);
-            if(!in_array($user->user_group_id, [2,3])) return false;
-            if($data->isDownline() && in_array('PCODE_011', json_decode($user->roles->pluck('code')))) {
+            if($data->isDownline() && in_array($user->user_group_id, [2,3]) && in_array('PCODE_011', json_decode($user->roles->pluck('code')))) {
                 return true;
             }
 
-            if(!$data->isDownline() && $user->user_group_id == 2 && in_array('PCODE_012', json_decode($user->roles->pluck('code')))) {
+            if(!$data->isDownline() && in_array($user->user_group_id, [2]) && in_array('PCODE_012', json_decode($user->roles->pluck('code')))) {
                 return true;
             }
             return false;
@@ -108,12 +106,42 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('update-user-status', function ($user, $id) {
             $data = User::findorfail($id);
-            if(!in_array($user->user_group_id, [2,3])) return false;
-            if($data->isDownline() && in_array('PCODE_005', json_decode($user->roles->pluck('code')))) {
+            if($data->isDownline() && in_array($user->user_group_id, [2,3,4]) && in_array('PCODE_005', json_decode($user->roles->pluck('code')))) {
                 return true;
             }
 
-            if(!$data->isDownline() && $user->user_group_id == 2 && in_array('PCODE_009', json_decode($user->roles->pluck('code')))) {
+            if(!$data->isDownline() && in_array($user->user_group_id, [2]) && in_array('PCODE_009', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+            return false;
+        });
+
+        Gate::define('transfer-credits', function ($user, $id) {
+            $data = User::findorfail($id);
+            if($data->isDownline() && in_array($user->user_group_id, [2,3,4]) && in_array('PCODE_013', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+
+            if(!$data->isDownline() && in_array($user->user_group_id, [2]) && in_array('PCODE_014', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+            return false;
+        });
+
+        Gate::define('generate-voucher', function ($user) {
+            if(in_array($user->user_group_id, [2,3,4]) && in_array('PCODE_015', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+            return false;
+        });
+
+        Gate::define('apply-voucher', function ($user, $id) {
+            $data = User::findorfail($id);
+            if($data->isDownline() && in_array($user->user_group_id, [2,3,4]) && in_array('PCODE_016', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+
+            if(!$data->isDownline() && in_array($user->user_group_id, [2]) && in_array('PCODE_017', json_decode($user->roles->pluck('code')))) {
                 return true;
             }
             return false;
