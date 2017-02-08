@@ -35,7 +35,7 @@ class JobVpnUpdateUsers implements ShouldQueue
         foreach($logs as $log)
         {
             try {
-                $user = \App\User::where('username', 'mp3sniff11')->firstorfail();
+                $user = \App\User::where('username', $log['CommonName'])->firstorfail();
                 if($user->vpn) {
                     $user->vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
                     $user->vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
