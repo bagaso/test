@@ -24,7 +24,7 @@ class UpdateAccount extends Controller
         // $this->authorize('update-account');
 
         if (Gate::denies('update-account')) {
-            return response()->json(['message' => 'No permission to update your account.'], 403);
+            return response()->json(['message' => 'Action not allowed.'], 403);
         }
 
         $account = $request->user();
@@ -35,16 +35,17 @@ class UpdateAccount extends Controller
             'fullname' => 'bail|required|max:50',
         ]);
 
-        if ($account->isAdmin()) {
+        if (auth()->user()->isAdmin()) {
             $account->username = $request->username;
         }
         $account->email = $request->email;
         $account->fullname = $request->fullname;
         $account->save();
-        if($account->save())
-            return response()->json([], 200);
-        else
-            return response()->json(['message' => 'Server Error.'], 500);
+        
+        return response()->json([
+            'message' => 'Profile updated successfully.',
+            'account' => ['updated_at' => $account->updated_at]
+        ], 200);
         
     } // function update
 

@@ -17,6 +17,7 @@ class CreateVoucherCodesTable extends Migration
             $table->increments('id');
             $table->string('code')->unique();
             $table->unsignedInteger('user_id');
+            $table->unsignedInteger('created_user_id');
             $table->unsignedInteger('duration');
             $table->timestamps();
         });

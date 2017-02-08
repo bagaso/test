@@ -72,24 +72,6 @@ class User extends Authenticatable
         })->paginate($request->per_page);
     }
 
-    public function scopeSearchPaginateAndOrderVoucher($query, $request)
-    {
-
-        return $query->where([['id', '<>', auth()->user()->id],['user_group_id', '<>', 1],['user_group_id', '>', auth()->user()->user_group_id]])
-            ->orderBy($request->column, $request->direction)
-            ->where(function($query) use ($request) {
-                if($request->has('search_input')) {
-                    if($request->search_operator == 'in') {
-                        $query->whereIn($request->search_column, array_map('trim', explode(',', $request->search_input)));
-                    } else if($request->search_operator == 'like') {
-                        $query->where($request->search_column, 'LIKE', '%'.trim($request->search_input).'%');
-                    } else {
-                        $query->where($request->search_column, $this->operators[$request->search_operator], trim($request->search_input));
-                    }
-                }
-            })->paginate($request->per_page);
-    }
-
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = bcrypt($value);
@@ -104,8 +86,12 @@ class User extends Authenticatable
         return $this->hasOne('App\OnlineUser');
     }
 
-    public function vouchers() {
+    public function vouchers_applied() {
         return $this->hasMany('App\VoucherCode');
+    }
+
+    public function vouchers_generated() {
+        return $this->hasMany('App\VoucherCode', 'created_user_id');
     }
 
     public function getCreatedAtAttribute($value) {
@@ -133,10 +119,10 @@ class User extends Authenticatable
         if($current->gte($dt)) {
             return 'Expired';
         }
-        if ($dt->diffInDays(Carbon::now()) > 1)
+        if ($dt->diffInDays(Carbon::now()) > 30)
             return $dt->format('Y-M-d');
         else
-            return $dt->diffForHumans();
+            return $dt->diffForHumans(null, true);
     }
 
     public function isAdmin()
@@ -159,6 +145,11 @@ class User extends Authenticatable
 
     public function getStatusIdAttribute($value) {
         return $this->isAdmin() ? 1 : $value;
+    }
+
+    public function getCreditsAttribute($value)
+    {
+        return $this->isAdmin() ? 'No Limit' : $value;
     }
 
     public function isActive() {

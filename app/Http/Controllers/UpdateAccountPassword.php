@@ -24,7 +24,7 @@ class UpdateAccountPassword extends Controller
     {
         // $this->authorize('update-account');
         if (Gate::denies('update-account')) {
-            return response()->json(['message' => 'No permission to update your account.'], 403);
+            return response()->json(['message' => 'Action not allowed.'], 403);
         }
 
         $account = $request->user();
@@ -40,8 +40,9 @@ class UpdateAccountPassword extends Controller
         ]);
 
         $account->password = $request->new_password;
+        $account->save();
 
-        return response()->json('', $account->save() ? 200 : 500);
+        return response()->json(['message' => 'Password changed successfully.'], 200);
 
     } // function update
 

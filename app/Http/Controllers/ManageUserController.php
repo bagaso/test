@@ -37,16 +37,20 @@ class ManageUserController extends Controller
 
         if($account->isAdmin()) {
             $data = User::whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-            $columns = User::$columns;
         } else {
             $data = User::where('parent_id', '=', $account->id)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-            $columns = User::$columns;
         }
 
+        $columns = User::$columns;
+
+        $total = auth()->user()->isAdmin() ? User::where('user_group_id', '<>', 1)->count() : User::where([['parent_id', '=', $account->id], ['user_group_id', '>', auth()->user()->user_group_id]])->count();
+        $new_users = User::where([['user_group_id', '<>', 1], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
         return response()->json([
             'model' => $data,
+            'total' => $total,
+            'new_users' => $new_users,
             'columns' => $columns
-        ]);
+        ], 200);
     } // end function all user
 
     public function ultimateUser(Request $request)
@@ -65,10 +69,16 @@ class ManageUserController extends Controller
         $data = User::where('user_group_id', '=', 2)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
         $columns = User::$columns;
 
+        $total = User::where('user_group_id', 2)->count();
+
+        $new_users = User::where([['user_group_id', 2], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
+
         return response()->json([
             'model' => $data,
+            'total' => $total,
+            'new_users' => $new_users,
             'columns' => $columns
-        ]);
+        ], 200);
     } // end function ultimate user
 
     public function premiumUser(Request $request)
@@ -86,16 +96,22 @@ class ManageUserController extends Controller
 
         if($account->isAdmin()) {
             $data = User::where('user_group_id', '=', 3)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-            $columns = User::$columns;
         } else {
             $data = User::where([['parent_id', '=', $account->id], ['user_group_id', '=', 3]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-            $columns = User::$columns;
         }
+
+        $columns = User::$columns;
+
+        $total = auth()->user()->isAdmin() ? User::where('user_group_id', 3)->count() : User::where([['user_group_id', 3], ['parent_id', auth()->user()->id]])->count();
+
+        $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 3], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 3], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
         return response()->json([
             'model' => $data,
+            'total' => $total,
+            'new_users' => $new_users,
             'columns' => $columns
-        ]);
+        ], 200);
     } // end function premium user
 
     public function resellerUser(Request $request)
@@ -113,16 +129,22 @@ class ManageUserController extends Controller
 
         if($account->isAdmin()) {
             $data = User::where('user_group_id', '=', 4)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-            $columns = User::$columns;
         } else {
             $data = User::where([['parent_id', '=', $account->id], ['user_group_id', '=', 4]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-            $columns = User::$columns;
         }
+
+        $columns = User::$columns;
+
+        $total = auth()->user()->isAdmin() ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
+
+        $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
         return response()->json([
             'model' => $data,
+            'total' => $total,
+            'new_users' => $new_users,
             'columns' => $columns
-        ]);
+        ], 200);
     } // end function reseller user
 
     public function clientUser(Request $request)
@@ -139,17 +161,23 @@ class ManageUserController extends Controller
         }
 
         if($account->isAdmin()) {
-            $data = User::where('user_group_id', '=', 5)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
+            $data = User::where('user_group_id', 5)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
         } else {
-            $data = User::where([['parent_id', '=', $account->id], ['user_group_id', '=', 5]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
+            $data = User::where([['parent_id', $account->id], ['user_group_id', 5]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
         }
 
         $columns = User::$columns;
+        
+        $total = auth()->user()->isAdmin() ? User::where('user_group_id', 5)->count() : User::where([['user_group_id', 5], ['parent_id', auth()->user()->id]])->count();
 
+        $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 5], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 5], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
+        
         return response()->json([
             'model' => $data,
+            'total' => $total,
+            'new_users' => $new_users,
             'columns' => $columns
-        ]);
+        ], 200);
     } // end function client user
 
     public function viewCreate()
@@ -283,6 +311,7 @@ class ManageUserController extends Controller
         $user->save();
 
         return response()->json([
+            'message' => 'User profile updated.',
             'user' => $user
         ], 200);
     } // end function update profile
@@ -385,7 +414,10 @@ class ManageUserController extends Controller
         }
 
         $user->save();
-        return response()->json(['user' => $user], 200);
+        return response()->json([
+            'message' => 'User duration updated.',
+            'user' => $user]
+        , 200);
     } // end function update duration
 
     public function viewCredits($id)
@@ -415,13 +447,25 @@ class ManageUserController extends Controller
         }
 
         if(auth()->user()->isAdmin()) {
-            $this->validate($request, [
-                'input_credits' => 'bail|required|integer|between:-10,10',
-            ]);
+            if($request->top_up) {
+                $this->validate($request, [
+                    'input_credits' => 'bail|required|integer|min:1|max:1',
+                ]);
+            } else {
+                $this->validate($request, [
+                    'input_credits' => 'bail|required|integer|between:-10,10',
+                ]);
+            }
         } else {
-            $this->validate($request, [
-                'input_credits' => 'bail|required|integer|between:1,10',
-            ]);
+            if($request->top_up) {
+                $this->validate($request, [
+                    'input_credits' => 'bail|required|integer|min:1|max:1',
+                ]);
+            } else {
+                $this->validate($request, [
+                    'input_credits' => 'bail|required|integer|between:1,10',
+                ]);
+            }
         }
 
         if(!auth()->user()->isAdmin() && auth()->user()->credits < $request->input_credits) {
@@ -430,11 +474,22 @@ class ManageUserController extends Controller
 
         $user = User::findOrFail($id);
 
-        if($request->input_credits < 0 && ($user->credits + $request->input_credits) < 0) {
-            return response()->json(['message' => 'User credits must be a non-negative value.'], 403);
+        if($request->top_up) {
+            $current = Carbon::now();
+            $dt = Carbon::parse($user->getOriginal('expired_at'));
+            if($current->lt($dt)) {
+                $user->expired_at = $dt->addDays(30);
+            } else {
+                $user->expired_at = $current->addDays(30);
+            }
+        } else {
+            if($request->input_credits < 0 && ($user->credits + $request->input_credits) < 0) {
+                return response()->json(['message' => 'User credits must be a non-negative value.'], 403);
+            }
+
+            $user->credits += $request->input_credits;
         }
 
-        $user->credits += $request->input_credits;
         $user->save();
 
         if(!auth()->user()->isAdmin()) {
@@ -445,7 +500,7 @@ class ManageUserController extends Controller
         return response()->json([
             'user' => ['username' => $user->username,
                        'credits' => $user->credits],
-            'account' => ['credits' => auth()->user()->isAdmin() ? 'No Limit' : auth()->user()->credits]
+            'account' => ['credits' => auth()->user()->credits]
         ], 200);
     } // end function update credits
 
@@ -463,9 +518,8 @@ class ManageUserController extends Controller
 
         $user = User::findOrFail($id);
         return response()->json([
-            'user' => ['username' => $user->username,
-                'credits' => $user->credits],
-            'account' => ['credits' => auth()->user()->isAdmin() ? 'No Limit' : auth()->user()->credits]
+            'user' => ['username' => $user->username],
+            'permission' => ['is_admin' => auth()->user()->isAdmin()]
         ], 200);
     } // end function view apply voucher
 
@@ -507,4 +561,32 @@ class ManageUserController extends Controller
 
         return response()->json(['message' => 'success'], 200);
     } // end function update apply voucher
+    
+    public function userVoucher(Request $request, $id)
+    {
+        if (Gate::denies('manage-user')) {
+            return response()->json(['message' => 'No permission to access this page.'], 403);
+        }
+        if (Gate::denies('update-user-profile', $id)) {
+            return response()->json(['message' => 'No permission to update user profile.'], 403);
+        }
+        if (Gate::denies('apply-voucher', $id)) {
+            return response()->json(['message' => 'No permission to appply voucher to the user.'], 403);
+        }
+
+        if(auth()->user()->isAdmin()) {
+            $data = VoucherCode::where('user_id', $id)->SearchPaginateAndOrder($request);
+        } else {
+            $data = VoucherCode::where([['user_id', $id],['created_user_id', auth()->user()->id]])->SearchPaginateAndOrder($request);
+        }
+
+        $columns = [
+            'code', 'duration', 'updated_at', 'created_at',
+        ];
+
+        return response()->json([
+            'model' => $data,
+            'columns' => $columns
+        ]);
+    }
 }

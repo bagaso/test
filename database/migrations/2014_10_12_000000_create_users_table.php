@@ -23,7 +23,7 @@ class CreateUsersTable extends Migration
             $table->integer('user_group_id')->unsigned();
             $table->integer('status_id')->unsigned();
             $table->integer('parent_id')->default(1);
-            $table->dateTime('expired_at');
+            $table->timestamp('expired_at')->useCurrent();
             $table->rememberToken();
             $table->timestamps();
             $table->index('user_group_id');
