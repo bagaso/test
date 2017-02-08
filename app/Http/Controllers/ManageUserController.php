@@ -237,7 +237,7 @@ class ManageUserController extends Controller
 
     public function viewProfile($id)
     {
-        if (Gate::denies('manage-user')) {
+        if (Gate::denies('manage-user') || auth()->user()->id == $id) {
             return response()->json(['message' => 'No permission to access this page.'], 403);
         }
         if (Gate::denies('update-user-profile', $id)) {
@@ -257,7 +257,7 @@ class ManageUserController extends Controller
 
     public function updateProfile(Request $request, $id)
     {
-        if (Gate::denies('manage-user') || Gate::denies('update-user-profile', $id)) {
+        if (auth()->user()->id == $id || Gate::denies('manage-user') || Gate::denies('update-user-profile', $id)) {
             return response()->json(['message' => 'Action not allowed.'], 403);
         }
         
@@ -318,7 +318,7 @@ class ManageUserController extends Controller
 
     public function viewSecurity($id)
     {
-        if (Gate::denies('manage-user')) {
+        if (auth()->user()->id == $id || Gate::denies('manage-user')) {
             return response()->json(['message' => 'No permission to access this page.'], 403);
         }
         if (Gate::denies('update-user-profile', $id)) {
@@ -337,7 +337,7 @@ class ManageUserController extends Controller
 
     public function updateSecurity(Request $request, $id)
     {
-        if(Gate::denies('manage-user') || Gate::denies('update-user-profile', $id) || Gate::denies('update-user-security', $id)) {
+        if(auth()->user()->id == $id || Gate::denies('manage-user') || Gate::denies('update-user-profile', $id) || Gate::denies('update-user-security', $id)) {
             return response()->json(['message' => 'Action not allowed.'], 403);
         }
         
@@ -356,7 +356,7 @@ class ManageUserController extends Controller
 
     public function viewPermission($id)
     {
-        if(!auth()->user()->isAdmin()) {
+        if(auth()->user()->id == $id || !auth()->user()->isAdmin()) {
             return response()->json(['message' => 'No permission to access this page.'], 403);
         }
 
@@ -373,7 +373,7 @@ class ManageUserController extends Controller
     public function updatePermission(Request $request, $id, $p_code)
     {
         $user = User::findorfail($id);
-        if(!auth()->user()->isAdmin() || (in_array($p_code, [7,8,9,10,12]) && $user->user_group_id != 2)) {
+        if(auth()->user()->id == $id || !auth()->user()->isAdmin() || (in_array($p_code, [7,8,9,10,12]) && $user->user_group_id != 2)) {
             return response()->json(['message' => 'Action not allowed.'], 403);
         }
         $user->roles()->toggle($p_code);
@@ -382,7 +382,7 @@ class ManageUserController extends Controller
 
     public function viewDuration($id)
     {
-        if (!auth()->user()->isAdmin()) {
+        if (auth()->user()->id == $id || !auth()->user()->isAdmin()) {
             return response()->json(['message' => 'No permission to access this page.'], 403);
         }
 
@@ -396,7 +396,7 @@ class ManageUserController extends Controller
     public function updateDuration(Request $request, $id)
     {
         $user = User::findorfail($id);
-        if(!auth()->user()->isAdmin()) {
+        if(auth()->user()->id == $id || !auth()->user()->isAdmin()) {
             return response()->json(['message' => 'Action not allowed.'], 403);
         }
 
@@ -422,7 +422,7 @@ class ManageUserController extends Controller
 
     public function viewCredits($id)
     {
-        if (Gate::denies('manage-user')) {
+        if (auth()->user()->id == $id || Gate::denies('manage-user')) {
             return response()->json(['message' => 'No permission to access this page.'], 403);
         }
         if (Gate::denies('update-user-profile', $id)) {
@@ -442,7 +442,7 @@ class ManageUserController extends Controller
 
     public function updateCredits(Request $request, $id)
     {
-        if (Gate::denies('manage-user') || Gate::denies('update-user-profile', $id) || Gate::denies('transfer-credits', $id)) {
+        if (auth()->user()->id == $id || Gate::denies('manage-user') || Gate::denies('update-user-profile', $id) || Gate::denies('transfer-credits', $id)) {
             return response()->json(['message' => 'Action not allowed.'], 403);
         }
 
@@ -506,7 +506,7 @@ class ManageUserController extends Controller
 
     public function viewVoucher($id)
     {
-        if (Gate::denies('manage-user')) {
+        if (auth()->user()->id == $id || Gate::denies('manage-user')) {
             return response()->json(['message' => 'No permission to access this page.'], 403);
         }
         if (Gate::denies('update-user-profile', $id)) {
@@ -525,7 +525,7 @@ class ManageUserController extends Controller
 
     public function applyVoucher(Request $request, $id)
     {
-        if (Gate::denies('manage-user') || Gate::denies('update-user-profile', $id) || Gate::denies('apply-voucher', $id)) {
+        if (auth()->user()->id == $id || Gate::denies('manage-user') || Gate::denies('update-user-profile', $id) || Gate::denies('apply-voucher', $id)) {
             return response()->json(['message' => 'Action not allowed.'], 403);
         }
 
@@ -564,7 +564,7 @@ class ManageUserController extends Controller
     
     public function userVoucher(Request $request, $id)
     {
-        if (Gate::denies('manage-user')) {
+        if (auth()->user()->id == $id || Gate::denies('manage-user')) {
             return response()->json(['message' => 'No permission to access this page.'], 403);
         }
         if (Gate::denies('update-user-profile', $id)) {

@@ -50,7 +50,7 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('update-user-profile', function ($user, $id) {
             $data = User::findorfail($id);
-            if($data->user_group_id <= $user->user_group_id || $user->id == $id) {
+            if($data->user_group_id <= $user->user_group_id) {
                 return false;
             }
             if($data->isDownline() && in_array($user->user_group_id, [2,3,4]) && in_array('PCODE_002', json_decode($user->roles->pluck('code')))) {
