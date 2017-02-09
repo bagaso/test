@@ -12,6 +12,7 @@ class VpnServer extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'free_user' => 'boolean',
     ];
 
     public function online_users()

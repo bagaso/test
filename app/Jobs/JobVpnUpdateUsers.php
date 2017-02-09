@@ -12,16 +12,16 @@ class JobVpnUpdateUsers implements ShouldQueue
 {
     use InteractsWithQueue, Queueable, SerializesModels;
     
-    protected $server;
+    protected $server_id;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(\App\VpnServer $server)
+    public function __construct($server_id)
     {
-        $this->server = $server;
+        $this->server_id = $server_id;
     }
 
     /**
@@ -31,22 +31,29 @@ class JobVpnUpdateUsers implements ShouldQueue
      */
     public function handle()
     {
-        $logs = $this->parseLog('http://' . strtolower($this->server->server_domain) . '/logs/logs.log', 'tcp');
+        $server = \App\VpnServer::findorfail($this->server_id);
+        $logs = $this->parseLog('http://' . strtolower($server->server_ip) . '/logs/logs.log', 'tcp');
         foreach($logs as $log)
         {
             try {
                 $user = \App\User::where('username', $log['CommonName'])->firstorfail();
-                if($user->vpn) {
-                    $user->vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
-                    $user->vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
-                    $user->vpn->touch();
-                    $user->vpn->save();
+                $login_session = $user->vpn->count();
+                if($login_session >= 1 && $login_session <= $user->vpn_session) {
+                    if($user->vpn->allowed_data <= intval($log['BytesSent']) ? intval($log['BytesSent']) : 0) {
+                        $user->vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
+                        $user->vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
+                        $user->vpn->touch();
+                        $user->vpn->save();
+                    } else {
+                        $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                        dispatch($job);
+                    }
                 } else {
-                    $job = (new JobVpnDisconnectUser($log['CommonName'], $this->server->server_ip, $this->server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                    $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                     dispatch($job);
                 }
             } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
-                $job = (new JobVpnDisconnectUser($log['CommonName'], $this->server->server_ip, $this->server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                 dispatch($job);
             }
         }

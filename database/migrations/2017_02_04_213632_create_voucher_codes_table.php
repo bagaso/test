@@ -20,6 +20,7 @@ class CreateVoucherCodesTable extends Migration
             $table->unsignedInteger('created_user_id');
             $table->unsignedInteger('duration');
             $table->timestamps();
+            $table->index(['user_id', 'created_user_id']);
         });
     }
 

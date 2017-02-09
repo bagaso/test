@@ -11,16 +11,16 @@ class JobVpnMonitorUser implements ShouldQueue
 {
     use InteractsWithQueue, Queueable, SerializesModels;
     
-    protected $server;
+    protected $server_id;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(\App\VpnServer $server)
+    public function __construct($server_id)
     {
-        $this->server = $server;
+        $this->server_id = $server_id;
     }
 
     /**
@@ -30,18 +30,28 @@ class JobVpnMonitorUser implements ShouldQueue
      */
     public function handle()
     {
-        foreach ($this->server->users as $user) {
-            if(!$this->server->is_active) {
-                $job = (new JobVpnDisconnectUser($user->username, $user->vpn->server_ip, $user->vpn->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
-                dispatch($job);
-            } else if(!$user->isAdmin()) {
-                $current = \Carbon\Carbon::now();
-                $dt = \Carbon\Carbon::parse($user->getOriginal('expired_at'));
-                if($user->status_id != 1 || $current->gte($dt)) {
-                    $job = (new JobVpnDisconnectUser($user->username, $user->vpn->server_ip, $user->vpn->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+        try {
+            $server = \App\VpnServer::findorfail($this->server_id);
+            foreach ($server->users as $online_user) {
+                if(!$server->is_active) {
+                    $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                     dispatch($job);
+                } else if(!$online_user->isAdmin()) {
+                    $current = \Carbon\Carbon::now();
+                    $dt = \Carbon\Carbon::parse($online_user->getOriginal('expired_at'));
+                    if(!$online_user->isActive() || $online_user->vpn->count() > $online_user->vpn_session) {
+                        $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                        dispatch($job);
+                    }
+                    if($current->gte($dt)) {
+                        if(!$server->free_user || $online_user->vpn->allowed_data >= $online_user->vpn->byte_received) {
+                            $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                            dispatch($job);
+                        }
+                    }
                 }
             }
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
         }
     }
 }
