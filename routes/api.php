@@ -59,24 +59,28 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
         if($username == '' || $server_key == '') return '0';
 
+        $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
+        if(!$server->is_active) {
+            return '0';
+        }
+
         $user = \App\User::where('username', $username)->firstorfail();
 
         $current = Carbon::now();
         $dt = Carbon::parse($user->getOriginal('expired_at'));
 
-        if($user->isAdmin() || ($user->isActive())) {
-            if($user->vpn->count() >= $user->vpn_session) {
-                return '0';
-            }
-            $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
-            if(!$server->is_active) {
-                return '0';
-            }
-            if($current->gte($dt)) {
-                if(!$server->free_user || $user->consumable_data < 1) {
+        if($user->isAdmin() || $user->isActive()) {
+            if(!$user->isAdmin()) {
+                if($user->vpn->count() >= $user->vpn_session) {
                     return '0';
                 }
+                if($current->gte($dt)) {
+                    if(!$server->free_user || $user->consumable_data < 1) {
+                        return '0';
+                    }
+                }
             }
+
             $vpn = new OnlineUser();
             $vpn->user_id = $user->id;
             $vpn->vpn_server_id = $server->id;
@@ -85,7 +89,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
             $vpn->server_name = $server->server_name;
             $vpn->byte_sent = 0;
             $vpn->byte_received = 0;
-            if($current->gte($dt)) {
+            if(!$user->isAdmin() && $current->gte($dt)) {
                 $vpn->data_available = $user->consumable_data;
             }
             if($vpn->save()) {
@@ -110,7 +114,7 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
     $dt = \Carbon\Carbon::parse($user_delete->getOriginal('expired_at'));
 
     $vpn = $user_delete->vpn()->where('vpn_server_id', $server->id)->firstorfail();
-    if($current->gte($dt) && $vpn->data_available > 0) {
+    if(!$user_delete->isAdmin() && $current->gte($dt) && $vpn->data_available > 0) {
         $vpn = $user_delete->vpn()->where('vpn_server_id', $server->id)->firstorfail();
         $data = $vpn->data_available - floatval($byte_sent);
         $user_delete->consumable_data = ($data >= 0) ? $data : 0;
