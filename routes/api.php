@@ -20,7 +20,13 @@ Route::get('/wew', function () {
     $server_key = '12345';
     $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
     $user_delete = $server->users()->where('username', $username)->firstorfail();
-    echo $user_delete->vpn()->where('vpn_server_id', $server->id)->delete();
+    $vpn = $user_delete->vpn()->where('vpn_server_id', $server->id)->firstorfail();
+    //echo $vpn->getOriginal('byte_sent');
+    if($vpn->getOriginal('byte_sent') >= $vpn->data_available) {
+        return '1';
+    } else {
+        return '0';
+    }
 //    $vpn = $user_delete->vpn()->where('vpn_server_id', 1)->firstorfail();
 //    echo $vpn->delete();
 //    $server = \App\VpnServer::findorfail(1);

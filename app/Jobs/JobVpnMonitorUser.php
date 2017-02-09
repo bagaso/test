@@ -42,9 +42,9 @@ class JobVpnMonitorUser implements ShouldQueue
                     if(!$online_user->isActive() || $online_user->vpn->count() > $online_user->vpn_session) {
                         $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                         dispatch($job);
-                    }
-                    if($current->gte($dt)) {
-                        if(!$server->free_user || $online_user->vpn()->where('vpn_server_id', $this->server_id)->firstorfail()->data_available >= $online_user->vpn()->where('vpn_server_id', $this->server_id)->firstorfail()->byte_sent) {
+                    } else if($current->gte($dt)) {
+                        $vpn = $online_user->vpn()->where('vpn_server_id', $this->server_id)->firstorfail();
+                        if(!$server->free_user || $vpn->getOriginal('byte_sent') >= $vpn->data_available) {
                             $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                             dispatch($job);
                         }
