@@ -39,7 +39,7 @@ class JobVpnUpdateUsers implements ShouldQueue
                 $user = \App\User::where('username', $log['CommonName'])->firstorfail();
                 $login_session = $user->vpn->count();
                 if($login_session >= 1 && $login_session <= $user->vpn_session) {
-                    if($user->vpn->allowed_data <= intval($log['BytesSent']) ? intval($log['BytesSent']) : 0) {
+                    if($user->vpn->data_available < intval($log['BytesSent']) ? intval($log['BytesSent']) : 0) {
                         $user->vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
                         $user->vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
                         $user->vpn->touch();
