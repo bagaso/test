@@ -16,8 +16,10 @@ use Illuminate\Http\Request;
 */
 
 Route::get('/wew', function () {
-    $online_users = \App\User::findorfail(1);
-    echo $online_users->vpn->count();
+    $server = \App\VpnServer::findorfail(1);
+    foreach ($server->users as $online_user) {
+        echo $online_user->vpn()->where('vpn_server_id', 1)->firstorfail()->data_available;
+    }
     //return $account->users->firstorfail();
 });
 
