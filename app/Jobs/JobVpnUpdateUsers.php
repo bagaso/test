@@ -44,10 +44,10 @@ class JobVpnUpdateUsers implements ShouldQueue
                     $vpn_user->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
                     $vpn_user->touch();
                     $vpn_user->save();
-                    if($vpn_user->data_available <= intval($log['BytesSent']) ? intval($log['BytesSent']) : 0) {
-                        $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
-                        dispatch($job);
-                    }
+//                    if($vpn_user->data_available <= intval($log['BytesSent']) ? intval($log['BytesSent']) : 0) {
+//                        $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+//                        dispatch($job);
+//                    }
                 } else {
                     $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                     dispatch($job);
