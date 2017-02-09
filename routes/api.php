@@ -79,8 +79,10 @@ Route::get('/vpn_auth_connect', function (Request $request) {
             if(!$server->is_active) {
                 return '0';
             }
-            if($current->lte($dt) && $user->consumable_data < 1) {
-                return '0';
+            if($current->gte($dt)) {
+                if(!$server->free_user || $user->consumable_data < 1) {
+                    return '0';
+                }
             }
             $vpn = new OnlineUser();
             $vpn->user_id = $user->id;
