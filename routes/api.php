@@ -56,8 +56,8 @@ Route::get('/vpn_auth_connect', function (Request $request) {
         $current = Carbon::now();
         $dt = Carbon::parse($user->getOriginal('expired_at'));
 
-        if($user->isAdmin() || ($user->status_id == 1 && $current->lte($dt))) {
-            if($user->vpn->count >= $user->vpn_session) {
+        if($user->isAdmin() || ($user->isActive() && $current->lte($dt))) {
+            if($user->vpn->count() >= $user->vpn_session) {
                 return '0';
             }
             $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
