@@ -40,7 +40,7 @@ class VpnUser extends Command
     {
         $servers = \App\VpnServer::where('is_active', 1)->get();
         foreach ($servers as $server) {
-            $job = (new JobVpnUpdateUsers($server))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('vpnupdateusers');
+            $job = (new JobVpnUpdateUsers($server->id))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('vpnupdateusers');
             dispatch($job);
         }
     }

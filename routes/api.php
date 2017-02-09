@@ -15,56 +15,72 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::get('/account', function (Request $request) {
-    $account = $request->user();
-    return $account;
+Route::get('/wew', function () {
+    $online_users = \App\User::findorfail(1);
+    echo $online_users->vpn->count();
+    //return $account->users->firstorfail();
+});
+
+Route::get('/account', function () {
+    return auth()->user();
 })->middleware('auth:api');
 
 Route::get('/vpn_auth', function (Request $request) {
-    $username = $request->username;
-    $password = $request->password;
-    if(Auth::attempt(['username' => $username, 'password' => $password])) {
-        Auth::user()->timestamps = false;
-        Auth::logout();
-        return '1';
-    }
-    else
+    try {
+        $username = $request->username;
+        $password = $request->password;
+        $server_key = $request->server_key;
+        $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
+
+        if(Auth::attempt(['username' => $username, 'password' => $password])) {
+            Auth::user()->timestamps = false;
+            Auth::logout();
+            return '1';
+        }
+        else
+            return '0';
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
         return '0';
+    }
 });
 
 Route::get('/vpn_auth_connect', function (Request $request) {
-    $username = trim($request->username);
+    try {
+        $username = trim($request->username);
+        $server_key = trim($request->server_key);
 
-    if($username == '') return '0';
+        if($username == '' || $server_key == '') return '0';
 
-    $user = \App\User::where('username', $username)->first();
+        $user = \App\User::where('username', $username)->firstorfail();
 
-    if(count($user) == 0) return '0';
+        $current = Carbon::now();
+        $dt = Carbon::parse($user->getOriginal('expired_at'));
 
-    $current = Carbon::now();
-    $dt = Carbon::parse($user->getOriginal('expired_at'));
-    
-    if($user->isAdmin() || ($user->status_id == 1 && $current->lte($dt))) {
-        if($user->vpn) {
+        if($user->isAdmin() || ($user->status_id == 1 && $current->lte($dt))) {
+            if($user->vpn->count >= $user->vpn_session) {
+                return '0';
+            }
+            $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
+            if(!$server->is_active) {
+                return '0';
+            }
+            $vpn = new OnlineUser();
+            $vpn->user_id = $user->id;
+            $vpn->vpn_server_id = $server->id;
+            $vpn->server_ip = $server->server_ip;
+            $vpn->server_port = $server->server_port;
+            $vpn->byte_sent = 0;
+            $vpn->byte_received = 0;
+            $vpn->allowed_data = $user->consumable_data;
+            if($vpn->save()) {
+                return '1';
+            }
             return '0';
-        }
-        $server = \App\VpnServer::where('server_ip', $request->server_ip)->first();
-        if(count($server) == 0 || !$server->is_active) {
-            return '0';
-        }
-        $vpn = new OnlineUser();
-        $vpn->user_id = $user->id;
-        $vpn->vpn_server_id = $server->id;
-        $vpn->server_ip = $server->server_ip;
-        $vpn->server_port = $server->server_port;
-        $vpn->byte_sent = 0;
-        $vpn->byte_received = 0;
-        if($vpn->save()) {
-            return '1';
         }
         return '0';
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
+        return '0';
     }
-    return '0';
 });
 
 Route::get('/vpn_auth_disconnect', function (Request $request) {

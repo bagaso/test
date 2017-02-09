@@ -83,7 +83,11 @@ class User extends Authenticatable
     }
     
     public function vpn() {
-        return $this->hasOne('App\OnlineUser');
+        return $this->hasMany('App\OnlineUser');
+    }
+
+    public function getVpnOnlineAttribute() {
+        return $this->vpn;
     }
 
     public function vouchers_applied() {
@@ -172,6 +176,6 @@ class User extends Authenticatable
     }
 
     protected $appends = [
-        'is_admin', 'permission',
+        'is_admin', 'permission', 'vpn_online',
     ];
 }
