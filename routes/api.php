@@ -16,17 +16,8 @@ use Illuminate\Http\Request;
 */
 
 Route::get('/wew', function () {
-    $input = array("1", "2", "Trinity", "Cypher", "Tank");
-    //echo $input[array_rand($input)] . "\n";
-    $a = ['1', '2', '3'];
-    $ctr = 0;
-    for($i=1;$i<=20;$i++) {
-        echo $a[$ctr];
-        if($ctr==0)
-            $ctr=1;
-        else
-            $ctr=0;
-    }
+
+    echo floatval('123456789123111') - 123456789123110;
 
         //echo $a[mt_rand(0, count($a) - 1)];
 //    $vpn = $user_delete->vpn()->where('vpn_server_id', 1)->firstorfail();
@@ -111,6 +102,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 Route::get('/vpn_auth_disconnect', function (Request $request) {
     $username = trim($request->username);
     $server_key = trim($request->server_key);
+    $byte_sent = trim($request->byte_sent);
     $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
     $user_delete = $server->users()->where('username', $username)->firstorfail();
 
@@ -120,7 +112,8 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
     $vpn = $user_delete->vpn()->where('vpn_server_id', $server->id)->firstorfail();
     if($current->gte($dt) && $vpn->data_available > 0) {
         $vpn = $user_delete->vpn()->where('vpn_server_id', $server->id)->firstorfail();
-        $user_delete->consumable_data = ($vpn->data_available - $vpn->getOriginal('byte_sent')) >= 0 ? $vpn->data_available - $vpn->getOriginal('byte_sent') : 0;
+        $data = $vpn->data_available - floatval($byte_sent);
+        $user_delete->consumable_data = ($data >= 0) ? $data : 0;
         $user_delete->timestamps = false;
         $user_delete->save();
     }
