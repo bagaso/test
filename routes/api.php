@@ -117,7 +117,7 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
     if(!$user_delete->isAdmin() && $current->gte($dt) && $vpn->data_available > 0) {
         $vpn = $user_delete->vpn()->where('vpn_server_id', $server->id)->firstorfail();
         $data = $vpn->data_available - floatval($byte_sent);
-        $user_delete->consumable_data = ($data >= 0) ? $data : 0;
+        $user_delete->consumable_data = floatval($byte_sent); //($data >= 0) ? $data : 0;
         $user_delete->timestamps = false;
         $user_delete->save();
     }
