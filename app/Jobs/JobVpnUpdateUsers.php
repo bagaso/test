@@ -39,11 +39,12 @@ class JobVpnUpdateUsers implements ShouldQueue
                 $user = \App\User::where('username', $log['CommonName'])->firstorfail();
                 $login_session = $user->vpn->count();
                 if($login_session >= 1 && $login_session <= $user->vpn_session) {
-                    if($user->vpn()->where('vpn_server_id', $this->server_id)->firstorfail()->data_available < intval($log['BytesSent']) ? intval($log['BytesSent']) : 0) {
-                        $user->vpn->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
-                        $user->vpn->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
-                        $user->vpn->touch();
-                        $user->vpn->save();
+                    $vpn_user = $user->vpn()->where('vpn_server_id', $this->server_id)->firstorfail();
+                    if($vpn_user->data_available < intval($log['BytesSent']) ? intval($log['BytesSent']) : 0) {
+                        $vpn_user->byte_sent = intval($log['BytesSent']) ? intval($log['BytesSent']) : 0;
+                        $vpn_user->byte_received = intval($log['BytesReceived']) ? intval($log['BytesReceived']) : 0;
+                        $vpn_user->touch();
+                        $vpn_user->save();
                     } else {
                         $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                         dispatch($job);
