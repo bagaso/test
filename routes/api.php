@@ -117,7 +117,8 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
     $current = \Carbon\Carbon::now();
     $dt = \Carbon\Carbon::parse($user_delete->getOriginal('expired_at'));
 
-    if($current->gte($dt)) {
+    $vpn = $user_delete->vpn()->where('vpn_server_id', $server->id)->firstorfail();
+    if($current->gte($dt) && $vpn->data_available > 0) {
         $vpn = $user_delete->vpn()->where('vpn_server_id', $server->id)->firstorfail();
         $user_delete->consumable_data = ($vpn->data_available - $vpn->getOriginal('byte_sent')) >= 0 ? $vpn->data_available - $vpn->getOriginal('byte_sent') : 0;
         $user_delete->timestamps = false;
