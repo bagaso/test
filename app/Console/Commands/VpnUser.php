@@ -38,10 +38,16 @@ class VpnUser extends Command
      */
     public function handle()
     {
+        $ctr = 0;
+        $vpnupdate_worker = array('vpnupdateusers-1', 'vpnupdateusers-2');
         $servers = \App\VpnServer::where('is_active', 1)->get();
         foreach ($servers as $server) {
-            $job = (new JobVpnUpdateUsers($server->id))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('vpnupdateusers-1');
+            $job = (new JobVpnUpdateUsers($server->id))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue($vpnupdate_worker[$ctr]);
             dispatch($job);
+            if($ctr==0)
+                $ctr=1;
+            else
+                $ctr=0;
         }
     }
     

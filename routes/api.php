@@ -24,10 +24,6 @@ Route::get('/wew', function () {
         echo $a[$ctr];
         if($ctr==0)
             $ctr=1;
-        else if($ctr==1)
-            $ctr=2;
-        else if($ctr==3)
-            $ctr=3;
         else
             $ctr=0;
     }
