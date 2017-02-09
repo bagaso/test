@@ -16,10 +16,17 @@ use Illuminate\Http\Request;
 */
 
 Route::get('/wew', function () {
-    $server = \App\VpnServer::findorfail(1);
-    foreach ($server->users as $online_user) {
-        echo $online_user->vpn()->where('vpn_server_id', 1)->firstorfail()->data_available;
-    }
+    $username = 'CeT.8yMDp';
+    $server_key = '12345';
+    $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
+    $user_delete = $server->users()->where('username', $username)->firstorfail();
+    echo $user_delete->vpn()->where('vpn_server_id', $server->id)->delete();
+//    $vpn = $user_delete->vpn()->where('vpn_server_id', 1)->firstorfail();
+//    echo $vpn->delete();
+//    $server = \App\VpnServer::findorfail(1);
+//    foreach ($server->users as $online_user) {
+//        echo $online_user->vpn()->where('vpn_server_id', 1)->firstorfail()->data_available;
+//    }
     //return $account->users->firstorfail();
 });
 
@@ -91,10 +98,10 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
 Route::get('/vpn_auth_disconnect', function (Request $request) {
     $username = trim($request->username);
-    $delete = \App\User::where('username', $username)->first();
-    if(count($delete) > 0 && $delete->vpn) {
-            $delete->vpn->delete();
-    }
+    $server_key = trim($request->server_key);
+    $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
+    $user_delete = $server->users()->where('username', $username)->firstorfail();
+    $user_delete->vpn()->where('vpn_server_id', $server->id)->delete();
     return '1';
 });
 
