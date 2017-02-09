@@ -30,6 +30,7 @@ class JobVpnMonitorUser implements ShouldQueue
      */
     public function handle()
     {
+        $monitor_work = array('monitorvpnuser-1', 'monitorvpnuser-2');
         try {
             $server = \App\VpnServer::findorfail($this->server_id);
             foreach ($server->users as $online_user) {

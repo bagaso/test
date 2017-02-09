@@ -16,17 +16,23 @@ use Illuminate\Http\Request;
 */
 
 Route::get('/wew', function () {
-    $username = 'CeT.8yMDp';
-    $server_key = '12345';
-    $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
-    $user_delete = $server->users()->where('username', $username)->firstorfail();
-    $vpn = $user_delete->vpn()->where('vpn_server_id', $server->id)->firstorfail();
-    //echo $vpn->getOriginal('byte_sent');
-    if($vpn->getOriginal('byte_sent') >= $vpn->data_available) {
-        return '1';
-    } else {
-        return '0';
+    $input = array("1", "2", "Trinity", "Cypher", "Tank");
+    //echo $input[array_rand($input)] . "\n";
+    $a = ['1', '2', '3'];
+    $ctr = 0;
+    for($i=1;$i<=20;$i++) {
+        echo $a[$ctr];
+        if($ctr==0)
+            $ctr=1;
+        else if($ctr==1)
+            $ctr=2;
+        else if($ctr==3)
+            $ctr=3;
+        else
+            $ctr=0;
     }
+
+        //echo $a[mt_rand(0, count($a) - 1)];
 //    $vpn = $user_delete->vpn()->where('vpn_server_id', 1)->firstorfail();
 //    echo $vpn->delete();
 //    $server = \App\VpnServer::findorfail(1);
