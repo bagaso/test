@@ -87,7 +87,7 @@ class User extends Authenticatable
     }
 
     public function getVpnOnlineAttribute() {
-        return $this->vpn;
+        return \App\OnlineUser::with('vpnserver')->where('user_id', $this->id)->get();
     }
 
     public function vouchers_applied() {
@@ -173,6 +173,25 @@ class User extends Authenticatable
                 'manage_user' => $this->can('manage-user'),
                 'create_user' => $this->can('create-user')
         );
+    }
+
+    public function getConsumableDataAttribute($value)
+    {
+        return $this->sizeformat($value);
+    }
+
+    public function sizeformat($bytesize)
+    {
+        $i=0;
+        while(abs($bytesize) >= 1024) {
+            $bytesize=$bytesize/1024;
+            $i++;
+            if($i==4) break;
+        }
+
+        $units = array("Bytes","KB","MB","GB","TB");
+        $newsize=round($bytesize,2);
+        return("$newsize $units[$i]");
     }
 
     protected $appends = [
