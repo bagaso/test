@@ -17,7 +17,11 @@ use Illuminate\Http\Request;
 
 Route::get('/wew', function () {
 
-    echo floatval('123456789123111') - 123456789123110;
+    $vpn_user = \App\OnlineUser::where('vpn_server_id', 1);
+    $vpn_user->update(['byte_sent'=>0]);
+//    $vpn_user->byte_received = 2;
+////    $vpn_user->touch();
+//    $vpn_user->save();
 
         //echo $a[mt_rand(0, count($a) - 1)];
 //    $vpn = $user_delete->vpn()->where('vpn_server_id', 1)->firstorfail();
