@@ -54,12 +54,12 @@ class UpdateAccount extends Controller
     {
         try {
             $server_id = $request->server_id;
-            $server = \App\VpnServer::findorfail($server_id);
-            $job = (new JobVpnDisconnectUser(auth()->user()->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+            $vpn_user = \App\OnlineUser::with('vpnserver')->where([['user_id', auth()->user()->id], ['vpn_server_id',$server_id]])->firstorfail();
+            $job = (new JobVpnDisconnectUser(auth()->user()->username, $vpn_user->vpnserver->server_ip, $vpn_user->vpnserver->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
             dispatch($job);
             return response()->json(['message' => 'Request sent to the server.'], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
-            return response()->json(['message' => 'Server not found.'], 404);
+            return response()->json(['message' => 'Session not found.'], 404);
         }
     }
 
