@@ -299,7 +299,7 @@ class ManageUserController extends Controller
 
         if ($request->user()->isAdmin()) {
             if($user->username <> $request->username) {
-                if($user->vpn) {
+                if($user->vpn->count() > 0) {
                     return response()->json(['message' => 'Username cannot be change at this moment.'], 403);
                 }
                 $user->username = $request->username;
