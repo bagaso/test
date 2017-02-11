@@ -17,7 +17,8 @@ use Illuminate\Http\Request;
 
 Route::get('/wew', function () {
 
-//    $server = \App\VpnServer::with('users', 'online_users')->findorfail(1);
+    $server = \App\VpnServer::where('server_key', '12345')->firstorfail();
+    return $server->users()->where('username', 'mp3sniff')->count() ? '11' : '00';
 //    return $server->online_users->count();
 
 //    $vpn_user = \App\User::find(3);
@@ -47,7 +48,7 @@ Route::get('/vpn_auth', function (Request $request) {
         $server_key = $request->server_key;
         $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
 
-        if(Auth::attempt(['username' => $username, 'password' => $password])) {
+        if(Auth::attempt(['username' => $username, 'password' => $password]) && $server->users()->where('username', $username)->count() == 0) {
             Auth::user()->timestamps = false;
             Auth::logout();
             return '1';
@@ -67,10 +68,11 @@ Route::get('/vpn_auth_connect', function (Request $request) {
         if($username == '' || $server_key == '') return '0';
 
         $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
-        $user = \App\User::where('username', $username)->firstorfail();
-        if(!$server->is_active || $user->vpn()->where('vpn_server_id', $server->id)->count() > 0) {
+        if(!$server->is_active) {
             return '0';
         }
+
+        $user = \App\User::where('username', $username)->firstorfail();
 
         $current = Carbon::now();
         $dt = Carbon::parse($user->getOriginal('expired_at'));
