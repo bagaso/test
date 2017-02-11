@@ -88,7 +88,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
                 }
             }
 
-            $vpn = new OnlineUser();
+            $vpn = new OnlineUser;
             $vpn->user_id = $user->id;
             $vpn->vpn_server_id = $server->id;
             $vpn->byte_sent = 0;
@@ -126,14 +126,14 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
             $user_delete->timestamps = false;
             $user_delete->save();
         }
-        $vpn_history = new \App\VpnHistory();
+        $vpn_history = new \App\VpnHistory;
         $vpn_history->server_name = $server->server_name;
         $vpn_history->server_ip = $server->server_ip;
         $vpn_history->server_domain = $server->server_domain;
         $vpn_history->byte_sent = floatval($bytes_sent);
         $vpn_history->byte_received = floatval($bytes_received);
         $vpn_history->session_start = \Carbon\Carbon::parse($vpn->getOriginal('created_at'));
-        $vpn->save();
+        $vpn_history->save();
         $user_delete->vpn()->where('vpn_server_id', $server->id)->delete();
         return '1';
     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {

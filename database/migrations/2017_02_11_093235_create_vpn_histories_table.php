@@ -18,10 +18,10 @@ class CreateVpnHistoriesTable extends Migration
             $table->string('server_name');
             $table->string('server_ip');
             $table->string('server_domain');
-            $table->double('byte_sent')->default(0);
-            $table->double('byte_received')->default(0);
+            $table->double('byte_sent')->default(0)->unsigned();
+            $table->double('byte_received')->default(0)->unsigned();
             $table->timestamp('session_start');
-            $table->timestamp('session_end')->useCurrent();
+            $table->timestamp('session_end');
         });
     }
 
