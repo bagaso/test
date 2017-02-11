@@ -328,6 +328,10 @@ class ManageUserController extends Controller
     public function disconnectVpn(Request $request, $id)
     {
         try {
+            if (auth()->user()->id == $id || !auth()->user()->isAdmin()) {
+                return response()->json(['message' => 'Action not allowed.'], 403);
+            }
+
             $server_id = $request->server_id;
             $vpn_user = \App\OnlineUser::with(['vpnserver', 'user'])->where([['user_id', $id], ['vpn_server_id', $server_id]])->firstorfail();
             $job = (new JobVpnDisconnectUser($vpn_user->user->username, $vpn_user->vpnserver->server_ip, $vpn_user->vpnserver->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
