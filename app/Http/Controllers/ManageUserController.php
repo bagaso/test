@@ -306,7 +306,7 @@ class ManageUserController extends Controller
 
         if (Gate::allows('update-user-status', $id)) {
             $user->status_id = $request->status_id;
-            if(int_array($request->status_id, [0,2])) {
+            if(in_array($request->status_id, [0,2])) {
                 foreach ($user->vpn as $vpn) {
                     $job = (new JobVpnDisconnectUser($user->username, $vpn->vpnserver->server_ip, $vpn->vpnserver->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                     dispatch($job);
