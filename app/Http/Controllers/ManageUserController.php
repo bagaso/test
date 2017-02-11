@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\JobVpnDisconnectUser;
 use App\User;
 use App\VoucherCode;
 use Carbon\Carbon;
@@ -293,9 +294,6 @@ class ManageUserController extends Controller
             }
             $user->user_group_id = $request->user_group_id;
         }
-        if (Gate::allows('update-user-status', $id)) {
-            $user->status_id = $request->status_id;
-        }
 
         if ($request->user()->isAdmin()) {
             if($user->username <> $request->username) {
@@ -305,6 +303,17 @@ class ManageUserController extends Controller
                 $user->username = $request->username;
             }
         }
+
+        if (Gate::allows('update-user-status', $id)) {
+            $user->status_id = $request->status_id;
+            if(int_array($request->status_id, [0,2])) {
+                foreach ($user->vpn as $vpn) {
+                    $job = (new JobVpnDisconnectUser($user->username, $vpn->vpnserver->server_ip, $vpn->vpnserver->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                    dispatch($job);
+                }
+            }
+        }
+
         $user->email = $request->email;
         $user->fullname = $request->fullname;
 
