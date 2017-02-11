@@ -67,7 +67,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
         if($username == '' || $server_key == '') return '0';
 
         $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
-        if(!$server->is_active) {
+        if(!$server->is_active || $server->users()->where('username', $username)->count() > 0) {
             return '0';
         }
 
