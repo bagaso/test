@@ -325,6 +325,19 @@ class ManageUserController extends Controller
         ], 200);
     } // end function update profile
 
+    public function disconnectVpn(Request $request, $id)
+    {
+        try {
+            $server_id = $request->server_id;
+            $vpn_user = \App\OnlineUser::with(['vpnserver', 'user'])->where([['user_id', $id], ['vpn_server_id', $server_id]])->firstorfail();
+            $job = (new JobVpnDisconnectUser($vpn_user->user->username, $vpn_user->vpnserver->server_ip, $vpn_user->vpnserver->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+            dispatch($job);
+            return response()->json(['message' => 'Request sent to the server.'], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
+            return response()->json(['message' => 'Session not found.'], 404);
+        }
+    }
+
     public function viewSecurity($id)
     {
         if (auth()->user()->id == $id || Gate::denies('manage-user')) {

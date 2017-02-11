@@ -128,6 +128,7 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
             $user_delete->save();
         }
         $vpn_history = new \App\VpnHistory;
+        $vpn_history->user_id = $user_delete->id;
         $vpn_history->server_name = $server->server_name;
         $vpn_history->server_ip = $server->server_ip;
         $vpn_history->server_domain = $server->server_domain;
@@ -164,5 +165,6 @@ Route::post('/manage-user/credits/{id}', 'ManageUserController@updateCredits');
 Route::get('/manage-user/voucher/{id}', 'ManageUserController@viewVoucher');
 Route::post('/manage-user/voucher/{id}', 'ManageUserController@applyVoucher');
 Route::get('/manage-user/user-voucher/{id}', 'ManageUserController@userVoucher');
+Route::post('/manage-user/vpn-session/{id}', 'ManageUserController@disconnectVpn');
 Route::get('/manage-user/create', 'ManageUserController@viewCreate');
 Route::post('/manage-user/create', 'ManageUserController@create');
