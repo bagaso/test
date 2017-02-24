@@ -75,7 +75,7 @@ class VoucherController extends Controller
                 $voucher[] = $temp;
                 $vouchers[$i]['code'] = $temp;
                 $vouchers[$i]['created_user_id'] = auth()->user()->id;
-                $vouchers[$i]['duration'] = 0;
+                // $vouchers[$i]['duration'] = 0;
                 $vouchers[$i]['duration_months'] = 0;
                 $vouchers[$i]['duration_days'] = 30;
                 $vouchers[$i]['duration_hours'] = 0;
