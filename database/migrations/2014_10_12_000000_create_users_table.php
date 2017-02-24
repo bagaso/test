@@ -28,6 +28,7 @@ class CreateUsersTable extends Migration
             $table->timestamp('expired_at')->useCurrent();
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
             $table->index(['user_group_id', 'status_id', 'parent_id', 'expired_at']);
         });
     }
