@@ -7,11 +7,12 @@ use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 class User extends Authenticatable
 {
-    use HasAPiTokens, Notifiable;
+    use SoftDeletes, HasAPiTokens, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -23,7 +24,7 @@ class User extends Authenticatable
     ];
 
     public static $columns = [
-        'id', 'username', 'email', 'user_group_id', 'status_id', 'expired_at',
+        'username', 'email', 'user_group_id', 'status_id', 'expired_at', 'created_at'
     ];
 
     /**
@@ -36,7 +37,7 @@ class User extends Authenticatable
     ];
 
     protected $dates = [
-        'expired_at'
+        'expired_at', 'deleted_at',
     ];
 
     protected $operators = [
@@ -84,10 +85,6 @@ class User extends Authenticatable
     
     public function vpn() {
         return $this->hasMany('App\OnlineUser');
-    }
-
-    public function getVpnOnlineAttribute() {
-        return \App\OnlineUser::with('vpnserver')->where('user_id', $this->id)->get();
     }
 
     public function vouchers_applied() {
@@ -160,11 +157,6 @@ class User extends Authenticatable
         return ($this->isAdmin() || $this->status_id == 1);
     }
 
-    public function getIsAdminAttribute()
-    {
-        return $this->isAdmin();
-    }
-
     public function getPermissionAttribute()
     {
         return array(
@@ -193,8 +185,4 @@ class User extends Authenticatable
         $newsize=round($bytesize,2);
         return("$newsize $units[$i]");
     }
-
-    protected $appends = [
-        'is_admin', 'permission', 'vpn_online',
-    ];
 }

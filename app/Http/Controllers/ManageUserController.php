@@ -25,8 +25,17 @@ class ManageUserController extends Controller
     
     public function allUser(Request $request)
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['create_user'] = auth()->user()->can('create-user');
+        
         if (Gate::denies('manage-user') || !in_array(auth()->user()->user_group_id, [1,2,3])) {
-            return response()->json(['message' => 'No permission to access this page.'], 403);
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
         
         $account = $request->user();
@@ -47,20 +56,31 @@ class ManageUserController extends Controller
         $total = auth()->user()->isAdmin() ? User::where('user_group_id', '<>', 1)->count() : User::where([['parent_id', '=', $account->id], ['user_group_id', '>', auth()->user()->user_group_id]])->count();
         $new_users = User::where([['user_group_id', '<>', 1], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
         return response()->json([
+            'profile' => auth()->user(),
+            'permission' => $permission,
             'model' => $data,
             'total' => $total,
             'new_users' => $new_users,
-            'columns' => $columns
+            'columns' => $columns,
         ], 200);
     } // end function all user
 
     public function ultimateUser(Request $request)
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['create_user'] = auth()->user()->can('create-user');
+        
         if (!auth()->user()->isAdmin()) {
-            return response()->json(['message' => 'No permission to access this page.'], 403);
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
 
-        $account = $request->user();
+        // $account = $request->user();
 
         $status_id = [$request->status_id];
         if($request->status_id == -1) {
@@ -75,17 +95,28 @@ class ManageUserController extends Controller
         $new_users = User::where([['user_group_id', 2], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
         return response()->json([
+            'profile' => auth()->user(),
+            'permission' => $permission,
             'model' => $data,
             'total' => $total,
             'new_users' => $new_users,
-            'columns' => $columns
+            'columns' => $columns,
         ], 200);
     } // end function ultimate user
 
     public function premiumUser(Request $request)
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['create_user'] = auth()->user()->can('create-user');
+        
         if (Gate::denies('manage-user') || !in_array(auth()->user()->user_group_id, [1,2])) {
-            return response()->json(['message' => 'No permission to access this page.'], 403);
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
 
         $account = $request->user();
@@ -108,17 +139,28 @@ class ManageUserController extends Controller
         $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 3], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 3], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
         return response()->json([
+            'profile' => auth()->user(),
+            'permission' => $permission,
             'model' => $data,
             'total' => $total,
             'new_users' => $new_users,
-            'columns' => $columns
+            'columns' => $columns,
         ], 200);
     } // end function premium user
 
     public function resellerUser(Request $request)
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['create_user'] = auth()->user()->can('create-user');
+        
         if (Gate::denies('manage-user') || !in_array(auth()->user()->user_group_id, [1,2,3])) {
-            return response()->json(['message' => 'No permission to access this page.'], 403);
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
 
         $account = $request->user();
@@ -141,17 +183,28 @@ class ManageUserController extends Controller
         $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
         return response()->json([
+            'profile' => auth()->user(),
+            'permission' => $permission,
             'model' => $data,
             'total' => $total,
             'new_users' => $new_users,
-            'columns' => $columns
+            'columns' => $columns,
         ], 200);
     } // end function reseller user
 
     public function clientUser(Request $request)
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['create_user'] = auth()->user()->can('create-user');
+
         if (Gate::denies('manage-user') || !in_array(auth()->user()->user_group_id, [1,2,3,4])) {
-            return response()->json(['message' => 'No permission to access this page.'], 403);
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
 
         $account = $request->user();
@@ -174,38 +227,56 @@ class ManageUserController extends Controller
         $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 5], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 5], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
         
         return response()->json([
+            'profile' => auth()->user(),
+            'permission' => $permission,
             'model' => $data,
             'total' => $total,
             'new_users' => $new_users,
-            'columns' => $columns
+            'columns' => $columns,
         ], 200);
     } // end function client user
 
     public function viewCreate()
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['create_user'] = auth()->user()->can('create-user');
 //        DB::beginTransaction();
 //        $idd = User::find(2);
 //        $idd->roles()->detach();
 //        $idd->delete();
 //        DB::commit();
         if (Gate::denies('manage-user')) {
-            return response()->json(['message' => 'No permission to access this page.'], 403);
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
         if (Gate::denies('create-user')) {
-            return response()->json(['message' => 'No permission to create user.'], 403);
+            return response()->json([
+                'message' => 'No permission to create user.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
-
+        
+        $permission['set_user_group'] = auth()->user()->can('set-user-usergroup');
+        $permission['set_user_status'] = auth()->user()->can('set-user-status');
+        
         return response()->json([
-            'permission' => array('set_user_usergroup' => Gate::allows('set-user-usergroup'),
-                                  'set_user_status' => Gate::allows('set-user-status')
-            )
+            'profile' => auth()->user(),
+            'permission' => $permission,
         ]);
     } // end function view create
 
     public function create(Request $request)
     {
         if (Gate::denies('manage-user') || Gate::denies('create-user')) {
-            return response()->json(['message' => 'Action not allowed.'], 403);
+            return response()->json([
+                'message' => 'Action not allowed.',
+            ], 403);
         }
 
         if($request->user()->user_group_id == 1) {
@@ -233,33 +304,55 @@ class ManageUserController extends Controller
 
         $new_user = new User();
         $new_user->create($request->all());
-        return response()->json(['message' => 'success'], 200);
+        return response()->json([
+            'message' => 'New user created.'
+        ], 200);
     } // end function create
 
     public function viewProfile($id)
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+
         if (Gate::denies('manage-user') || auth()->user()->id == $id) {
-            return response()->json(['message' => 'No permission to access this page.'], 403);
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
         if (Gate::denies('update-user-profile', $id)) {
-            return response()->json(['message' => 'No permission to View / Update user profile.'], 403);
+            return response()->json([
+                'message' => 'No permission to View / Update user profile.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
 
         $user = User::findOrFail($id);
+
+        $permission['create_user'] = auth()->user()->can('create-user');
+        $permission['update_user_security'] = auth()->user()->can('update-user-security', $id);
+        $permission['update_user_usergroup'] = auth()->user()->can('update-user-usergroup', $id);
+        $permission['update_user_status'] =  auth()->user()->can('update-user-status', $id);
+        $permission['update_user_credits'] = auth()->user()->can('transfer-credits', $id);
+        $permission['apply_user_voucher'] = auth()->user()->can('apply-voucher', $id);
+
         return response()->json([
-            'permission' => array('update_user_security' => Gate::allows('update-user-security', $id),
-                                  'update_user_usergroup' => Gate::allows('update-user-profile', $id) && Gate::allows('update-user-usergroup', $id),
-                                  'update_user_status' => Gate::allows('update-user-profile', $id) && Gate::allows('update-user-status', $id),
-                                  'update_user_credits' => Gate::allows('transfer-credits', $id)
-                                ),
-            'user' => $user
-        ]);
+            'profile' => auth()->user(),
+            'permission' => $permission,
+            'user_profile' => $user,
+            'user_vpn_session' => \App\OnlineUser::with('vpnserver')->where('user_id', $user->id)->get(),
+        ], 200);
     } // end function view profile
 
     public function updateProfile(Request $request, $id)
     {
         if (auth()->user()->id == $id || Gate::denies('manage-user') || Gate::denies('update-user-profile', $id)) {
-            return response()->json(['message' => 'Action not allowed.'], 403);
+            return response()->json([
+                'message' => 'Action not allowed.',
+            ], 403);
         }
         
         $user = User::findOrFail($id);
@@ -295,10 +388,12 @@ class ManageUserController extends Controller
             $user->user_group_id = $request->user_group_id;
         }
 
-        if ($request->user()->isAdmin()) {
+        if (auth()->user()->isAdmin()) {
             if($user->username <> $request->username) {
                 if($user->vpn->count() > 0) {
-                    return response()->json(['message' => 'Username cannot be change at this moment.'], 403);
+                    return response()->json([
+                        'message' => 'Username cannot be change at this moment.',
+                    ], 403);
                 }
                 $user->username = $request->username;
             }
@@ -316,12 +411,11 @@ class ManageUserController extends Controller
 
         $user->email = $request->email;
         $user->fullname = $request->fullname;
-
         $user->save();
 
         return response()->json([
             'message' => 'User profile updated.',
-            'user' => $user
+            'user_profile' => $user,
         ], 200);
     } // end function update profile
 
@@ -344,27 +438,46 @@ class ManageUserController extends Controller
 
     public function viewSecurity($id)
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
         if (auth()->user()->id == $id || Gate::denies('manage-user')) {
-            return response()->json(['message' => 'No permission to access this page.'], 403);
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
         if (Gate::denies('update-user-profile', $id)) {
-            return response()->json(['message' => 'No permission to update user profile.'], 403);
+            return response()->json([
+                'message' => 'No permission to update user profile.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
         if(Gate::denies('update-user-security', $id)) {
-            return response()->json(['message' => 'No permission to update user security.'], 403);
+            return response()->json([
+                'message' => 'No permission to update user security.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
 
         $user = User::findOrFail($id);
 
         return response()->json([
-            'user' => $user
+            'profile' => auth()->user(),
+            'permission' => $permission,
+            'user_profile' => $user
         ], 200);
     } // end function view security
 
     public function updateSecurity(Request $request, $id)
     {
         if(auth()->user()->id == $id || Gate::denies('manage-user') || Gate::denies('update-user-profile', $id) || Gate::denies('update-user-security', $id)) {
-            return response()->json(['message' => 'Action not allowed.'], 403);
+            return response()->json([
+                'message' => 'Action not allowed.',
+            ], 403);
         }
         
         $user = User::findorfail($id);
@@ -375,28 +488,45 @@ class ManageUserController extends Controller
         ]);
 
         $user->password = $request->new_password;
-
-        return response()->json('', $user->save() ? 200 : 500);
+        $user->save();
+        
+        return response()->json([
+            'message' => 'User security updated.',
+        ], 200);
 
     } // end function update security
 
     public function viewPermission($id)
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+
         if(auth()->user()->id == $id || !auth()->user()->isAdmin()) {
-            return response()->json(['message' => 'No permission to access this page.'], 403);
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
 
         $user = User::findOrFail($id);
         if($user->user_group_id > 4) {
-            return response()->json(['message' => 'This user permission is not available upgrade user to reseller or higher.'], 403);
+            return response()->json([
+                'message' => 'This user permission is not available upgrade user to reseller or higher.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
         return response()->json([
-            'user' => $user,
+            'profile' => auth()->user(),
+            'permission' => $permission,
+            'user_profile' => $user,
             'user_permission' => $user->roles
         ], 200);
     } // end function view permission
 
-    public function updatePermission(Request $request, $id, $p_code)
+    public function updatePermission($id, $p_code)
     {
         $user = User::findorfail($id);
         if(auth()->user()->id == $id || !auth()->user()->isAdmin() || (in_array($p_code, [7,8,9,10,12]) && $user->user_group_id != 2)) {
@@ -408,14 +538,24 @@ class ManageUserController extends Controller
 
     public function viewDuration($id)
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+
         if (auth()->user()->id == $id || !auth()->user()->isAdmin()) {
-            return response()->json(['message' => 'No permission to access this page.'], 403);
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
 
         $user = User::findOrFail($id);
 
         return response()->json([
-            'user' => $user
+            'profile' => auth()->user(),
+            'permission' => $permission,
+            'user_profile' => $user
         ], 200);
     } // end function view duration
 
@@ -442,34 +582,52 @@ class ManageUserController extends Controller
         $user->save();
         return response()->json([
             'message' => 'User duration updated.',
-            'user' => $user]
-        , 200);
+            'user_profile' => $user
+        ], 200);
     } // end function update duration
 
     public function viewCredits($id)
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+
         if (auth()->user()->id == $id || Gate::denies('manage-user')) {
-            return response()->json(['message' => 'No permission to access this page.'], 403);
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
         if (Gate::denies('update-user-profile', $id)) {
-            return response()->json(['message' => 'No permission to update user profile.'], 403);
+            return response()->json([
+                'message' => 'No permission to update user profile.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
         if (Gate::denies('transfer-credits', $id)) {
-            return response()->json(['message' => 'No permission to transfer credits.'], 403);
+            return response()->json([
+                'message' => 'No permission to transfer credits.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
 
         $user = User::findOrFail($id);
         return response()->json([
-            'user' => ['username' => $user->username,
-                       'credits' => $user->credits],
-            'account' => ['credits' => auth()->user()->isAdmin() ? 'No Limit' : auth()->user()->credits]
+            'profile' => auth()->user(),
+            'permission' => $permission,
+            'user_profile' => $user
         ], 200);
     } // end function view top-up
 
     public function updateCredits(Request $request, $id)
     {
         if (auth()->user()->id == $id || Gate::denies('manage-user') || Gate::denies('update-user-profile', $id) || Gate::denies('transfer-credits', $id)) {
-            return response()->json(['message' => 'Action not allowed.'], 403);
+            return response()->json([
+                'message' => 'Action not allowed.',
+            ], 403);
         }
 
         if(auth()->user()->isAdmin()) {
@@ -495,7 +653,9 @@ class ManageUserController extends Controller
         }
 
         if(!auth()->user()->isAdmin() && auth()->user()->credits < $request->input_credits) {
-            return response()->json(['message' => 'Input must be lower or equal to your available credits'], 403);
+            return response()->json([
+                'message' => 'Input must be lower or equal to your available credits.',
+            ], 403);
         }
 
         $user = User::findOrFail($id);
@@ -522,37 +682,74 @@ class ManageUserController extends Controller
             $request->user()->credits -= $request->input_credits;
             $request->user()->save();
         }
+        
+        if($request->top_up) {
+            $message = 'User has been successfully top-up.';
+        } else {
+            $message = 'Credits has been transferred successfully.';
+        }
 
         return response()->json([
-            'user' => ['username' => $user->username,
-                       'credits' => $user->credits],
-            'account' => ['credits' => auth()->user()->credits]
+            'message' => $message,
+            'profile' => auth()->user(),
+            'user_profile' => $user
         ], 200);
     } // end function update credits
 
-    public function viewVoucher($id)
+    public function viewVoucher(Request $request, $id)
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+
         if (auth()->user()->id == $id || Gate::denies('manage-user')) {
-            return response()->json(['message' => 'No permission to access this page.'], 403);
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
         if (Gate::denies('update-user-profile', $id)) {
-            return response()->json(['message' => 'No permission to update user profile.'], 403);
+            return response()->json([
+                'message' => 'No permission to update user profile.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
         if (Gate::denies('apply-voucher', $id)) {
-            return response()->json(['message' => 'No permission to appply voucher to the user.'], 403);
+            return response()->json([
+                'message' => 'No permission to apply voucher to the user.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
         }
+
+        if(auth()->user()->isAdmin()) {
+            $data = VoucherCode::where('user_id', $id)->SearchPaginateAndOrder($request);
+        } else {
+            $data = VoucherCode::where([['user_id', $id],['created_user_id', auth()->user()->id]])->SearchPaginateAndOrder($request);
+        }
+
+        $columns = [
+            'code', 'duration', 'updated_at', 'created_at',
+        ];
 
         $user = User::findOrFail($id);
         return response()->json([
-            'user' => ['username' => $user->username],
-            'permission' => ['is_admin' => auth()->user()->isAdmin()]
+            'profile' => auth()->user(),
+            'permission' => $permission,
+            'user_profile' => $user,
+            'model' => $data,
+            'columns' => $columns
         ], 200);
     } // end function view apply voucher
 
     public function applyVoucher(Request $request, $id)
     {
         if (auth()->user()->id == $id || Gate::denies('manage-user') || Gate::denies('update-user-profile', $id) || Gate::denies('apply-voucher', $id)) {
-            return response()->json(['message' => 'Action not allowed.'], 403);
+            return response()->json([
+                'message' => 'Action not allowed.',
+            ], 403);
         }
 
         $this->validate($request, [
@@ -562,30 +759,35 @@ class ManageUserController extends Controller
         $voucher = VoucherCode::where('code', $request->voucher_code)->first();
 
         if(count($voucher) == 0) {
-            return response()->json(['message' => 'Voucher code is invalid.'], 403);
+            return response()->json([
+                'message' => 'Voucher code is invalid.',
+            ], 403);
         }
 
         if(!is_null($voucher->user_id)) {
-            return response()->json(['message' => 'Voucher code is already used.'], 403);
+            return response()->json([
+                'message' => 'Voucher code is already used.',
+            ], 403);
         }
 
         $user = User::findorfail($id);
-        $expired_at = Carbon::parse($user->getOriginal('expired_at'));
-        $user->expired_at = $expired_at->addSeconds($voucher->duration);
 
         $current = Carbon::now();
         $expired_at = Carbon::parse($user->getOriginal('expired_at'));
+
         if($current->lt($expired_at)) {
-            $user->expired_at = $expired_at->addSeconds($voucher->duration);
+            $user->expired_at = $expired_at->addMonths($voucher->duration_months)->addDays($voucher->duration_days)->addHours($voucher->duration_hours);
         } else {
-            $user->expired_at = $current->addSeconds($voucher->duration);
+            $user->expired_at = $current->addMonths($voucher->duration_months)->addDays($voucher->duration_days)->addHours($voucher->duration_hours);
         }
 
         $user->save();
         $voucher->user_id = $user->id;
         $voucher->save();
 
-        return response()->json(['message' => 'success'], 200);
+        return response()->json([
+            'message' => 'Voucher code applied to user.',
+        ], 200);
     } // end function update apply voucher
     
     public function userVoucher(Request $request, $id)
@@ -614,5 +816,27 @@ class ManageUserController extends Controller
             'model' => $data,
             'columns' => $columns
         ]);
+    }
+
+    public function deleteUsers(Request $request)
+    {
+        $this->validate($request, [
+            'id' => 'bail|required|array',
+        ]);
+
+        foreach ($request->id as $id) {
+            if (auth()->user()->id == $id || Gate::denies('delete-user', $id)) {
+                return response()->json([
+                    'message' => 'Action not allowed.',
+                ], 403);
+            }
+        }
+        
+        $user = User::whereIn('id', $request->id);
+        $user->delete();
+
+        return response()->json([
+            'message' => 'User deleted.',
+        ], 200);
     }
 }

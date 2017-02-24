@@ -16,9 +16,11 @@ class CreateVoucherCodesTable extends Migration
         Schema::create('voucher_codes', function (Blueprint $table) {
             $table->increments('id');
             $table->string('code')->unique();
-            $table->unsignedInteger('user_id');
+            $table->unsignedInteger('user_id')->nullable();
             $table->unsignedInteger('created_user_id');
-            $table->unsignedInteger('duration');
+            $table->unsignedInteger('duration_months');
+            $table->unsignedInteger('duration_days');
+            $table->unsignedInteger('duration_hours');
             $table->timestamps();
             $table->index(['user_id', 'created_user_id']);
         });

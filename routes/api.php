@@ -3,6 +3,8 @@
 use App\OnlineUser;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,7 +40,14 @@ Route::get('/wew', function () {
 });
 
 Route::get('/account', function () {
-    return auth()->user();
+    $permission['is_admin'] = auth()->user()->isAdmin();
+    $permission['update_account'] = auth()->user()->can('update-account');
+    $permission['manage_user'] = auth()->user()->can('manage-user');
+    return response()->json([
+        'profile'=> auth()->user(),
+        'permission' => $permission,
+        'vpn_session' => \App\OnlineUser::with('vpnserver')->where('user_id', auth()->user()->id)->get()
+    ], 200);
 })->middleware('auth:api');
 
 Route::get('/vpn_auth', function (Request $request) {
@@ -48,9 +57,9 @@ Route::get('/vpn_auth', function (Request $request) {
         $server_key = $request->server_key;
         $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
 
-        if(Auth::attempt(['username' => $username, 'password' => $password]) && $server->users()->where('username', $username)->count() == 0) {
-            Auth::user()->timestamps = false;
-            Auth::logout();
+        $account = \App\User::where('username', $username)->firstorfail();
+
+        if($server->users()->where('username', $username)->count() == 0 && Hash::check($password, $account->password)) {
             return '1';
         }
         else
@@ -143,28 +152,75 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
     }
 });
 
+Route::get('/account/profile', 'Account\AccountController@index');
+Route::post('/account/profile', 'Account\AccountController@update');
 
-Route::post('/account/update', 'UpdateAccount@update');
-Route::post('/account/password', 'UpdateAccountPassword@update');
-Route::post('/account/vpn_user_disconnect', 'UpdateAccount@disconnectVpn');
-Route::get('/manage-user/all', 'ManageUserController@allUser');
-Route::get('/manage-user/ultimate', 'ManageUserController@ultimateUser');
-Route::get('/manage-user/premium', 'ManageUserController@premiumUser');
-Route::get('/manage-user/reseller', 'ManageUserController@resellerUser');
-Route::get('/manage-user/client', 'ManageUserController@clientUser');
-Route::get('/manage-user/profile/{id}', 'ManageUserController@viewProfile');
-Route::post('/manage-user/profile/{id}', 'ManageUserController@updateProfile');
-Route::get('/manage-user/security/{id}', 'ManageUserController@viewSecurity');
-Route::post('/manage-user/security/{id}', 'ManageUserController@updateSecurity');
+Route::get('/account/security', 'Account\SecurityController@index');
+Route::post('/account/security', 'Account\SecurityController@update');
+
+Route::get('/account/vpn_status', 'Account\VpnStatusController@index');
+Route::post('/account/vpn_disconnect', 'Account\VpnStatusController@disconnect');
+
+Route::get('/voucher/generate', 'VoucherController@generateVoucherIndex');
+Route::post('/voucher/generate', 'VoucherController@generate');
+
+Route::get('/voucher/apply', 'VoucherController@applyVoucherIndex');
+Route::post('/voucher/apply', 'VoucherController@applyVoucher');
+
+Route::get('/manage-user/all', 'ManageUser\ListUserAllController@index');
+Route::get('/manage-user/ultimate', 'ManageUser\ListUserUltimateController@index');
+Route::get('/manage-user/premium', 'ManageUser\ListUserPremiumController@index');
+Route::get('/manage-user/reseller', 'ManageUser\ListUserResellerController@index');
+Route::get('/manage-user/client', 'ManageUser\ListUserClientController@index');
+Route::get('/manage-user/trash', 'ManageUser\ListUserTrashController@index');
+
+Route::get('/manage-user/profile/{id}', 'ManageUser\UserProfileController@index');
+Route::post('/manage-user/profile/{id}', 'ManageUser\UserProfileController@updateProfile');
+
+Route::get('/manage-user/security/{id}', 'ManageUser\UserSecurityController@index');
+Route::post('/manage-user/security/{id}', 'ManageUser\UserSecurityController@updateSecurity');
+
 Route::get('/manage-user/permission/{id}', 'ManageUserController@viewPermission');
 Route::get('/manage-user/permission/{id}/{p_code}', 'ManageUserController@updatePermission');
+
 Route::get('/manage-user/duration/{id}', 'ManageUserController@viewDuration');
 Route::post('/manage-user/duration/{id}', 'ManageUserController@updateDuration');
+
 Route::get('/manage-user/credits/{id}', 'ManageUserController@viewCredits');
 Route::post('/manage-user/credits/{id}', 'ManageUserController@updateCredits');
+
 Route::get('/manage-user/voucher/{id}', 'ManageUserController@viewVoucher');
 Route::post('/manage-user/voucher/{id}', 'ManageUserController@applyVoucher');
 Route::get('/manage-user/user-voucher/{id}', 'ManageUserController@userVoucher');
+Route::get('/manage-user/user-voucher/{id}/delete', 'ManageUserController@userVoucher');
 Route::post('/manage-user/vpn-session/{id}', 'ManageUserController@disconnectVpn');
 Route::get('/manage-user/create', 'ManageUserController@viewCreate');
 Route::post('/manage-user/create', 'ManageUserController@create');
+
+Route::post('/manage-user/delete-client', 'ManageUser\ListUserClientController@deleteUsers');
+Route::post('/manage-user/delete-reseller', 'ManageUser\ListUserResellerController@deleteUsers');
+Route::post('/manage-user/delete-premium', 'ManageUser\ListUserPremiumController@deleteUsers');
+Route::post('/manage-user/delete-ultimate', 'ManageUser\ListUserUltimateController@deleteUsers');
+Route::post('/manage-user/delete-all', 'ManageUser\ListUserAllController@deleteUsers');
+
+
+Route::post('/manage-user/client-update-status', 'ManageUser\ListUserClientController@updateUserStatus');
+Route::post('/manage-user/reseller-update-status', 'ManageUser\ListUserResellerController@updateUserStatus');
+Route::post('/manage-user/premium-update-status', 'ManageUser\ListUserPremiumController@updateUserStatus');
+Route::post('/manage-user/ultimate-update-status', 'ManageUser\ListUserUltimateController@updateUserStatus');
+Route::post('/manage-user/all-update-status', 'ManageUser\ListUserAllController@updateUserStatus');
+
+Route::post('/manage-user/user-restore', 'ManageUser\ListUserTrashController@restoreUser');
+Route::post('/manage-user/user-force-delete', 'ManageUser\ListUserTrashController@forceDeleteUser');
+
+Route::get('/vpn-server/add', 'VpnServer\AddServerController@index');
+Route::post('/vpn-server/add', 'VpnServer\AddServerController@addServer');
+Route::get('/vpn-server/list', 'VpnServer\ListServerController@index');
+Route::post('/vpn-server/delete-server', 'VpnServer\ListServerController@deleteServer');
+Route::post('/vpn-server/server-up', 'VpnServer\ListServerController@upServer');
+Route::post('/vpn-server/server-down', 'VpnServer\ListServerController@downServer');
+Route::post('/vpn-server/server-free', 'VpnServer\ListServerController@freeServer');
+Route::post('/vpn-server/server-premium', 'VpnServer\ListServerController@premiumServer');
+Route::get('/vpn-server/server-info/{id}', 'VpnServer\ServerInfoController@index');
+Route::post('/vpn-server/server-info/{id}', 'VpnServer\ServerInfoController@updateServer');
+Route::get('/vpn-server/generatekey', 'VpnServer\ServerInfoController@generatekey');

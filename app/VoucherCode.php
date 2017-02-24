@@ -62,18 +62,30 @@ class VoucherCode extends Model
 
     public function getUpdatedAtAttribute($value) {
         $dt = \Carbon\Carbon::parse($value);
+        if(is_null($this->user_id)) {
+            return '-';
+        }
         if ($dt->diffInDays(\Carbon\Carbon::now()) > 1)
             return $dt->format('Y-M-d');
         else
             return $dt->diffForHumans();
     }
 
-    public function getAppliedToAttribute($value) {
-        return $this->user_applied->username;
+    public function getAppliedToAttribute() {
+        if(!is_null($this->user_id)) {
+            return $this->user_applied->username;
+        }
+        if(!is_null($this->user_id) && is_null($this->user_applied)) {
+            return '*';
+        }
+        return '-';
     }
 
-    public function getCreatedByAttribute($value) {
-        return $this->user_created->username;
+    public function getCreatedByAttribute() {
+        if(!is_null($this->user_created)) {
+            return $this->user_created->username;
+        }
+        return '*';
     }
 
     protected $appends = [

@@ -147,5 +147,17 @@ class AuthServiceProvider extends ServiceProvider
             return false;
         });
 
+        Gate::define('delete-user', function ($user, $id) {
+            $data = User::findorfail($id);
+            if($data->isDownline() && in_array($user->user_group_id, [2,3,4]) && in_array('PCODE_003', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+
+            if(!$data->isDownline() && in_array($user->user_group_id, [2]) && in_array('PCODE_010', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+            return false;
+        });
+
     }
 }
