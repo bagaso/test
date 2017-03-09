@@ -99,6 +99,16 @@ class DatabaseSeeder extends Seeder
             'code' => 'PCODE_017',
             'desc' => 'Apply Voucher to Other User',
         ]);
+        DB::table('roles')->insert([
+            'name' => 'User Package',
+            'code' => 'PCODE_018',
+            'desc' => 'User Package',
+        ]);
+        DB::table('roles')->insert([
+            'name' => 'Other User Package',
+            'code' => 'PCODE_019',
+            'desc' => 'Other User Package',
+        ]);
 
     }
 }

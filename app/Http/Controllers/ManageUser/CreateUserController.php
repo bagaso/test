@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\ManageUser;
 
+use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Gate;
 
 class CreateUserController extends Controller
 {
@@ -15,11 +17,74 @@ class CreateUserController extends Controller
     public function __construct()
     {
         $this->middleware(['auth:api']);
-
-    } // function __construct
+    }
 
     public function index()
     {
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['update_account'] = auth()->user()->can('update-account');
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['create_user'] = auth()->user()->can('create-user');
 
+        if (Gate::denies('manage-user')) {
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
+        }
+        if (Gate::denies('create-user')) {
+            return response()->json([
+                'message' => 'No permission to create user.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
+        }
+
+        $permission['set_user_group'] = auth()->user()->can('set-user-usergroup');
+        $permission['set_user_status'] = auth()->user()->can('set-user-status');
+
+        return response()->json([
+            'profile' => auth()->user(),
+            'permission' => $permission,
+        ]);
+    }
+
+    public function create(Request $request)
+    {
+        if (Gate::denies('manage-user') || Gate::denies('create-user')) {
+            return response()->json([
+                'message' => 'Action not allowed.',
+            ], 403);
+        }
+
+        if(auth()->user()->user_group_id == 1) {
+            $usergroups = '2,3,4,5';
+        }
+        if(auth()->user()->user_group_id == 2) {
+            $usergroups = '3,4,5';
+        }
+        if(auth()->user()->user_group_id == 3) {
+            $usergroups = '4,5';
+        }
+        if(auth()->user()->user_group_id == 4) {
+            $usergroups = '5';
+        }
+
+        $this->validate($request, [
+            'user_group_id' => 'bail|required|integer|in:' . $usergroups,
+            'username' => 'bail|required|alpha_num|between:6,20|unique:users,username',
+            'password' => 'bail|required|between:6,15|confirmed',
+            'password_confirmation' => 'bail|required|between:6,15',
+            'email' => 'bail|required|email|max:50|unique:users,email',
+            'fullname' => 'bail|required|max:50',
+            'status_id' => 'bail|required|integer|in:0,1',
+        ]);
+
+        $new_user = new User;
+        $new_user->create($request->all());
+        return response()->json([
+            'message' => 'New user created.'
+        ], 200);
     }
 }

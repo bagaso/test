@@ -72,11 +72,11 @@ class VoucherCode extends Model
     }
 
     public function getAppliedToAttribute() {
-        if(!is_null($this->user_id)) {
+        if(!is_null($this->user_applied)) {
             return $this->user_applied->username;
         }
         if(!is_null($this->user_id) && is_null($this->user_applied)) {
-            return '*';
+            return '###';
         }
         return '-';
     }
@@ -85,7 +85,7 @@ class VoucherCode extends Model
         if(!is_null($this->user_created)) {
             return $this->user_created->username;
         }
-        return '*';
+        return '###';
     }
 
     protected $appends = [

@@ -19,8 +19,12 @@ use Illuminate\Support\Facades\Hash;
 
 Route::get('/wew', function () {
 
-    $server = \App\VpnServer::where('server_key', '12345')->firstorfail();
-    return $server->users()->where('username', 'mp3sniff')->count() ? '11' : '00';
+    $du = \App\VoucherCode::find(1);
+
+    echo Carbon::now()->addSeconds($du->getOriginal('duration1'))->diffForHumans();
+
+//    $server = \App\VpnServer::where('server_key', '12345')->firstorfail();
+//    return $server->users()->where('username', 'mp3sniff')->count() ? '11' : '00';
 //    return $server->online_users->count();
 
 //    $vpn_user = \App\User::find(3);
@@ -158,6 +162,12 @@ Route::post('/account/profile', 'Account\AccountController@update');
 Route::get('/account/security', 'Account\SecurityController@index');
 Route::post('/account/security', 'Account\SecurityController@update');
 
+Route::get('/account/extend-duration', 'Account\ExtendDurationController@index');
+Route::post('/account/extend-duration', 'Account\ExtendDurationController@extend');
+
+Route::get('/account/transfer-credits', 'Account\TransferCreditsController@index');
+Route::post('/account/transfer-credits', 'Account\TransferCreditsController@transfer');
+
 Route::get('/account/vpn_status', 'Account\VpnStatusController@index');
 Route::post('/account/vpn_disconnect', 'Account\VpnStatusController@disconnect');
 
@@ -166,6 +176,7 @@ Route::post('/voucher/generate', 'VoucherController@generate');
 
 Route::get('/voucher/apply', 'VoucherController@applyVoucherIndex');
 Route::post('/voucher/apply', 'VoucherController@applyVoucher');
+Route::post('/voucher/delete-voucher', 'VoucherController@deleteVoucher');
 
 Route::get('/manage-user/all', 'ManageUser\ListUserAllController@index');
 Route::get('/manage-user/ultimate', 'ManageUser\ListUserUltimateController@index');
@@ -180,22 +191,39 @@ Route::post('/manage-user/profile/{id}', 'ManageUser\UserProfileController@updat
 Route::get('/manage-user/security/{id}', 'ManageUser\UserSecurityController@index');
 Route::post('/manage-user/security/{id}', 'ManageUser\UserSecurityController@updateSecurity');
 
-Route::get('/manage-user/permission/{id}', 'ManageUserController@viewPermission');
-Route::get('/manage-user/permission/{id}/{p_code}', 'ManageUserController@updatePermission');
+Route::get('/manage-user/permission/{id}', 'ManageUser\UserPermissionController@index');
+Route::get('/manage-user/permission/{id}/{p_code}', 'ManageUser\UserPermissionController@updatePermission');
 
-Route::get('/manage-user/duration/{id}', 'ManageUserController@viewDuration');
-Route::post('/manage-user/duration/{id}', 'ManageUserController@updateDuration');
+Route::get('/manage-user/duration/{id}', 'ManageUser\UserDurationController@index');
+Route::post('/manage-user/duration/{id}', 'ManageUser\UserDurationController@updateDuration');
 
-Route::get('/manage-user/credits/{id}', 'ManageUserController@viewCredits');
-Route::post('/manage-user/credits/{id}', 'ManageUserController@updateCredits');
+Route::get('/manage-user/credits/{id}', 'ManageUser\UserCreditController@index');
+Route::post('/manage-user/credits/{id}', 'ManageUser\UserCreditController@updateCredits');
 
-Route::get('/manage-user/voucher/{id}', 'ManageUserController@viewVoucher');
-Route::post('/manage-user/voucher/{id}', 'ManageUserController@applyVoucher');
-Route::get('/manage-user/user-voucher/{id}', 'ManageUserController@userVoucher');
-Route::get('/manage-user/user-voucher/{id}/delete', 'ManageUserController@userVoucher');
-Route::post('/manage-user/vpn-session/{id}', 'ManageUserController@disconnectVpn');
-Route::get('/manage-user/create', 'ManageUserController@viewCreate');
-Route::post('/manage-user/create', 'ManageUserController@create');
+Route::get('/manage-user/voucher/{id}', 'ManageUser\UserVoucherController@index');
+Route::post('/manage-user/voucher/{id}', 'ManageUser\UserVoucherController@applyVoucher');
+Route::post('/manage-user/voucher/{id}/delete', 'ManageUser\UserVoucherController@deleteVoucher');
+
+Route::post('/manage-user/vpn-session/{id}', 'ManageUser\UserDisconnectVpn@index');
+
+Route::post('/distributor', 'DistributorController@index');
+
+Route::get('/online-users', 'OnlineUsersController@index');
+Route::post('/online-users', 'OnlineUsersController@searchOnlineUser');
+Route::post('/online-users/disconnect-user', 'OnlineUsersController@disconnectVpn');
+
+Route::get('/news-and-updates', 'NewsAndUpdates\ListController@index');
+Route::post('/news-and-updates/delete', 'NewsAndUpdates\ListController@deletePost');
+Route::post('/news-and-updates/pin-post', 'NewsAndUpdates\ListController@pinPost');
+Route::post('/news-and-updates/unpin-post', 'NewsAndUpdates\ListController@unPinPost');
+Route::post('/news-and-updates/item', 'NewsAndUpdates\ItemController@index');
+Route::get('/news-and-updates/edit/{id}', 'NewsAndUpdates\EditItemController@index');
+Route::post('/news-and-updates/edit/{id}', 'NewsAndUpdates\EditItemController@update');
+Route::get('/news-and-updates-create', 'NewsAndUpdates\CreateController@index');
+Route::post('/news-and-updates-create', 'NewsAndUpdates\CreateController@create');
+
+Route::get('/manage-user/create', 'ManageUser\CreateUserController@index');
+Route::post('/manage-user/create', 'ManageUser\CreateUserController@create');
 
 Route::post('/manage-user/delete-client', 'ManageUser\ListUserClientController@deleteUsers');
 Route::post('/manage-user/delete-reseller', 'ManageUser\ListUserResellerController@deleteUsers');
@@ -203,6 +231,17 @@ Route::post('/manage-user/delete-premium', 'ManageUser\ListUserPremiumController
 Route::post('/manage-user/delete-ultimate', 'ManageUser\ListUserUltimateController@deleteUsers');
 Route::post('/manage-user/delete-all', 'ManageUser\ListUserAllController@deleteUsers');
 
+Route::post('/manage-user/client-update-userpackage', 'ManageUser\ListUserClientController@updateUserPackage');
+Route::post('/manage-user/reseller-update-userpackage', 'ManageUser\ListUserResellerController@updateUserPackage');
+Route::post('/manage-user/premium-update-userpackage', 'ManageUser\ListUserPremiumController@updateUserPackage');
+Route::post('/manage-user/ultimate-update-userpackage', 'ManageUser\ListUserUltimateController@updateUserPackage');
+Route::post('/manage-user/all-update-userpackage', 'ManageUser\ListUserAllController@updateUserPackage');
+
+Route::post('/manage-user/client-update-usergroup', 'ManageUser\ListUserClientController@updateUserGroup');
+Route::post('/manage-user/reseller-update-usergroup', 'ManageUser\ListUserResellerController@updateUserGroup');
+Route::post('/manage-user/premium-update-usergroup', 'ManageUser\ListUserPremiumController@updateUserGroup');
+Route::post('/manage-user/ultimate-update-usergroup', 'ManageUser\ListUserUltimateController@updateUserGroup');
+Route::post('/manage-user/all-update-usergroup', 'ManageUser\ListUserAllController@updateUserGroup');
 
 Route::post('/manage-user/client-update-status', 'ManageUser\ListUserClientController@updateUserStatus');
 Route::post('/manage-user/reseller-update-status', 'ManageUser\ListUserResellerController@updateUserStatus');

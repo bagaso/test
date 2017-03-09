@@ -44,6 +44,8 @@ class AccountController extends Controller
             'username' => 'sometimes|bail|required|alpha_num|between:6,20|unique:users,username,' . $account->id,
             'email' => 'bail|required|email|max:50|unique:users,email,' . $account->id,
             'fullname' => 'bail|required|max:50',
+            'contact' => 'required_if:distributor,true',
+            'distributor' => 'bail|required|boolean',
         ]);
 
         if (auth()->user()->isAdmin()) {
@@ -51,6 +53,10 @@ class AccountController extends Controller
         }
         $account->email = $request->email;
         $account->fullname = $request->fullname;
+        $account->contact = $request->contact;
+        if(in_array(auth()->user()->user_group_id, [2,3,4])) {
+            $account->distributor = $request->distributor;
+        }
         $account->save();
 
         return response()->json([

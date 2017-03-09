@@ -18,7 +18,7 @@ class ListUserTrashController extends Controller
     {
         $this->middleware(['auth:api']);
 
-    } // function __construct
+    }
 
     public function index(Request $request)
     {

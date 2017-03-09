@@ -15,14 +15,17 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id');
+            $table->integer('user_id');
             $table->string('username')->unique();
+            $table->string('password');
             $table->string('email')->unique();
             $table->string('fullname');
-            $table->string('password');
+            $table->string('contact')->nullable();
             $table->integer('credits')->default(0)->unsigned();
             $table->integer('vpn_session')->default(1)->unsigned();
             $table->double('consumable_data')->unsigned()->default(0);
-            $table->integer('user_group_id')->unsigned();
+            $table->integer('user_group_id')->unsigned()->default(5);
+            $table->integer('distributor')->unsigned()->default(0);
             $table->integer('status_id')->unsigned();
             $table->integer('parent_id')->default(1);
             $table->timestamp('expired_at')->useCurrent();

@@ -24,7 +24,11 @@ class User extends Authenticatable
     ];
 
     public static $columns = [
-        'username', 'email', 'user_group_id', 'status_id', 'expired_at', 'created_at'
+        'username', 'email', 'user_group_id', 'vpn_session', 'status_id', 'expired_at', 'created_at'
+    ];
+
+    protected $casts = [
+        'distributor' => 'boolean',
     ];
 
     /**
@@ -71,6 +75,24 @@ class User extends Authenticatable
                 }
             }
         })->paginate($request->per_page);
+    }
+
+    public function scopeSearchDistPaginateAndOrder($query, $request)
+    {
+
+        return $query->where([['user_group_id', '<>', 1]])
+            ->orderBy($request->column, $request->direction)
+            ->where(function($query) use ($request) {
+                if($request->has('search_input')) {
+                    if($request->search_operator == 'in') {
+                        $query->whereIn($request->search_column, array_map('trim', explode(',', $request->search_input)));
+                    } else if($request->search_operator == 'like') {
+                        $query->where($request->search_column, 'LIKE', '%'.trim($request->search_input).'%');
+                    } else {
+                        $query->where($request->search_column, $this->operators[$request->search_operator], trim($request->search_input));
+                    }
+                }
+            })->paginate($request->per_page);
     }
 
     public function setPasswordAttribute($value)
@@ -120,8 +142,8 @@ class User extends Authenticatable
         if($current->gte($dt)) {
             return 'Expired';
         }
-        if ($dt->diffInDays(Carbon::now()) > 30)
-            return $dt->format('Y-M-d');
+        if ($dt->diffInDays(Carbon::now()) > 1)
+            return $dt->diffInDays(Carbon::now()) . ' Days';
         else
             return $dt->diffForHumans(null, true);
     }
@@ -142,8 +164,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany('App\Role');
     }
-
-
+    
     public function getStatusIdAttribute($value) {
         return $this->isAdmin() ? 1 : $value;
     }

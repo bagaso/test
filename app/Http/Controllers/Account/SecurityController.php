@@ -62,6 +62,6 @@ class SecurityController extends Controller
             'message' => 'Password changed successfully.',
         ], 200);
 
-    } // function update
+    }
 
-} // end class
+}

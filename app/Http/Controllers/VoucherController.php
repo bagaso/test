@@ -26,6 +26,15 @@ class VoucherController extends Controller
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['generate_voucher'] = auth()->user()->can('generate-voucher');
+
+        if (Gate::denies('manage-user') || Gate::denies('generate-voucher')) {
+            return response()->json([
+                'message' => 'No permission to access this page.',
+                'profile' => auth()->user(),
+                'permission' => $permission,
+            ], 403);
+        }
 
         if(auth()->user()->isAdmin()) {
             $data = VoucherCode::SearchPaginateAndOrder($request);
@@ -41,12 +50,18 @@ class VoucherController extends Controller
             'profile' => auth()->user(),
             'permission' => $permission,
             'model' => $data,
-            'columns' => $columns
+            'columns' => $columns,
         ], 200);
     }
 
     public function generate(Request $request)
     {
+        if (Gate::denies('manage-user') || Gate::denies('generate-voucher')) {
+            return response()->json([
+                'message' => 'Action not allowed.',
+            ], 403);
+        }
+        
         if(auth()->user()->isAdmin()) {
             $this->validate($request, [
                 'credits' => 'bail|required|integer|between:1,5',
@@ -68,19 +83,18 @@ class VoucherController extends Controller
         $voucher = array();
         DB::beginTransaction();
         try {
-            $time_now = Carbon::now();
             $vouchers = array();
             for($i=0;$i<=$request->credits-1;$i++) {
                 $temp = Carbon::now()->format('y') . strtoupper(str_random(5)) . '-' . Carbon::now()->format('m') . strtoupper(str_random(6)) . '-' . Carbon::now()->format('d') . strtoupper(str_random(7));
                 $voucher[] = $temp;
                 $vouchers[$i]['code'] = $temp;
                 $vouchers[$i]['created_user_id'] = auth()->user()->id;
-                // $vouchers[$i]['duration'] = 0;
-                $vouchers[$i]['duration_months'] = 0;
-                $vouchers[$i]['duration_days'] = 30;
-                $vouchers[$i]['duration_hours'] = 0;
-                $vouchers[$i]['created_at'] = $time_now;
-                $vouchers[$i]['updated_at'] = $time_now;
+                $vouchers[$i]['duration'] = 2592000 + 3600;
+                if(auth()->user()->isAdmin()) {
+                    $vouchers[$i]['duration'] = 2592000 + 3600;
+                }
+                $vouchers[$i]['created_at'] = Carbon::now();
+                $vouchers[$i]['updated_at'] = Carbon::now();;
             }
             VoucherCode::insert($vouchers);
             if(!auth()->user()->isAdmin()) {
@@ -96,10 +110,22 @@ class VoucherController extends Controller
             ], 403);
         }
 
+        if(auth()->user()->isAdmin()) {
+            $data = VoucherCode::SearchPaginateAndOrder($request);
+        } else {
+            $data = VoucherCode::where('created_user_id', auth()->user()->id)->SearchPaginateAndOrder($request);
+        }
+
+        $columns = [
+            'code', 'duration', 'updated_at', 'created_at',
+        ];
+
         return response()->json([
             'message' => 'Voucher generated.',
             'profile' => auth()->user(),
             'voucher' => $voucher,
+            'model' => $data,
+            'columns' => $columns,
         ], 200);
     }
     
@@ -108,6 +134,7 @@ class VoucherController extends Controller
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['generate_voucher'] = auth()->user()->can('generate-voucher');
 
         if (Gate::denies('update-account')) {
             return response()->json([
@@ -127,7 +154,7 @@ class VoucherController extends Controller
             'profile' => auth()->user(),
             'permission' => $permission,
             'model' => $data,
-            'columns' => $columns
+            'columns' => $columns,
         ], 200);
     }
     
@@ -135,7 +162,7 @@ class VoucherController extends Controller
     {
         if (auth()->user()->isAdmin()) {
             return response()->json([
-                'message' => 'Admin account cannot use vouchers.',
+                'message' => 'Admin account cannot use voucher.',
             ], 403);
         }
         
@@ -169,17 +196,56 @@ class VoucherController extends Controller
         $expired_at = Carbon::parse($account->getOriginal('expired_at'));
 
         if($current->lt($expired_at)) {
-            $account->expired_at = $expired_at->addMonths($voucher->duration_months)->addDays($voucher->duration_days)->addHours($voucher->duration_hours);
+            $account->expired_at = $expired_at->addSeconds($voucher->getOriginal('duration'));
         } else {
-            $account->expired_at = $current->addMonths($voucher->duration_months)->addDays($voucher->duration_days)->addHours($voucher->duration_hours);
+            $account->expired_at = $current->addSeconds($voucher->getOriginal('duration'));
         }
 
         $account->save();
         $voucher->user_id = auth()->user()->id;
         $voucher->save();
 
+        $data = VoucherCode::where('user_id', auth()->user()->id)->SearchPaginateAndOrder($request);
+
+        $columns = [
+            'code', 'duration', 'updated_at',
+        ];
+
         return response()->json([
             'message' => 'Voucher code applied.',
+            'model' => $data,
+            'columns' => $columns,
+        ], 200);
+    }
+
+    public function deleteVoucher(Request $request)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Action not allowed.',
+            ], 403);
+        }
+        $this->validate($request, [
+            'id' => 'bail|required|array',
+        ]);
+
+        $vouchers = VoucherCode::whereIn('id', $request->id);
+        $vouchers->delete();
+
+        if(auth()->user()->isAdmin()) {
+            $data = VoucherCode::SearchPaginateAndOrder($request);
+        } else {
+            $data = VoucherCode::where('created_user_id', auth()->user()->id)->SearchPaginateAndOrder($request);
+        }
+
+        $columns = [
+            'code', 'duration', 'updated_at', 'created_at',
+        ];
+
+        return response()->json([
+            'message' => 'Voucher deleted.',
+            'model' => $data,
+            'columns' => $columns,
         ], 200);
     }
 }

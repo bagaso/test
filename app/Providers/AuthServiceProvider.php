@@ -159,5 +159,16 @@ class AuthServiceProvider extends ServiceProvider
             return false;
         });
 
+        Gate::define('update-user-package', function ($user, $id) {
+            $data = User::findorfail($id);
+            if($data->isDownline() && in_array($user->user_group_id, [2,3,4]) && in_array('PCODE_018', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+
+            if(!$data->isDownline() && in_array($user->user_group_id, [2]) && in_array('PCODE_019', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+            return false;
+        });
     }
 }
