@@ -51,9 +51,9 @@ class VoucherCode extends Model
     public function getDurationAttribute($value) {
         $current = Carbon::now();
         if ($current->copy()->addSeconds($value)->diffInDays($current) > 1)
-            return $current->diffInDays(Carbon::now()) . ' Days';
+            return $current->copy()->addSeconds($value)->diffInDays($current) . ' Days';
         else
-            return $current->diffForHumans(null, true);
+            return $current->copy()->addSeconds($value)->diffForHumans(null, true);
         // return $current->addSeconds($value)->diffForHumans(null, true);
     }
 
