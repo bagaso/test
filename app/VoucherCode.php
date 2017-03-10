@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class VoucherCode extends Model
@@ -48,8 +49,12 @@ class VoucherCode extends Model
     }
 
     public function getDurationAttribute($value) {
-        $current = \Carbon\Carbon::now();
-        return $current->addSeconds($value)->diffForHumans(null, true);
+        $current = Carbon::now();
+        if ($current->copy()->addSeconds($value)->diffInDays($current) > 1)
+            return $current->diffInDays(Carbon::now()) . ' Days';
+        else
+            return $current->diffForHumans(null, true);
+        // return $current->addSeconds($value)->diffForHumans(null, true);
     }
 
     public function getCreatedAtAttribute($value) {
