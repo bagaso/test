@@ -71,15 +71,15 @@ class TransferCreditsController extends Controller
         }
 
         try {
+            $user = User::where('username', $request->username)->firstorfail();
+
+            if($user->isAdmin() || auth()->user()->username == $user->username) {
+                return response()->json([
+                    'message' => 'Action not allowed.',
+                ], 403);
+            }
             DB::transaction(function () use ($request) {
                 $user = User::where('username', $request->username)->firstorfail();
-
-                if($user->isAdmin() || auth()->user()->username == $user->username) {
-                    return response()->json([
-                        'message' => 'Action not allowed.',
-                    ], 403);
-                }
-
                 if (!auth()->user()->isAdmin()) {
                     $request->user()->credits -= $request->credits;
                     $request->user()->save();
