@@ -45,7 +45,7 @@ class SecurityController extends Controller
 
         if($request->password != '' && !Hash::check($request->password, $account->getAuthPassword())) {
             return response()->json([
-                'password' => 'Your old password is incorrect.',
+                'password' => ['Your old password is incorrect.'],
             ], 422);
         }
 
