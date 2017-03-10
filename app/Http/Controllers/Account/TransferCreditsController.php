@@ -74,7 +74,7 @@ class TransferCreditsController extends Controller
             DB::transaction(function () use ($request) {
                 $user = User::where('username', $request->username)->firstorfail();
 
-                if($user->isAdmin() || auth()->user()->username == $request->username) {
+                if($user->isAdmin() || auth()->user()->username == $user->username) {
                     return response()->json([
                         'message' => 'Action not allowed.',
                     ], 403);
