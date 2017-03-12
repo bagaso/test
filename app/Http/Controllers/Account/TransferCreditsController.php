@@ -90,8 +90,8 @@ class TransferCreditsController extends Controller
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
             return response()->json([
-                'message' => 'User not found.',
-            ], 403);
+                'username' => ['User not found.'],
+            ], 422);
         }
 
 
