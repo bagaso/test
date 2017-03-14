@@ -15,8 +15,7 @@ class Cors
      */
     public function handle($request, Closure $next)
     {
-        //$domains = ['https://smartyvpn.com', 'https://www.smartyvpn.com'];
-        $domains = ['http://localhost:8080', 'http://localhost'];
+        //$domains = ['http://localhost:8080', 'http://localhost'];
 
         if(isset($request->server()['HTTP_ORIGIN'])) {
             $origin = $request->server()['HTTP_ORIGIN'];
