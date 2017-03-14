@@ -58,6 +58,12 @@ class CreateUserController extends Controller
             ], 403);
         }
 
+        if (!auth()->user()->isAdmin() && auth()->user()->user_down_ctr->count() > 500) {
+            return response()->json([
+                'message' => 'You have reached user limit.',
+            ], 403);
+        }
+
         if(auth()->user()->user_group_id == 1) {
             $usergroups = '2,3,4,5';
         }

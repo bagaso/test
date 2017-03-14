@@ -51,7 +51,7 @@ class UserPermissionController extends Controller
     public function updatePermission($id, $p_code)
     {
         $user = User::findorfail($id);
-        if(auth()->user()->id == $id || !auth()->user()->isAdmin() || (in_array($p_code, [7,8,9,10,12]) && $user->user_group_id != 2)) {
+        if(auth()->user()->id == $id || !auth()->user()->isAdmin() || (in_array($p_code, [7,8,9,10,12,14,17,19]) && $user->user_group_id != 2)) {
             return response()->json(['message' => 'Action not allowed.'], 403);
         }
         $user->roles()->toggle($p_code);

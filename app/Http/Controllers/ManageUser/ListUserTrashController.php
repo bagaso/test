@@ -121,8 +121,11 @@ class ListUserTrashController extends Controller
             }
         }
 
-        $user = User::onlyTrashed()->whereIn('id', $request->id);
-        $user->forceDelete();
+        $users = User::onlyTrashed()->whereIn('id', $request->id);
+        foreach ($users->get() as $user) {
+            $user->roles()->detach();
+        }
+        $users->forceDelete();
 
         $status_id = [$request->status_id];
         if($request->status_id == -1) {

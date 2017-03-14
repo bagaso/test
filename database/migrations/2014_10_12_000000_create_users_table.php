@@ -28,6 +28,7 @@ class CreateUsersTable extends Migration
             $table->integer('distributor')->unsigned()->default(0);
             $table->integer('status_id')->unsigned();
             $table->integer('parent_id')->default(1);
+            //$table->integer('user_limit')->default(500);
             $table->timestamp('expired_at')->useCurrent();
             $table->timestamp('pause_start')->nullable();
             $table->timestamp('pause_end')->nullable();

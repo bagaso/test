@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
+use App\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 
@@ -25,8 +26,11 @@ class AccountController extends Controller
         $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
+        $user = User::with('upline')->find(auth()->user()->id);
+
         return response()->json([
             'profile' => auth()->user(),
+            'upline' => $user->upline->username,
             'permission' => $permission,
             'vpn_session' => \App\OnlineUser::where('user_id', auth()->user()->id)->count(),
         ], 200);

@@ -160,6 +160,16 @@ class User extends Authenticatable
         return false;
     }
 
+    public function upline()
+    {
+        return $this->belongsTo('App\User', 'parent_id');
+    }
+
+    public function user_down_ctr()
+    {
+        return $this->hasMany('App\User', 'parent_id');
+    }
+
     public function roles()
     {
         return $this->belongsToMany('App\Role');
@@ -206,4 +216,6 @@ class User extends Authenticatable
         $newsize=round($bytesize,2);
         return("$newsize $units[$i]");
     }
+
+    //protected $appends = ['upline1'];
 }

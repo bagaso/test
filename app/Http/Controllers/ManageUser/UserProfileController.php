@@ -51,10 +51,14 @@ class UserProfileController extends Controller
         $permission['update_user_credits'] = auth()->user()->can('transfer-credits', $user->id);
         $permission['apply_user_voucher'] = auth()->user()->can('apply-voucher', $user->id);
 
+        $user_upline = User::with('upline')->find($id);
+
         return response()->json([
             'profile' => auth()->user(),
             'permission' => $permission,
             'user_profile' => $user,
+            'user_upline' => $user_upline->upline->username,
+            'no_of_users' => $user->user_down_ctr->count(),
             'user_vpn_session' => \App\OnlineUser::with('vpnserver')->where('user_id', $user->id)->get(),
         ], 200);
     }
