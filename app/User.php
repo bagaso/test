@@ -100,6 +100,11 @@ class User extends Authenticatable
         $this->attributes['password'] = bcrypt($value);
     }
 
+    public function setUsernameAttribute($value)
+    {
+        $this->attributes['username'] = strtolower($value);
+    }
+
     public function setParentIdAttribute($value)
     {
         $this->attributes['parent_id'] = auth()->user()->id;
