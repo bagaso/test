@@ -18,29 +18,11 @@ use Illuminate\Support\Facades\Hash;
 */
 
 Route::get('/wew', function () {
-
-    $du = \App\VoucherCode::find(1);
-
-    echo Carbon::now()->addSeconds($du->getOriginal('duration1'))->diffForHumans();
-
-//    $server = \App\VpnServer::where('server_key', '12345')->firstorfail();
-//    return $server->users()->where('username', 'mp3sniff')->count() ? '11' : '00';
-//    return $server->online_users->count();
-
-//    $vpn_user = \App\User::find(3);
-//    return $vpn_user->vpn->with('vpnserver');
-//    $vpn_user->byte_received = 2;
-////    $vpn_user->touch();
-//    $vpn_user->save();
-
-        //echo $a[mt_rand(0, count($a) - 1)];
-//    $vpn = $user_delete->vpn()->where('vpn_server_id', 1)->firstorfail();
-//    echo $vpn->delete();
-//    $server = \App\VpnServer::findorfail(1);
-//    foreach ($server->users as $online_user) {
-//        echo $online_user->vpn()->where('vpn_server_id', 1)->firstorfail()->data_available;
-//    }
-    //return $account->users->firstorfail();
+    $users = \App\User::whereIn('user_group_id', [3,4])->get();
+    foreach ($users as $user) {
+        $user->roles()->sync([1,2,4,6]);
+        $user->save();
+    }
 });
 
 Route::get('/account', function () {
