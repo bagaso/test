@@ -48,7 +48,7 @@ class OnlineUsersController extends Controller
             if($request->has('search_input')) {
                 $query->where('username', 'LIKE', '%'.trim($request->search_input).'%');
             }
-        })->orderBy('vpn_server_id', 'asc')->paginate(25);
+        })->orderBy('vpn_server_id', 'asc')->paginate(50);
         
         return response()->json([
             'model' => $data,
