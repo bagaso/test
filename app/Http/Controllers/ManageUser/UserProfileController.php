@@ -95,10 +95,10 @@ class UserProfileController extends Controller
         ]);
 
         if (Gate::allows('update-user-usergroup', $user->id)) {
-            if ($user->user_group_id <> $request->user_group_id) {
+            if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [2,3,4])) {
                 $user->roles()->sync([1,2,4,6,13,15,16,18]);
             }
-            if ($request->user_group_id == 5) {
+            if ($user->user_group_id <> $request->user_group_id && $request->user_group_id == 5) {
                 $user->roles()->detach();
             }
             $user->user_group_id = $request->user_group_id;
