@@ -33,7 +33,7 @@ class OnlineUsersController extends Controller
             ], 403);
         }
 
-        $data = OnlineUser::with('user', 'vpnserver')->orderBy('vpn_server_id', 'asc')->paginate(25);
+        $data = OnlineUser::with('user', 'vpnserver')->orderBy('vpn_server_id', 'asc')->paginate(50);
 
         return response()->json([
             'profile' => auth()->user(),
