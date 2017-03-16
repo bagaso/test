@@ -34,6 +34,9 @@ class VoucherCode extends Model
 
     public function scopeSearchPaginateAndOrder($query, $request)
     {
+        if(is_null($request->column) || trim($request->column) = '') {
+            $request->column = 'code';
+        }
         return $query->orderBy($request->column, $request->direction)
             ->where(function($query) use ($request) {
                 if($request->has('search_input')) {
