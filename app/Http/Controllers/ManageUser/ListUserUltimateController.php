@@ -102,6 +102,7 @@ class ListUserUltimateController extends Controller
             if ($user->user_group_id <> $request->user_group_id && $request->user_group_id == 5) {
                 $user->roles()->detach();
             }
+            $user->save();
         }
 
         $status_id = [$request->status_id];
