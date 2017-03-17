@@ -16,10 +16,6 @@ use Illuminate\Support\Facades\Hash;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-//
-Route::get('/wew', function () {
-    return bcrypt('demo');
-});
 
 Route::get('/account', function () {
     $permission['is_admin'] = auth()->user()->isAdmin();

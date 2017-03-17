@@ -98,6 +98,16 @@ class ListUserPremiumController extends Controller
         $users = User::whereIn('id', $request->id);
         $users->update(['user_group_id' => $request->user_group_id]);
 
+        foreach ($request->id as $id) {
+            $user = User::findorfail($id);
+            if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [2,3,4])) {
+                $user->roles()->sync([1,2,4,6,13,15,16,18]);
+            }
+            if ($user->user_group_id <> $request->user_group_id && $request->user_group_id == 5) {
+                $user->roles()->detach();
+            }
+        }
+
         $status_id = [$request->status_id];
         if($request->status_id == -1) {
             $status_id = [0,1,2];
