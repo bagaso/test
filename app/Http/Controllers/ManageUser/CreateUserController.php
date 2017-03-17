@@ -87,8 +87,7 @@ class CreateUserController extends Controller
             'status_id' => 'bail|required|integer|in:0,1',
         ]);
 
-        $new_user = new User;
-        $new_user->create($request->all());
+        $new_user = User::create($request->all());
         if(in_array($new_user->user_group_id, [2,3,4])) {
             $new_user->roles()->sync([1,2,4,6,13,15,16,18]);
         }

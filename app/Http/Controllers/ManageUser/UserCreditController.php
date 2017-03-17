@@ -71,7 +71,7 @@ class UserCreditController extends Controller
                 ]);
             } else {
                 $this->validate($request, [
-                    'input_credits' => 'bail|required|integer|between:-10,10',
+                    'input_credits' => 'bail|required|integer|between:-20,100',
                 ]);
             }
         } else {
