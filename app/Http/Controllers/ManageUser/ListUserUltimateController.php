@@ -91,9 +91,6 @@ class ListUserUltimateController extends Controller
             }
         }
 
-        $users = User::whereIn('id', $request->id);
-        $users->update(['user_group_id' => $request->user_group_id]);
-
         foreach ($request->id as $id) {
             $user = User::findorfail($id);
             if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [2,3,4])) {
@@ -102,8 +99,10 @@ class ListUserUltimateController extends Controller
             if ($user->user_group_id <> $request->user_group_id && $request->user_group_id == 5) {
                 $user->roles()->detach();
             }
-            $user->save();
         }
+
+        $users = User::whereIn('id', $request->id);
+        $users->update(['user_group_id' => $request->user_group_id]);
 
         $status_id = [$request->status_id];
         if($request->status_id == -1) {
