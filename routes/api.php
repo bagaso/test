@@ -33,6 +33,11 @@ Route::get('/vpn_auth', function (Request $request) {
         $username = $request->username;
         $password = $request->password;
         $server_key = $request->server_key;
+
+        if (!ctype_lower($username)) {
+            return '0';
+        }
+
         $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
 
         $account = \App\User::where('username', $username)->firstorfail();
