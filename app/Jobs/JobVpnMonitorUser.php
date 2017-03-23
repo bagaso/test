@@ -39,12 +39,36 @@ class JobVpnMonitorUser implements ShouldQueue
                 } else if(!$online_user->isAdmin()) {
                     $current = \Carbon\Carbon::now();
                     $dt = \Carbon\Carbon::parse($online_user->getOriginal('expired_at'));
-                    if(!$online_user->isActive() || $online_user->vpn->count() > $online_user->vpn_session) {
+                    if ($online_user->vpn_session == 1 && $server->allowed_userpackage['bronze'] == 0) {
+                        $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                        dispatch($job);
+                    } else if ($online_user->vpn_session == 3 && $server->allowed_userpackage['silver'] == 0) {
+                        $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                        dispatch($job);
+                    } else if ($online_user->vpn_session == 4 && $server->allowed_userpackage['gold'] == 0) {
+                        $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                        dispatch($job);
+                    } else if(!$online_user->isActive() || $online_user->vpn->count() > $online_user->vpn_session) {
                         $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                         dispatch($job);
                     } else if($current->gte($dt)) {
+                        $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                        dispatch($job);
+                    } else if($server->limit_bandwidth) {
                         $vpn = $online_user->vpn()->where('vpn_server_id', $this->server_id)->firstorfail();
-                        if(!$server->free_user || $vpn->getOriginal('byte_sent') >= $vpn->data_available) {
+                        if($vpn->getOriginal('byte_sent') >= $vpn->data_available) {
+                            $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+                            dispatch($job);
+                        }
+                    } else if($server->free_user) {
+                        $vip_sessions = \App\VpnServer::where('free_user', 1)->get();
+                        $vip_ctr = 0;
+                        foreach ($vip_sessions as $vip) {
+                            if($vip->users()->where('id', $online_user->id)->count() > 0) {
+                                $vip_ctr += 1;
+                            }
+                        }
+                        if($vip_ctr > 1) {
                             $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                             dispatch($job);
                         }

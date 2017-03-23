@@ -94,19 +94,16 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 //                        return '0';
 //                    }
                 }
-                if($server->free_user) {
-                    if($user->vpn_session == 1) {
+                if($server->limit_bandwidth) {
+                    if($user->consumable_data < 1) {
                         return '0';
                     }
+                }
+                if($server->free_user) {
                     $vip_sessions = \App\VpnServer::where('free_user', 1)->get();
                     foreach ($vip_sessions as $vip) {
                         if($vip->users()->where('id', $user->id)->count() > 0) {
                             return '0';
-                        }
-                    }
-                    if($server->limit_bandwidth) {
-                        if($user->consumable_data < 1) {
-                                return '0';
                         }
                     }
                 }
@@ -117,7 +114,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
             $vpn->vpn_server_id = $server->id;
             $vpn->byte_sent = 0;
             $vpn->byte_received = 0;
-            $vpn->data_available = $user->getOriginal('consumable_data');
+            $vpn->data_available = $server->limit_bandwidth ? $user->getOriginal('consumable_data') : 0;
             if($vpn->save()) {
                 return '1';
             }
