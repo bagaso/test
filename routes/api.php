@@ -17,6 +17,13 @@ use Illuminate\Support\Facades\Hash;
 |
 */
 
+Route::get('/wew', function() {
+    $vip_sessions = \App\VpnServer::where('free_user', 1)->get();
+    foreach($vip_sessions as $vip) {
+        return $vip->users()->where('id', 2)->count();
+    }
+});
+
 Route::get('/account', function () {
     $permission['is_admin'] = auth()->user()->isAdmin();
     $permission['update_account'] = auth()->user()->can('update-account');
@@ -71,12 +78,36 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
         if($user->isAdmin() || $user->isActive()) {
             if(!$user->isAdmin()) {
+                if ($user->vpn_session == 1 && $server->allowed_userpackage['bronze'] == 0) {
+                    return '0';
+                } else if ($user->vpn_session == 3 && $server->allowed_userpackage['silver'] == 0) {
+                    return '0';
+                } else if ($user->vpn_session == 4 && $server->allowed_userpackage['gold'] == 0) {
+                    return '0';
+                }
                 if($user->vpn->count() >= $user->vpn_session) {
                     return '0';
                 }
                 if($current->gte($dt)) {
-                    if(!$server->free_user || $user->consumable_data < 1) {
+                    return '0';
+//                    if(!$server->free_user || $user->consumable_data < 1) {
+//                        return '0';
+//                    }
+                }
+                if($server->free_user) {
+                    if($user->vpn_session == 1) {
                         return '0';
+                    }
+                    $vip_sessions = \App\VpnServer::where('free_user', 1)->get();
+                    foreach ($vip_sessions as $vip) {
+                        if($vip->users()->where('id', $user->id)->count() > 0) {
+                            return '0';
+                        }
+                    }
+                    if($server->limit_bandwidth) {
+                        if($user->consumable_data < 1) {
+                                return '0';
+                        }
                     }
                 }
             }
@@ -86,9 +117,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
             $vpn->vpn_server_id = $server->id;
             $vpn->byte_sent = 0;
             $vpn->byte_received = 0;
-            if(!$user->isAdmin() && $current->gte($dt)) {
-                $vpn->data_available = $user->consumable_data;
-            }
+            $vpn->data_available = $user->consumable_data;
             if($vpn->save()) {
                 return '1';
             }
