@@ -105,6 +105,11 @@ class User extends Authenticatable
         $this->attributes['username'] = strtolower($value);
     }
 
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = strtolower($value);
+    }
+
     public function setParentIdAttribute($value)
     {
         $this->attributes['parent_id'] = auth()->user()->id;
