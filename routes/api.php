@@ -139,7 +139,7 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
         $dt = \Carbon\Carbon::parse($user_delete->getOriginal('expired_at'));
 
         $vpn = $user_delete->vpn()->where('vpn_server_id', $server->id)->firstorfail();
-        if(!$user_delete->isAdmin() && $current->gte($dt) && $vpn->data_available > 0) {
+        if(!$user_delete->isAdmin() && $server->limit_bandwidth && $vpn->data_available > 0) {
             $data = $vpn->data_available - floatval($bytes_sent);
             $user_delete->consumable_data = ($data >= 0) ? $data : 0;
             $user_delete->timestamps = false;
