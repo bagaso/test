@@ -48,15 +48,15 @@ class VpnDeleteIdleUser extends Command
                 $online_user->user->consumable_data = ($data >= 0) ? $data : 0;
                 $online_user->user->save();
             }
-            $vpn_history = new \App\VpnHistory;
-            $vpn_history->user_id = $online_user->user->id;
-            $vpn_history->server_name = $online_user->vpnserver->server_name;
-            $vpn_history->server_ip = $online_user->vpnserver->server_ip;
-            $vpn_history->server_domain = $online_user->vpnserver->server_domain;
-            $vpn_history->byte_sent = floatval($online_user->byte_sent);
-            $vpn_history->byte_received = floatval($online_user->byte_received);
-            $vpn_history->session_start = \Carbon\Carbon::parse($online_user->getOriginal('created_at'));
-            $vpn_history->save();
+//            $vpn_history = new \App\VpnHistory;
+//            $vpn_history->user_id = $online_user->user->id;
+//            $vpn_history->server_name = $online_user->vpnserver->server_name;
+//            $vpn_history->server_ip = $online_user->vpnserver->server_ip;
+//            $vpn_history->server_domain = $online_user->vpnserver->server_domain;
+//            $vpn_history->byte_sent = floatval($online_user->byte_sent);
+//            $vpn_history->byte_received = floatval($online_user->byte_received);
+//            $vpn_history->session_start = \Carbon\Carbon::parse($online_user->getOriginal('created_at'));
+//            $vpn_history->save();
         }
         $delete_idle->delete();
     }
