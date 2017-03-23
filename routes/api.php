@@ -117,7 +117,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
             $vpn->vpn_server_id = $server->id;
             $vpn->byte_sent = 0;
             $vpn->byte_received = 0;
-            $vpn->data_available = doubleval($user->consumable_data);
+            $vpn->data_available = $user->getOriginal('consumable_data');
             if($vpn->save()) {
                 return '1';
             }
