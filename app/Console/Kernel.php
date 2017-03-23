@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\VpnUser',
         'App\Console\Commands\VpnDeleteIdleUser',
         'App\Console\Commands\VpnMonitorUser',
+        'App\Console\Commands\VpnResetData',
     ];
 
     /**
@@ -31,6 +32,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('vpnuser')->everyMinute();
         $schedule->command('vpn:deleteidle')->everyMinute();
         $schedule->command('vpn:monitoruser')->everyMinute();
+        $schedule->command('vpn:resetdata')->daily();
     }
 
     /**
