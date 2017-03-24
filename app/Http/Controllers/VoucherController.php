@@ -197,19 +197,19 @@ class VoucherController extends Controller
 
         if($current->lt($expired_at)) {
             if($account->vpn_session == 3) {
-                $account->expired_at = $expired_at->addSeconds((2595600 * $request->credits) / 2);
+                $account->expired_at = $expired_at->addSeconds(2595600 / 2);
             } else if($account->vpn_session == 4) {
-                $account->expired_at = $expired_at->addSeconds((2595600 * $request->credits) / 3);
+                $account->expired_at = $expired_at->addSeconds(2595600 / 3);
             } else {
-                $account->expired_at = $expired_at->addSeconds((2595600 * $request->credits));
+                $account->expired_at = $expired_at->addSeconds(2595600);
             }
         } else {
             if($account->vpn_session == 3) {
-                $account->expired_at = $current->addSeconds((2595600 * $request->credits) / 2);
+                $account->expired_at = $current->addSeconds(2595600 / 2);
             } else if($account->vpn_session == 4) {
-                $account->expired_at = $current->addSeconds((2595600 * $request->credits) / 3);
+                $account->expired_at = $current->addSeconds(2595600 / 3);
             } else {
-                $account->expired_at = $current->addSeconds((2595600 * $request->credits));
+                $account->expired_at = $current->addSeconds(2595600);
             }
         }
 
