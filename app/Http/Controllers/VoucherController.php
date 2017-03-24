@@ -176,7 +176,7 @@ class VoucherController extends Controller
             'voucher_code' => 'bail|required',
         ]);
 
-        $voucher = VoucherCode::where('code', $request->voucher_code)->firstorfail();
+        $voucher = VoucherCode::where('code', $request->voucher_code)->first();
 
         if(count($voucher) == 0) {
             return response()->json([
@@ -196,9 +196,21 @@ class VoucherController extends Controller
         $expired_at = Carbon::parse($account->getOriginal('expired_at'));
 
         if($current->lt($expired_at)) {
-            $account->expired_at = $expired_at->addSeconds($voucher->getOriginal('duration'));
+            if($account->vpn_session == 3) {
+                $account->expired_at = $expired_at->addSeconds((2595600 * $request->credits) / 2);
+            } else if($account->vpn_session == 4) {
+                $account->expired_at = $expired_at->addSeconds((2595600 * $request->credits) / 3);
+            } else {
+                $account->expired_at = $expired_at->addSeconds((2595600 * $request->credits));
+            }
         } else {
-            $account->expired_at = $current->addSeconds($voucher->getOriginal('duration'));
+            if($account->vpn_session == 3) {
+                $account->expired_at = $current->addSeconds((2595600 * $request->credits) / 2);
+            } else if($account->vpn_session == 4) {
+                $account->expired_at = $current->addSeconds((2595600 * $request->credits) / 3);
+            } else {
+                $account->expired_at = $current->addSeconds((2595600 * $request->credits));
+            }
         }
 
         $account->save();

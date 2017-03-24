@@ -64,26 +64,21 @@ class UserCreditController extends Controller
             ], 403);
         }
 
-        if (auth()->user()->isAdmin()) {
-            if ($request->top_up) {
-                $this->validate($request, [
-                    'input_credits' => 'bail|required|integer|min:1|max:1',
-                ]);
-            } else {
+        if ($request->top_up) {
+            $this->validate($request, [
+                'input_credits' => 'bail|required|integer|min:1|max:1',
+            ]);
+        } else {
+            if(auth()->user()->isAdmin()) {
                 $this->validate($request, [
                     'input_credits' => 'bail|required|integer|between:-20,100',
                 ]);
-            }
-        } else {
-            if ($request->top_up) {
-                $this->validate($request, [
-                    'input_credits' => 'bail|required|integer|min:1|max:1',
-                ]);
             } else {
                 $this->validate($request, [
-                    'input_credits' => 'bail|required|integer|between:1,10',
+                    'input_credits' => 'bail|required|integer|between:1,100',
                 ]);
             }
+
         }
 
         if (!auth()->user()->isAdmin() && auth()->user()->credits < $request->input_credits) {
