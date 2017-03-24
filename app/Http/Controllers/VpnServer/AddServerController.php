@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7;
 
 class AddServerController extends Controller
 {
@@ -74,7 +75,7 @@ class AddServerController extends Controller
 
             $cloudflare = json_decode($response->getBody());
         } catch (ClientException $e) {
-            $message = $e->getMessage();
+            $message = Psr7\str($e->getResponse());
             return response()->json([
                 'message' => $message,
             ], 403);
