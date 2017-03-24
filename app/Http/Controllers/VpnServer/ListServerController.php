@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\VpnServer;
 
 use App\VpnServer;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -59,6 +60,21 @@ class ListServerController extends Controller
             if ($server->online_users->count() > 0) {
                 return response()->json([
                     'message' => 'Server cannot be deleted while users are logged in.',
+                ], 403);
+            }
+        }
+
+        foreach ($request->id as $id) {
+            $server = VpnServer::find($id);
+            $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
+            $response = $client->request('DELETE', '/client/v4/zones/5e777546f7645f3243d2290ca7b9c5af/dns_records/' . $server->cf_id,
+                ['http_errors' => false, 'headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json']]);
+
+            $cloudflare = json_decode($response->getBody());
+
+            if(!$cloudflare->success) {
+                return response()->json([
+                    'message' => 'Cloudflare: ' . $cloudflare->errors[0]->message,
                 ], 403);
             }
         }
