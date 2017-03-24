@@ -69,11 +69,11 @@ class AddServerController extends Controller
         $response = $client->request('POST', '/client/v4/zones/5e777546f7645f3243d2290ca7b9c5af/dns_records',
             ['headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json'], 'json' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
 
-        if(!$response->success) {
+        //if(!$response->success) {
             return response()->json([
-                'message' => $response->errors->message,
+                'message' => $response,
             ], 403);
-        }
+        //}
 
         $server = new VpnServer;
 
