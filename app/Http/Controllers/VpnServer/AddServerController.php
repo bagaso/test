@@ -71,7 +71,7 @@ class AddServerController extends Controller
 
         //if(!$response->success) {
             return response()->json([
-                'message' => $response1->result,
+                'message' => $response1->getBody(),
             ], 403);
         //}
 
