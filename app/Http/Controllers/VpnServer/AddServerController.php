@@ -77,7 +77,7 @@ class AddServerController extends Controller
 
         if(!$cloudflare->success) {
             return response()->json([
-                'message' => json_encode($cloudflare->errors)->message,
+                'message' => json_decode($cloudflare->errors),
             ], 403);
         }
 //        } catch (ClientException $e) {
