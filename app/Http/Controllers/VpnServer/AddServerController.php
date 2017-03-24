@@ -68,28 +68,21 @@ class AddServerController extends Controller
 
 
 
-//        try {
-            $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
-            $response = $client->request('POST', '/client/v4/zones/5e777546f7645f3243d2290ca7b9c5af/dns_records',
-                ['http_errors' => false, 'headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json'], 'json' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
+        $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
+        $response = $client->request('POST', '/client/v4/zones/5e777546f7645f3243d2290ca7b9c5af/dns_records',
+            ['http_errors' => false, 'headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json'], 'json' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
 
-            $cloudflare = json_decode($response->getBody());
+        $cloudflare = json_decode($response->getBody());
 
         if(!$cloudflare->success) {
             return response()->json([
-                'message' => $cloudflare->errors[0]->message,
+                'message' => 'Cloudflare: ' . $cloudflare->errors[0]->message,
             ], 403);
         }
-//        } catch (ClientException $e) {
-//            $message = Psr7\str($e->get);
-//            return response()->json([
-//                'message' => $message,
-//            ], 403);
-//        }
 
 
         $server = new VpnServer;
-
+        $server->cf_id = $cloudflare->result->id;
         $server->server_name = $request->server_name;
         $server->server_ip = $request->server_ip;
         $server->server_domain = $request->server_domain;
