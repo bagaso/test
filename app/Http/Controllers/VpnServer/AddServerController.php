@@ -74,6 +74,12 @@ class AddServerController extends Controller
                 ['http_errors' => false, 'headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json'], 'json' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
 
             $cloudflare = json_decode($response->getBody());
+
+        if(is_null($cloudflare)) {
+            return response()->json([
+                'message' => $cloudflare,
+            ], 403);
+        }
 //        } catch (ClientException $e) {
 //            $message = Psr7\str($e->get);
 //            return response()->json([
