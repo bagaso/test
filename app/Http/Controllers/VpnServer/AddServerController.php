@@ -72,7 +72,7 @@ class AddServerController extends Controller
 
         $client->setDefaultOption('headers', array('X-Auth-Email' => $cloud_flare_email, 'X-Auth-Key' => $cloud_flare_api));
 
-        $response = $client->post('https://api.cloudflare.com/client/v4/zones/' . $cloud_flare_zone . '/dns_records',
+        $response = $client->request('POST', 'https://api.cloudflare.com/client/v4/zones/' . $cloud_flare_zone . '/dns_records',
             ['form_params' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
 
         if(!$response->success) {
