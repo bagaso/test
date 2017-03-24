@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\VpnServer;
 
 use App\VpnServer;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -38,6 +39,7 @@ class ServerInfoController extends Controller
             'profile' => auth()->user(),
             'permission' => $permission,
             'server_info' => $server_info,
+            'sss' => $server_info->allowed_userpackage['gold'],
         ], 200);
     }
 
@@ -71,6 +73,18 @@ class ServerInfoController extends Controller
                 'message' => 'Server IP cannot be change at this moment.',
                 'profile' => auth()->user(),
                 'permission' => $permission,
+            ], 403);
+        }
+
+        $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
+        $response = $client->request('PUT', '/client/v4/zones/5e777546f7645f3243d2290ca7b9c5af/dns_records/' . $server->cf_id,
+            ['http_errors' => false, 'headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json'], 'json' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
+
+        $cloudflare = json_decode($response->getBody());
+
+        if(!$cloudflare->success) {
+            return response()->json([
+                'message' => 'Cloudflare: ' . $cloudflare->errors[0]->message,
             ], 403);
         }
 

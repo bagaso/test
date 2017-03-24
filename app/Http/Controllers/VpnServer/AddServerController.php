@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\VpnServer;
 
 use App\VpnServer;
-use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use GuzzleHttp\Client;
@@ -65,8 +64,6 @@ class AddServerController extends Controller
             'server_access' => 'bail|required|boolean',
             'server_status' => 'bail|required|boolean',
         ]);
-
-
 
         $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
         $response = $client->request('POST', '/client/v4/zones/5e777546f7645f3243d2290ca7b9c5af/dns_records',
