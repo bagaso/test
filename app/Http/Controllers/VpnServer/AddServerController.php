@@ -64,15 +64,11 @@ class AddServerController extends Controller
             'server_status' => 'bail|required|boolean',
         ]);
 
-        $cloud_flare_email = 'mp3sniff@gmail.com';
-        $cloud_flare_api = 'ff245b46bd71002891e2890059b122e80b834';
-        $cloud_flare_zone = '5e777546f7645f3243d2290ca7b9c5af';
-
         $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
 
-        $client->setDefaultOption('headers', array('X-Auth-Email:mp3sniff@gmail.com', 'X-Auth-Key:ff245b46bd71002891e2890059b122e80b834'));
+        $client->setDefaultOption('headers', ['X-Auth-Email:mp3sniff@gmail.com', 'X-Auth-Key:ff245b46bd71002891e2890059b122e80b834', 'Content-Type:application/json']);
 
-        $response = $client->request('POST', '/client/v4/zones/' . $cloud_flare_zone . '/dns_records',
+        $response = $client->request('POST', '/client/v4/zones/5e777546f7645f3243d2290ca7b9c5af/dns_records',
             ['form_params' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
 
         if(!$response->success) {
