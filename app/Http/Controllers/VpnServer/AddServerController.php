@@ -89,7 +89,7 @@ class AddServerController extends Controller
         $server->vpn_secret = $request->vpn_secret;
         $server->free_user = $request->server_access;
         $server->is_active = $request->server_status;
-        $server->save();
+        //$server->save();
 
         return response()->json([
             'message' => 'New server added.',
