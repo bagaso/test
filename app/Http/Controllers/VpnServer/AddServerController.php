@@ -68,18 +68,18 @@ class AddServerController extends Controller
 
 
 
-        try {
+//        try {
             $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
             $response = $client->request('POST', '/client/v4/zones/5e777546f7645f3243d2290ca7b9c5af/dns_records',
-                ['headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json'], 'json' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
+                ['http_errors' => false, 'headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json'], 'json' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
 
             $cloudflare = json_decode($response->getBody());
-        } catch (ClientException $e) {
-            $message = Psr7\str($e->getResponse());
-            return response()->json([
-                'message' => $message,
-            ], 403);
-        }
+//        } catch (ClientException $e) {
+//            $message = Psr7\str($e->get);
+//            return response()->json([
+//                'message' => $message,
+//            ], 403);
+//        }
 
 
         $server = new VpnServer;
