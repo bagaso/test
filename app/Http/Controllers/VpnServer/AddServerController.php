@@ -66,10 +66,8 @@ class AddServerController extends Controller
 
         $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
 
-        $client->setDefaultOption('headers', ['X-Auth-Email:mp3sniff@gmail.com', 'X-Auth-Key:ff245b46bd71002891e2890059b122e80b834', 'Content-Type:application/json']);
-
         $response = $client->request('POST', '/client/v4/zones/5e777546f7645f3243d2290ca7b9c5af/dns_records',
-            ['form_params' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
+            ['form_params' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip], 'headers' => ['X-Auth-Email:mp3sniff@gmail.com', 'X-Auth-Key:ff245b46bd71002891e2890059b122e80b834', 'Content-Type:application/json']]);
 
         if(!$response->success) {
             return response()->json([
