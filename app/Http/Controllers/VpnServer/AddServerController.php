@@ -70,7 +70,7 @@ class AddServerController extends Controller
             'server_status' => 'bail|required|boolean',
         ]);
 
-        $response = $client->request('POST', 'https://api.cloudflare.com/client/v4/zones/' . $cloud_flare_zone . '/dns_records',
+        $response = $client->post('https://api.cloudflare.com/client/v4/zones/' . $cloud_flare_zone . '/dns_records',
             ['form_params' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
 
         if(!$response->success) {
