@@ -76,7 +76,7 @@ class AddServerController extends Controller
         } catch (ClientException $e) {
             //$message = json_decode($e->getResponse());
             return response()->json([
-                'message' => $e->errors->message,
+                'message' => $e->getResponse(),
             ], 403);
         }
 
