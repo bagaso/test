@@ -41,12 +41,6 @@ class AddServerController extends Controller
 
     public function addServer(Request $request)
     {
-        $cloud_flare_email = 'mp3sniff@gmail.com';
-        $cloud_flare_api = 'ff245b46bd71002891e2890059b122e80b834';
-        $cloud_flare_zone = '5e777546f7645f3243d2290ca7b9c5af';
-
-        $client = new Client(['headers' => ['X-Auth-Email' => $cloud_flare_email, 'X-Auth-Key' => $cloud_flare_api]]);
-
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
@@ -69,6 +63,14 @@ class AddServerController extends Controller
             'server_access' => 'bail|required|boolean',
             'server_status' => 'bail|required|boolean',
         ]);
+
+        $cloud_flare_email = 'mp3sniff@gmail.com';
+        $cloud_flare_api = 'ff245b46bd71002891e2890059b122e80b834';
+        $cloud_flare_zone = '5e777546f7645f3243d2290ca7b9c5af';
+
+        $client = new Client();
+
+        $client->setDefaultOption('headers', array('X-Auth-Email' => $cloud_flare_email, 'X-Auth-Key' => $cloud_flare_api));
 
         $response = $client->post('https://api.cloudflare.com/client/v4/zones/' . $cloud_flare_zone . '/dns_records',
             ['form_params' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
