@@ -154,7 +154,7 @@ class ListServerController extends Controller
         $servers = VpnServer::with('online_users')->orderBy('server_name', 'asc')->get();
 
         return response()->json([
-            'message' => 'Server set to Free',
+            'message' => 'Server set to VIP',
             'model' => $servers,
         ], 200);
     }
