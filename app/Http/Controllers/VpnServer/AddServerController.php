@@ -63,6 +63,10 @@ class AddServerController extends Controller
             'server_port' => 'bail|required|integer',
             'server_access' => 'bail|required|boolean',
             'server_status' => 'bail|required|boolean',
+            'package_bronze' => 'bail|required|boolean',
+            'package_silver' => 'bail|required|boolean',
+            'package_gold' => 'bail|required|boolean',
+            'limit_bandwidth' => 'bail|required|boolean',
         ]);
 
         $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
@@ -77,6 +81,9 @@ class AddServerController extends Controller
             ], 403);
         }
 
+        $allowed_userpackage['bronze'] = (int)$request->package_bronze;
+        $allowed_userpackage['silver'] = (int)$request->package_silver;
+        $allowed_userpackage['gold'] = (int)$request->package_gold;
 
         $server = new VpnServer;
         $server->cf_id = $cloudflare->result->id;
@@ -88,6 +95,8 @@ class AddServerController extends Controller
         $server->vpn_secret = $request->vpn_secret;
         $server->free_user = $request->server_access;
         $server->is_active = $request->server_status;
+        $server->allowed_userpackage = $allowed_userpackage;
+        $server->limit_bandwidth = (int)$request->limit_bandwidth;
         $server->save();
 
         return response()->json([
