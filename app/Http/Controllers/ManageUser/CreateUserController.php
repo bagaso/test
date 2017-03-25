@@ -101,7 +101,7 @@ class CreateUserController extends Controller
         $new_user->email = $request->email;
         $new_user->fullname = $request->fullname;
         $new_user->status_id = $request->status_id;
-        $new_user->consumable_data = 1073741824;
+        $new_user->consumable_data = $site_settings->settings['consumable_data'] * 1048576;
         $new_user->expired_at = $current->addSeconds($site_settings->settings['trial_period']);
         $new_user->save();
         if(in_array($new_user->user_group_id, [2,3,4])) {
