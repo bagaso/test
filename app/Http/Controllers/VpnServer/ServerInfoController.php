@@ -39,7 +39,6 @@ class ServerInfoController extends Controller
             'profile' => auth()->user(),
             'permission' => $permission,
             'server_info' => $server_info,
-            'sss' => $server_info->allowed_userpackage['gold'],
         ], 200);
     }
 
@@ -66,6 +65,10 @@ class ServerInfoController extends Controller
             'server_key' => 'bail|required|unique:vpn_servers,server_key,' . $server->id,
             'server_access' => 'bail|required|boolean',
             'server_status' => 'bail|required|boolean',
+            'package_bronze' => 'bail|required|boolean',
+            'package_silver' => 'bail|required|boolean',
+            'package_gold' => 'bail|required|boolean',
+            'limit_bandwidth' => 'bail|required|boolean',
         ]);
 
         if($server->online_users->count() > 0 && $server->server_ip <> $request->server_ip) {
@@ -88,6 +91,10 @@ class ServerInfoController extends Controller
             ], 403);
         }
 
+        $allowed_userpackage['bronze'] = (int)$request->package_bronze;
+        $allowed_userpackage['silver'] = (int)$request->package_silver;
+        $allowed_userpackage['gold'] = (int)$request->package_gold;
+
         $server->server_name = $request->server_name;
         $server->server_ip = $request->server_ip;
         $server->server_domain = $request->server_domain;
@@ -96,6 +103,8 @@ class ServerInfoController extends Controller
         $server->vpn_secret = $request->vpn_secret;
         $server->free_user = $request->server_access;
         $server->is_active = $request->server_status;
+        $server->allowed_userpackage = $allowed_userpackage;
+        $server->limit_bandwidth = (int)$request->limit_bandwidth;
         $server->save();
 
         return response()->json([
