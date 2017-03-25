@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\ManageUser;
 
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Gate;
@@ -87,7 +88,18 @@ class CreateUserController extends Controller
             'status_id' => 'bail|required|integer|in:0,1',
         ]);
 
-        $new_user = User::create($request->all());
+        $current = Carbon::now();
+
+        //$new_user = new User::create($request->all());
+        $new_user = new User;
+        $new_user->user_group_id = $request->user_group_id;
+        $new_user->username = $request->username;
+        $new_user->password = $request->password;
+        $new_user->email = $request->email;
+        $new_user->fullname = $request->fullname;
+        $new_user->status_id = $request->status_id;
+        $new_user->expired_at = $current->addSeconds(3600 + 3600);
+        $new_user->save();
         if(in_array($new_user->user_group_id, [2,3,4])) {
             $new_user->roles()->sync([1,2,4,6,13,15,16,18]);
         }
