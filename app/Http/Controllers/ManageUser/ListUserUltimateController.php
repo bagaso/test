@@ -26,7 +26,6 @@ class ListUserUltimateController extends Controller
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
-        $permission['create_user'] = auth()->user()->can('create-user');
 
         if (!auth()->user()->isAdmin()) {
             return response()->json([
@@ -48,6 +47,7 @@ class ListUserUltimateController extends Controller
         $total = User::where('user_group_id', 2)->count();
         $new_users = User::where([['user_group_id', 2], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
+        $permission['create_user'] = auth()->user()->can('create-user');
         $permission['delete_user'] = auth()->user()->isAdmin() || in_array('PCODE_005', json_decode(auth()->user()->roles->pluck('code')));
         $permission['update_user_group'] = auth()->user()->isAdmin() || in_array('PCODE_011', json_decode(auth()->user()->roles->pluck('code')));
         $permission['update_user_status'] =  auth()->user()->isAdmin() || in_array('PCODE_005', json_decode(auth()->user()->roles->pluck('code')));

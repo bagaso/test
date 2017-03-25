@@ -40,6 +40,9 @@ class UserPermissionController extends Controller
                 'permission' => $permission,
             ], 403);
         }
+
+        $permission['create_user'] = auth()->user()->can('create-user');
+        
         return response()->json([
             'profile' => auth()->user(),
             'permission' => $permission,

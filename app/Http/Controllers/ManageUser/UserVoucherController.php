@@ -60,6 +60,9 @@ class UserVoucherController extends Controller
         ];
 
         $user = User::findOrFail($id);
+
+        $permission['create_user'] = auth()->user()->can('create-user');
+        
         return response()->json([
             'profile' => auth()->user(),
             'permission' => $permission,
