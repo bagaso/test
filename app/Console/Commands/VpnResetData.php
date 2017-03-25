@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\SiteSettings;
+use App\User;
 use Illuminate\Console\Command;
 
 class VpnResetData extends Command
@@ -37,6 +39,7 @@ class VpnResetData extends Command
      */
     public function handle()
     {
-        \App\User::query()->update(['consumable_data' => 1073741824]);
+        $site_settings = SiteSettings::find(1);
+        User::query()->update(['consumable_data' => $site_settings->settings['consumable_data'] * 1048576]);
     }
 }
