@@ -25,7 +25,6 @@ class ListUserTrashController extends Controller
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
-        $permission['create_user'] = auth()->user()->can('create-user');
 
         if (!auth()->user()->isAdmin()) {
             return response()->json([
@@ -46,6 +45,8 @@ class ListUserTrashController extends Controller
 
         $total = User::onlyTrashed()->count();
         $new_users = User::onlyTrashed()->where([['deleted_at', '>=', Carbon::now()->startOfWeek()], ['deleted_at', '<=', Carbon::now()->endOfWeek()]])->count();
+
+        $permission['create_user'] = auth()->user()->can('create-user');
 
         return response()->json([
             'profile' => auth()->user(),

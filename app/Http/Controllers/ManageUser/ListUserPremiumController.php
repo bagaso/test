@@ -26,7 +26,6 @@ class ListUserPremiumController extends Controller
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
-        $permission['create_user'] = auth()->user()->can('create-user');
 
         if (Gate::denies('manage-user') || !in_array(auth()->user()->user_group_id, [1,2])) {
             return response()->json([
@@ -52,6 +51,7 @@ class ListUserPremiumController extends Controller
         $total = auth()->user()->isAdmin() ? User::where('user_group_id', 3)->count() : User::where([['user_group_id', 3], ['parent_id', auth()->user()->id]])->count();
         $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 3], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 3], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
+        $permission['create_user'] = auth()->user()->can('create-user');
         $permission['delete_user'] = auth()->user()->isAdmin() || in_array('PCODE_005', json_decode(auth()->user()->roles->pluck('code')));
         $permission['update_user_group'] = auth()->user()->isAdmin() || in_array('PCODE_011', json_decode(auth()->user()->roles->pluck('code')));
         $permission['update_user_status'] =  auth()->user()->isAdmin() || in_array('PCODE_005', json_decode(auth()->user()->roles->pluck('code')));
