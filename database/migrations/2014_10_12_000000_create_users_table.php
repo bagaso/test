@@ -15,7 +15,6 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('user_id');
             $table->string('username')->unique();
             $table->string('password');
             $table->string('email')->unique();
@@ -28,7 +27,6 @@ class CreateUsersTable extends Migration
             $table->integer('distributor')->unsigned()->default(0);
             $table->integer('status_id')->unsigned();
             $table->integer('parent_id')->default(1);
-            //$table->integer('user_limit')->default(500);
             $table->timestamp('expired_at')->useCurrent();
             $table->timestamp('pause_start')->nullable();
             $table->timestamp('pause_end')->nullable();
