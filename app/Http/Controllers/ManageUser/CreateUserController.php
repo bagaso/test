@@ -54,6 +54,12 @@ class CreateUserController extends Controller
 
     public function create(Request $request)
     {
+        if (Gate::denies('is_subscribed')) {
+            return response()->json([
+                'message' => 'Your account is already expired please extend your duration.',
+            ], 403);
+        }
+
         if (Gate::denies('manage-user') || Gate::denies('create-user')) {
             return response()->json([
                 'message' => 'Action not allowed.',

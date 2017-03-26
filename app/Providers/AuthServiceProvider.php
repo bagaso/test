@@ -43,6 +43,15 @@ class AuthServiceProvider extends ServiceProvider
             return true;
         });
 
+        Gate::define('is_subscribed', function ($user) {
+            $current = Carbon::now();
+            $dt = Carbon::parse($user->getOriginal('expired_at'));
+            if($current->lt($dt)) {
+                return true;
+            }
+            return false;
+        });
+
         Gate::define('manage-user', function ($user) {
             if(in_array($user->user_group_id, [2,3,4])) return true;
             return false;
