@@ -109,11 +109,6 @@ class User extends Authenticatable
     {
         $this->attributes['email'] = strtolower($value);
     }
-
-    public function setParentIdAttribute($value)
-    {
-        $this->attributes['parent_id'] = auth()->user()->id;
-    }
     
     public function vpn() {
         return $this->hasMany('App\OnlineUser');
