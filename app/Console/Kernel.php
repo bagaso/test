@@ -33,14 +33,14 @@ class Kernel extends ConsoleKernel
         $schedule->command('vpnuser')->everyMinute();
         $schedule->command('vpn:deleteidle')->everyMinute();
         $schedule->command('vpn:monitoruser')->everyMinute();
-//        $site_settings = SiteSettings::find(1);
-//        if($site_settings->settings['data_reset']==0) {
-//            $schedule->command('vpn:resetdata')->daily();
-//        } else if($site_settings->settings['data_reset']==1) {
-//            $schedule->command('vpn:resetdata')->weekly();
-//        } else if($site_settings->settings['data_reset']==2) {
-//            $schedule->command('vpn:resetdata')->monthly();
-//        }
+        $site_settings = SiteSettings::find(1);
+        if($site_settings->settings['data_reset']==0) {
+            $schedule->command('vpn:resetdata')->daily();
+        } else if($site_settings->settings['data_reset']==1) {
+            $schedule->command('vpn:resetdata')->weekly();
+        } else if($site_settings->settings['data_reset']==2) {
+            $schedule->command('vpn:resetdata')->monthly();
+        }
     }
 
     /**
