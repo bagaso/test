@@ -39,7 +39,7 @@ class VpnResetData extends Command
      */
     public function handle()
     {
-        $site_settings = SiteSettings::find(1);
-        User::query()->update(['consumable_data' => $site_settings->settings['consumable_data'] * 1048576]);
+        //$site_settings = SiteSettings::find(1);
+        //User::query()->update(['consumable_data' => $site_settings->settings['consumable_data'] * 1048576]);
     }
 }
