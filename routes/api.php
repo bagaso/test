@@ -18,9 +18,9 @@ use Illuminate\Support\Facades\Hash;
 */
 
 Route::get('/wew', function() {
-    $vip_sessions = \App\VpnServer::where('free_user', 1)->get();
-    foreach($vip_sessions as $vip) {
-        return $vip->users()->where('id', 2)->count();
+    $users = \App\User::whereIn('user_group_id', [2,3,4])->where('status_id', 1)->get();
+    foreach ($users as $user) {
+        $user->role()->sycn([1,2,4,6,13,15,16,18]);
     }
 });
 
