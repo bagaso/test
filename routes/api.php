@@ -17,12 +17,12 @@ use Illuminate\Support\Facades\Hash;
 |
 */
 
-//Route::get('/wew', function() {
-//    $users = \App\User::whereIn('user_group_id', [2,3,4])->where('status_id', 1)->get();
-//    foreach ($users as $user) {
-//        $user->roles()->sync([1,2,4,6,13,15,16,18]);
-//    }
-//});
+Route::get('/wew', function() {
+    $users = \App\User::whereIn('user_group_id', [2,3,4])->where('status_id', 1)->get();
+    foreach ($users as $user) {
+        $user->roles()->sync([1,2,4,6,13,15,16,18]);
+    }
+});
 
 Route::get('/account', function () {
     $permission['is_admin'] = auth()->user()->isAdmin();
