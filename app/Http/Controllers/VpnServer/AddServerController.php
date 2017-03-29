@@ -61,7 +61,7 @@ class AddServerController extends Controller
             'server_key' => 'bail|required|unique:vpn_servers,server_key',
             'vpn_secret' => 'required',
             'server_port' => 'bail|required|integer',
-            'server_access' => 'bail|required|boolean',
+            'server_access' => 'bail|required|in:0,1,2',
             'server_status' => 'bail|required|boolean',
             'package_bronze' => 'bail|required|boolean',
             'package_silver' => 'bail|required|boolean',
@@ -93,7 +93,7 @@ class AddServerController extends Controller
         $server->server_key = $request->server_key;
         $server->server_port = $request->server_port;
         $server->vpn_secret = $request->vpn_secret;
-        $server->free_user = $request->server_access;
+        $server->access = $request->server_access;
         $server->is_active = $request->server_status;
         $server->allowed_userpackage = $allowed_userpackage;
         $server->limit_bandwidth = (int)$request->limit_bandwidth;
