@@ -16,8 +16,8 @@ class Cors
     public function handle($request, Closure $next)
     {
         //$domains = ['https://smarty-api.top', 'https://www.smarty-api.top'];
-        $domains = ['https://smartyvpn.com'];
-        //$domains = ['https://jeckvpn.com'];
+        //$domains = ['https://smartyvpn.com'];
+        $domains = ['https://jeckvpn.com'];
         // $domains = ['http://localhost:8080', 'http://localhost'];
 
         if(isset($request->server()['HTTP_ORIGIN'])) {
