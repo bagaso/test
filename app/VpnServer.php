@@ -12,10 +12,20 @@ class VpnServer extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
-        'free_user' => 'boolean',
         'allowed_userpackage' => 'array',
         'limit_bandwidth' => 'boolean',
     ];
+
+    public function setServerNameAttribute($value)
+    {
+        $this->attributes['server_name'] = strtoupper($value);
+    }
+
+    public function setServerDomainAttribute($value)
+    {
+        $this->attributes['server_domain'] = strtoupper($value);
+    }
+    
 
     public function online_users()
     {

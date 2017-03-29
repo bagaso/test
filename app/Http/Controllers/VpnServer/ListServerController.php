@@ -90,7 +90,7 @@ class ListServerController extends Controller
         ], 200);
     }
 
-    public function upServer(Request $request)
+    public function server_status(Request $request)
     {
         if(!auth()->user()->isAdmin()) {
             return response()->json([
@@ -100,20 +100,23 @@ class ListServerController extends Controller
 
         $this->validate($request, [
             'id' => 'bail|required|array',
+            'status' => 'bail|required|in:0,1',
         ]);
 
         $servers = VpnServer::whereIn('id', $request->id);
-        $servers->update(['is_active' => 1]);
+        $servers->update(['is_active' => $request->status]);
 
         $servers = VpnServer::with('online_users')->orderBy('server_name', 'asc')->get();
 
+        $msg = ['Server down.', 'Server up.'];
+
         return response()->json([
-            'message' => 'Server up.',
+            'message' => $msg[$request->status],
             'model' => $servers,
         ], 200);
     }
 
-    public function downServer(Request $request)
+    public function server_access(Request $request)
     {
         if(!auth()->user()->isAdmin()) {
             return response()->json([
@@ -123,61 +126,18 @@ class ListServerController extends Controller
 
         $this->validate($request, [
             'id' => 'bail|required|array',
+            'access' => 'bail|required|in:0,1,2',
         ]);
 
         $servers = VpnServer::whereIn('id', $request->id);
-        $servers->update(['is_active' => 0]);
+        $servers->update(['access' => $request->access]);
 
         $servers = VpnServer::with('online_users')->orderBy('server_name', 'asc')->get();
 
-        return response()->json([
-            'message' => 'Server down.',
-            'model' => $servers,
-        ], 200);
-    }
-
-    public function freeServer(Request $request)
-    {
-        if(!auth()->user()->isAdmin()) {
-            return response()->json([
-                'message' => 'Action not allowed.',
-            ], 403);
-        }
-
-        $this->validate($request, [
-            'id' => 'bail|required|array',
-        ]);
-
-        $servers = VpnServer::whereIn('id', $request->id);
-        $servers->update(['free_user' => 1]);
-
-        $servers = VpnServer::with('online_users')->orderBy('server_name', 'asc')->get();
+        $msg = ['Server set to free', 'Server set to premium', 'Server set to vip'];
 
         return response()->json([
-            'message' => 'Server set to VIP',
-            'model' => $servers,
-        ], 200);
-    }
-
-    public function premiumServer(Request $request)
-    {
-        if(!auth()->user()->isAdmin()) {
-            return response()->json([
-                'message' => 'Action not allowed.',
-            ], 403);
-        }
-
-        $this->validate($request, [
-            'id' => 'bail|required|array',
-        ]);
-
-        $servers = VpnServer::whereIn('id', $request->id);
-        $servers->update(['free_user' => 0]);
-
-        $servers = VpnServer::with('online_users')->orderBy('server_name', 'asc')->get();
-
-        return response()->json([
-            'message' => 'Server set to Premium',
+            'message' => $msg[$request->access],
             'model' => $servers,
         ], 200);
     }

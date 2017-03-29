@@ -32,7 +32,7 @@ class JobVpnUpdateUsers implements ShouldQueue
     public function handle()
     {
         $server = \App\VpnServer::findorfail($this->server_id);
-        $logs = $this->parseLog('http://' . strtolower($server->server_ip) . ':81/logs/logs.log', 'tcp');
+        $logs = $this->parseLog('http://' . strtolower($server->server_ip) . '/logs/logs.log', 'tcp');
         foreach($logs as $log)
         {
             try {
@@ -41,10 +41,6 @@ class JobVpnUpdateUsers implements ShouldQueue
                 if($user->isAdmin() || $login_session >= 1 && $login_session <= $user->vpn_session) {
                     $vpn_user = $user->vpn()->where('vpn_server_id', $this->server_id);
                     $vpn_user->update(['byte_sent' => floatval($log['BytesSent']) ? floatval($log['BytesSent']) : 0, 'byte_received' => floatval($log['BytesReceived']) ? floatval($log['BytesReceived']) : 0]);
-//                    if($vpn_user->data_available <= intval($log['BytesSent']) ? intval($log['BytesSent']) : 0) {
-//                        $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
-//                        dispatch($job);
-//                    }
                 } else {
                     $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                     dispatch($job);

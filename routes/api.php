@@ -76,50 +76,66 @@ Route::get('/vpn_auth_connect', function (Request $request) {
         $current = Carbon::now();
         $dt = Carbon::parse($user->getOriginal('expired_at'));
 
-        if($user->isAdmin() || $user->isActive()) {
-            if(!$user->isAdmin()) {
-                if ($user->vpn_session == 1 && $server->allowed_userpackage['bronze'] == 0) {
-                    return '0';
-                } else if ($user->vpn_session == 3 && $server->allowed_userpackage['silver'] == 0) {
-                    return '0';
-                } else if ($user->vpn_session == 4 && $server->allowed_userpackage['gold'] == 0) {
+        if(!$user->isAdmin()) {
+
+            if ($user->vpn_session == 1 && $server->allowed_userpackage['bronze'] == 0) {
+                return '0';
+            }
+            if ($user->vpn_session == 3 && $server->allowed_userpackage['silver'] == 0) {
+                return '0';
+            }
+            if ($user->vpn_session == 4 && $server->allowed_userpackage['gold'] == 0) {
+                return '0';
+            }
+            if(!$user->isActive() || $user->vpn->count() >= $user->vpn_session) {
+                return '0';
+            }
+            if(in_array($server->access, [1,2]) && $current->gte($dt)) {
+                return '0';
+            }
+            if($server->limit_bandwidth && $user->consumable_data < 1) {
+                return '0';
+            }
+            if($server->access == 0) {
+                if($current->lt($dt)) {
                     return '0';
                 }
-                if($user->vpn->count() >= $user->vpn_session) {
-                    return '0';
-                }
-                if($current->gte($dt)) {
-                    return '0';
-//                    if(!$server->free_user || $user->consumable_data < 1) {
-//                        return '0';
-//                    }
-                }
-                if($server->limit_bandwidth) {
-                    if($user->consumable_data < 1) {
-                        return '0';
+                $free_sessions = \App\VpnServer::where('access', 0)->get();
+                $free_ctr = 0;
+                foreach ($free_sessions as $free) {
+                    if($free->users()->where('id', $user->id)->count() > 0) {
+                        $free_ctr += 1;
                     }
                 }
-                if($server->free_user) {
-                    $vip_sessions = \App\VpnServer::where('free_user', 1)->get();
-                    foreach ($vip_sessions as $vip) {
-                        if($vip->users()->where('id', $user->id)->count() > 0) {
-                            return '0';
-                        }
-                    }
+                if($free_ctr > 0) {
+                    return '0';
                 }
             }
 
-            $vpn = new OnlineUser;
-            $vpn->user_id = $user->id;
-            $vpn->vpn_server_id = $server->id;
-            $vpn->byte_sent = 0;
-            $vpn->byte_received = 0;
-            $vpn->data_available = $server->limit_bandwidth ? $user->getOriginal('consumable_data') : 0;
-            if($vpn->save()) {
-                return '1';
+            if($server->access == 2) {
+                $vip_sessions = \App\VpnServer::where('access', 2)->get();
+                $vip_ctr = 0;
+                foreach ($vip_sessions as $vip) {
+                    if($vip->users()->where('id', $user->id)->count() > 0) {
+                        $vip_ctr += 1;
+                    }
+                }
+                if($vip_ctr > 0) {
+                    return '0';
+                }
             }
-            return '0';
         }
+
+        $vpn = new OnlineUser;
+        $vpn->user_id = $user->id;
+        $vpn->vpn_server_id = $server->id;
+        $vpn->byte_sent = 0;
+        $vpn->byte_received = 0;
+        $vpn->data_available = $server->limit_bandwidth ? $user->getOriginal('consumable_data') : 0;
+        if($vpn->save()) {
+            return '1';
+        }
+
         return '0';
     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
         return '0';
@@ -261,10 +277,8 @@ Route::get('/vpn-server/add', 'VpnServer\AddServerController@index');
 Route::post('/vpn-server/add', 'VpnServer\AddServerController@addServer');
 Route::get('/vpn-server/list', 'VpnServer\ListServerController@index');
 Route::post('/vpn-server/delete-server', 'VpnServer\ListServerController@deleteServer');
-Route::post('/vpn-server/server-up', 'VpnServer\ListServerController@upServer');
-Route::post('/vpn-server/server-down', 'VpnServer\ListServerController@downServer');
-Route::post('/vpn-server/server-free', 'VpnServer\ListServerController@freeServer');
-Route::post('/vpn-server/server-premium', 'VpnServer\ListServerController@premiumServer');
+Route::post('/vpn-server/quick/server-status', 'VpnServer\ListServerController@server_status');
+Route::post('/vpn-server/quick/server-access', 'VpnServer\ListServerController@server_access');
 Route::get('/vpn-server/server-info/{id}', 'VpnServer\ServerInfoController@index');
 Route::post('/vpn-server/server-info/{id}', 'VpnServer\ServerInfoController@updateServer');
 Route::get('/vpn-server/generatekey', 'VpnServer\ServerInfoController@generatekey');
