@@ -34,7 +34,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('vpnuser')->everyMinute();
         $schedule->command('vpn:deleteidle')->everyMinute();
         $schedule->command('vpn:monitoruser')->everyMinute();
-        if(Schema::hasTable('site_settings') && SiteSetting::where('id', 1)->exists()) {
+        if(Schema::hasTable('site_settings')) {
             $site_settings = SiteSettings::find(1);
             if($site_settings->settings['data_reset']==0) {
                 $schedule->command('vpn:resetdata')->daily();
