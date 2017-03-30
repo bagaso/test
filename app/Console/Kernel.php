@@ -2,7 +2,7 @@
 
 namespace App\Console;
 
-use App\SiteSettings;
+use \App\SiteSettings;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Schema;
