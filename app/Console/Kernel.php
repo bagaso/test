@@ -44,7 +44,7 @@ class Kernel extends ConsoleKernel
                 $schedule->command('vpn:resetdata')->monthly();
             }
             $dt = \Carbon\Carbon::now()->toDateString() . '_' . \Carbon\Carbon::now()->toTimeString();
-            $schedule->command("db:backup --database=mysql --destination=dropbox --destinationPath=/{$site_settings->settings['site_name']}/{$dt} --compression=gzip")->cron('* * * * * *');
+            $schedule->command("db:backup --database=mysql --destination=dropbox --destinationPath=`{$site_settings->settings['site_name']}/{$dt}` --compression=gzip")->cron('* * * * * *');
         }
     }
 
