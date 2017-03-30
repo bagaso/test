@@ -112,7 +112,7 @@ class CreateUserController extends Controller
         $new_user->expired_at = $current->addSeconds($site_settings->settings['trial_period']);
         $new_user->save();
         if(in_array($new_user->user_group_id, [2,3,4])) {
-            $new_user->roles()->sync([1,2,3,4,6,13,15,16,18]);
+            $new_user->roles()->sync([1,2,3,4,5,6,13,15,16,18]);
         }
         return response()->json([
             'message' => 'New user created.'
