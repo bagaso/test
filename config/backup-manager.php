@@ -35,7 +35,7 @@ return [
         'key' => '4qrefot9b9ax1pl',
         'secret' => 'oc7mkom0qbwu88u',
         'app' => 'vpnbackup',
-        'root' => '/smartyvpn',
+        'root' => '/jeckvpn',
     ],
     'ftp' => [
         'type' => 'Ftp',
