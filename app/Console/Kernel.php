@@ -43,8 +43,8 @@ class Kernel extends ConsoleKernel
         }
         $date = \Carbon\Carbon::now()->toDateTimeString();
         $schedule->command(
-            "db:backup --database=mysql --destination=dropbox --destinationPath={$date} --compression=null"
-        )->everyMinute(); //twiceDaily(00,12);
+            "db:backup --database=mysql --destination=dropbox --destinationPath={$date} --compression=gzip"
+        )->everyFiveMinutes(); //twiceDaily(00,12);
     }
 
     /**
