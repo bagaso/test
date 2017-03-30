@@ -42,9 +42,7 @@ class Kernel extends ConsoleKernel
             $schedule->command('vpn:resetdata')->dailyAt();
         }
         $date = \Carbon\Carbon::now()->toDateTimeString();
-        $schedule->command(
-            "db:backup --database=mysql --destination=dropbox --destinationPath={$date} --compression=gzip"
-        )->everyFiveMinutes(); //twiceDaily(00,12);
+        $schedule->command("db:backup --database=mysql --destination=dropbox --destinationPath={$date} --compression=gzip")->everyFiveMinutes(); //twiceDaily(00,12);
     }
 
     /**
