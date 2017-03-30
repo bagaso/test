@@ -41,7 +41,7 @@ class Kernel extends ConsoleKernel
         } else if($site_settings->settings['data_reset']==2) {
             $schedule->command('vpn:resetdata')->dailyAt();
         }
-        $dt = \Carbon\Carbon::now()->toDateString() . '_' . \Carbon\Carbon::now()->toTimeString();
+        $dt = \Carbon\Carbon::now()->toW3cString();;
         $schedule->command("db:backup --database=mysql --destination=dropbox --destinationPath={$dt} --compression=gzip")->everyMinute(); //twiceDaily(00,12);
     }
 
