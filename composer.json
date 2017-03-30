@@ -6,9 +6,11 @@
     "type": "project",
     "require": {
         "php": ">=5.6.4",
+        "backup-manager/laravel": "^1.1",
         "guzzlehttp/guzzle": "^6.2",
         "laravel/framework": "5.3.*",
         "laravel/passport": "^1.0",
+        "league/flysystem-dropbox": "^1.0",
         "pda/pheanstalk": "~3.0"
     },
     "require-dev": {
