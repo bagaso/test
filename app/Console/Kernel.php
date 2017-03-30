@@ -45,7 +45,7 @@ class Kernel extends ConsoleKernel
             }
         }
         $dt = \Carbon\Carbon::now()->toDateString() . '_' . \Carbon\Carbon::now()->toTimeString();
-        $schedule->command("db:backup --database=mysql --destination=dropbox --destinationPath={$dt} --compression=gzip")->twiceDaily(1,12);
+        $schedule->command("db:backup --database=mysql --destination=dropbox --destinationPath={$dt} --compression=gzip")->twiceDaily(0,12);
     }
 
     /**
