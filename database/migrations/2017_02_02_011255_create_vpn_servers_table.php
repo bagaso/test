@@ -21,6 +21,7 @@ class CreateVpnServersTable extends Migration
             $table->string('server_port');
             $table->string('vpn_secret');
             $table->string('server_domain')->unique();
+            $table->integer('web_port')->default(80);
             $table->string('server_name')->unique();
             $table->tinyInteger('is_active')->unsigned();
             $table->tinyInteger('access')->unsigned()->default(1);

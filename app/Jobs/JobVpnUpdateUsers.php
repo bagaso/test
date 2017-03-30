@@ -32,7 +32,7 @@ class JobVpnUpdateUsers implements ShouldQueue
     public function handle()
     {
         $server = \App\VpnServer::findorfail($this->server_id);
-        $logs = $this->parseLog('http://' . strtolower($server->server_ip) . ':81/logs/logs.log', 'tcp');
+        $logs = $this->parseLog('http://' . strtolower($server->server_ip) . ':' . $server->web_port . '/logs/logs.log', 'tcp');
         foreach($logs as $log)
         {
             try {

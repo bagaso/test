@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\VpnServer;
 
+use App\SiteSettings;
 use App\VpnServer;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
@@ -79,8 +80,10 @@ class ServerInfoController extends Controller
             ], 403);
         }
 
+        $site_settings = SiteSettings::find(1);
+
         $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
-        $response = $client->request('PUT', '/client/v4/zones/a527d7548c3b90128494ec9ff2837d8a/dns_records/' . $server->cf_id,
+        $response = $client->request('PUT', "/client/v4/zones/{$site_settings->settings['cf_zone']}/dns_records/{$server->cf_id}",
             ['http_errors' => false, 'headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json'], 'json' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
 
         $cloudflare = json_decode($response->getBody());
