@@ -34,8 +34,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('vpnuser')->everyMinute();
         $schedule->command('vpn:deleteidle')->everyMinute();
         $schedule->command('vpn:monitoruser')->everyMinute();
-        if(Schema::hasTable('site_settings')) {
-            $site_settings = SiteSettings::findorfail(1);
+        if(Schema::hasTable('site_settings' && SiteSetting::where('id', 1)->exists()) ) {
+            $site_settings = SiteSettings::find(1);
             $schedule->command('vpn:resetdata')->cron($site_settings->settings['data_reset_cron']);
             $dt = \Carbon\Carbon::now()->toDateString() . '_' . \Carbon\Carbon::now()->toTimeString();
             $schedule->command("db:backup --database=mysql --destination=dropbox --destinationPath={$site_settings->settings['site_name']}/{$dt} --compression=gzip")->cron($site_settings->settings['db_cron']);
