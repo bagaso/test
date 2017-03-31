@@ -109,6 +109,9 @@ class DatabaseSeeder extends Seeder
             'code' => 'PCODE_019',
             'desc' => 'Other User Package',
         ]);
-
+        
+        DB::table('site_settings')->insert([
+            'settings' => '{"site_name":"VPN","domain":"https://domain.com","db_cron":"0 */12 * * * *","data_reset_cron":"0 0 * * * *","trial_period":7200,"consumable_data":1024,"cf_zone":"123"}',
+        ]);
     }
 }
