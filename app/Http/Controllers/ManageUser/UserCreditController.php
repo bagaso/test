@@ -95,10 +95,22 @@ class UserCreditController extends Controller
         if ($request->top_up) {
             $current = Carbon::now();
             $dt = Carbon::parse($user->getOriginal('expired_at'));
-            if ($current->lt($dt)) {
-                $user->expired_at = $dt->addDays(30);
+            if($current->lt($dt)) {
+                if($user->vpn_session == 3) {
+                    $user->expired_at = $dt->addSeconds(2595600 / 2);
+                } else if($user->vpn_session == 4) {
+                    $user->expired_at = $dt->addSeconds(2595600 / 3);
+                } else {
+                    $user->expired_at = $dt->addSeconds(2595600);
+                }
             } else {
-                $user->expired_at = $current->addDays(30);
+                if($user->vpn_session == 3) {
+                    $user->expired_at = $current->addSeconds(2595600 / 2);
+                } else if($user()->vpn_session == 4) {
+                    $user->expired_at = $current->addSeconds(2595600 / 3);
+                } else {
+                    $user->expired_at = $current->addSeconds(2595600);
+                }
             }
         } else {
             if ($request->input_credits < 0 && ($user->credits + $request->input_credits) < 0) {

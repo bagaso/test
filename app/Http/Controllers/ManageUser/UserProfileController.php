@@ -96,7 +96,7 @@ class UserProfileController extends Controller
 
         if (Gate::allows('update-user-usergroup', $user->id)) {
             if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [2,3,4])) {
-                $user->roles()->sync([1,2,3,4,5,6,13,15,16,18]);
+                $user->roles()->sync([1,2,3,4,5,6,11,13,15,16,18]);
             }
             if ($user->user_group_id <> $request->user_group_id && $request->user_group_id == 5) {
                 $user->roles()->detach();
@@ -117,12 +117,6 @@ class UserProfileController extends Controller
 
         if (Gate::allows('update-user-status', $user->id)) {
             $user->status_id = $request->status_id;
-            if(in_array($request->status_id, [0,2])) {
-                foreach ($user->vpn as $vpn) {
-                    $job = (new JobVpnDisconnectUser($user->username, $vpn->vpnserver->server_ip, $vpn->vpnserver->server_port))->delay(Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
-                    dispatch($job);
-                }
-            }
         }
 
         $user->email = $request->email;

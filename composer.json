@@ -11,6 +11,7 @@
         "laravel/framework": "5.3.*",
         "laravel/passport": "^1.0",
         "league/flysystem-dropbox": "^1.0",
+        "mtdowling/cron-expression": "^1.2",
         "pda/pheanstalk": "~3.0"
     },
     "require-dev": {
