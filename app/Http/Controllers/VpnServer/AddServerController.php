@@ -59,6 +59,7 @@ class AddServerController extends Controller
             'server_name' => 'bail|required|unique:vpn_servers,server_name',
             'server_ip' => 'bail|required|ip|unique:vpn_servers,server_ip',
             'server_domain' => 'bail|required|unique:vpn_servers,server_domain',
+            'web_port' => 'bail|required|integer',
             'server_key' => 'bail|required|unique:vpn_servers,server_key',
             'vpn_secret' => 'required',
             'server_port' => 'bail|required|integer',
@@ -93,6 +94,7 @@ class AddServerController extends Controller
         $server->server_name = $request->server_name;
         $server->server_ip = $request->server_ip;
         $server->server_domain = $request->server_domain;
+        $server->web_port = $request->web_port;
         $server->server_key = $request->server_key;
         $server->server_port = $request->server_port;
         $server->vpn_secret = $request->vpn_secret;

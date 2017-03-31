@@ -63,6 +63,7 @@ class ServerInfoController extends Controller
             'server_name' => 'bail|required|unique:vpn_servers,server_name,' . $server->id,
             'server_ip' => 'bail|required|ip|unique:vpn_servers,server_ip,' . $server->id,
             'server_domain' => 'bail|required|unique:vpn_servers,server_domain,' . $server->id,
+            'web_port' => 'bail|required|integer',
             'server_key' => 'bail|required|unique:vpn_servers,server_key,' . $server->id,
             'server_access' => 'bail|required|in:0,1,2',
             'server_status' => 'bail|required|boolean',
@@ -101,6 +102,7 @@ class ServerInfoController extends Controller
         $server->server_name = $request->server_name;
         $server->server_ip = $request->server_ip;
         $server->server_domain = $request->server_domain;
+        $server->web_port = $request->web_port;
         $server->server_key = $request->server_key;
         $server->server_port = $request->server_port;
         $server->vpn_secret = $request->vpn_secret;
