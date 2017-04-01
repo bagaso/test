@@ -40,7 +40,9 @@ class JobVpnUpdateUsers implements ShouldQueue
                 $login_session = $user->vpn->count();
                 if($user->isAdmin() || $login_session >= 1 && $login_session <= $user->vpn_session) {
                     $vpn_user = $user->vpn()->where('vpn_server_id', $this->server_id);
-                    $vpn_user->update(['byte_sent' => floatval($log['BytesSent']) ? floatval($log['BytesSent']) : 0, 'byte_received' => floatval($log['BytesReceived']) ? floatval($log['BytesReceived']) : 0]);
+                    //$vpn_user->timestamp = true;
+                    //$vpn_user->update(['byte_sent' => floatval($log['BytesSent']) ? floatval($log['BytesSent']) : 0, 'byte_received' => floatval($log['BytesReceived']) ? floatval($log['BytesReceived']) : 0]);
+                    $vpn_user->update(['byte_sent' => 0, 'byte_received' => 0]);
                 } else {
                     $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
                     dispatch($job);
