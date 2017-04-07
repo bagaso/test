@@ -42,7 +42,7 @@ class VpnUser extends Command
         $vpnupdate_worker = array('log_update-1', 'log_update-2');
         $servers = \App\VpnServer::where('is_active', 1)->get();
         foreach ($servers as $server) {
-            $job = (new JobVpnUpdateUsers($server->id))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue($vpnupdate_worker[$ctr]);
+            $job = (new JobVpnUpdateUsers($server->id))->onConnection('database')->onQueue($vpnupdate_worker[$ctr]);
             dispatch($job);
             if($ctr==0)
                 $ctr=1;
