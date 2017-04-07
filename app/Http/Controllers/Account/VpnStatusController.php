@@ -16,17 +16,28 @@ class VpnStatusController extends Controller
     public function __construct()
     {
         $this->middleware(['auth:api']);
-
-    } // function __construct
+    }
 
     public function index()
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+        
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'VPN Sessions';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username, 'distributor' => auth()->user()->distributor],
             'permission' => $permission,
             'vpn_session' => \App\OnlineUser::with('vpnserver')->where('user_id', auth()->user()->id)->get(),
         ], 200);

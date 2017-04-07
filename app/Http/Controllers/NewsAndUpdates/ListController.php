@@ -20,9 +20,20 @@ class ListController extends Controller
 
     public function index()
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
+
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'News and Updates';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
         $data = Updates::orderBy('pinned', 'desc')->orderBy('id', 'desc')->paginate(10);
 
@@ -31,7 +42,8 @@ class ListController extends Controller
         ];
 
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username],
             'permission' => $permission,
             'model' => $data,
             'columns' => $columns,
@@ -40,6 +52,14 @@ class ListController extends Controller
     
     public function deletePost(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Action not allowed.',
@@ -67,6 +87,14 @@ class ListController extends Controller
 
     public function pinPost(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Action not allowed.',
@@ -94,6 +122,14 @@ class ListController extends Controller
 
     public function unPinPost(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Action not allowed.',

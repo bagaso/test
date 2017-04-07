@@ -19,19 +19,29 @@ class TransferCreditsController extends Controller
     public function __construct()
     {
         $this->middleware(['auth:api']);
-
-    } // function __construct
+    }
 
     public function index()
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+        
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
+
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'Transfer Credits';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
         if(!auth()->user()->can('manage-user')) {
             return response()->json([
                 'message' => 'No permission to access this page.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username, 'credits' => auth()->user()->credits],
                 'permission' => $permission,
             ], 403);
         }
@@ -39,30 +49,33 @@ class TransferCreditsController extends Controller
         if(!auth()->user()->isAdmin() && !auth()->user()->distributor) {
             return response()->json([
                 'message' => 'No permission to access this page.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username, 'credits' => auth()->user()->credits],
                 'permission' => $permission,
             ], 403);
         }
 
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username, 'credits' => auth()->user()->credits, 'distributor' => auth()->user()->distributor],
             'permission' => $permission
         ], 200);
     }
 
     public function transfer(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
 
         if(!auth()->user()->distributor && Gate::denies('manage_user')) {
             return response()->json([
                 'message' => 'Action not allowed.',
             ], 403);
         }
-
-        $this->validate($request, [
-            'username' => 'required',
-            'credits' => 'bail|required|integer|between:1,10',
-        ]);
 
         if (!auth()->user()->isAdmin() && auth()->user()->credits < $request->credits) {
             return response()->json([
@@ -72,6 +85,11 @@ class TransferCreditsController extends Controller
 
         try {
             $user = User::where('username', $request->username)->firstorfail();
+
+            $this->validate($request, [
+                'username' => 'required',
+                'credits' => 'bail|required|integer|between:1,' . $db_settings->settings['max_transfer_credits'],
+            ]);
 
             if($user->isAdmin() || auth()->user()->username == $user->username) {
                 return response()->json([
@@ -94,12 +112,10 @@ class TransferCreditsController extends Controller
             ], 422);
         }
 
-
-
         $withs = $request->credits > 1 ? ' credits' : ' credit';
         return response()->json([
             'message' => 'You have transferred ' . $request->credits . $withs . ' to ' . $request->username . '.',
-            'profile' => auth()->user(),
+            'profile' => ['credits' => auth()->user()->credits],
         ], 200);
 
     }

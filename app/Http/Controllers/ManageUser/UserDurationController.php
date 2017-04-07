@@ -21,24 +21,37 @@ class UserDurationController extends Controller
 
     public function index($id)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
         if (auth()->user()->id == $id || !auth()->user()->isAdmin()) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
 
         $user = User::findOrFail($id);
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'User Duration';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
         $permission['create_user'] = auth()->user()->can('create-user');
 
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id],
             'permission' => $permission,
             'user_profile' => $user
         ], 200);
@@ -46,6 +59,14 @@ class UserDurationController extends Controller
 
     public function updateDuration(Request $request, $id)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+        
         $user = User::findorfail($id);
         if(auth()->user()->id == $id || !auth()->user()->isAdmin()) {
             return response()->json(['message' => 'Action not allowed.'], 403);

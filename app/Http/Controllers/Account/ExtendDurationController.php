@@ -17,31 +17,45 @@ class ExtendDurationController extends Controller
     public function __construct()
     {
         $this->middleware(['auth:api']);
-
-    } // function __construct
+    }
 
     public function index()
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'Extend Duration';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username, 'credits' => auth()->user()->credits, 'expired_at' => auth()->user()->expired_at, 'distributor' => auth()->user()->distributor],
             'permission' => $permission
         ], 200);
     }
 
     public function extend(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if (auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Admin account cannot extend duration.',
-            ], 403);
-        }
-        if (Gate::denies('update-account')) {
-            return response()->json([
-                'message' => 'Action not allowed.',
             ], 403);
         }
 
@@ -83,7 +97,7 @@ class ExtendDurationController extends Controller
         $withs = $request->credits > 1 ? ' credits' : ' credit';
         return response()->json([
             'message' => 'You have extend your duration using ' . $request->credits . ' ' . $withs . '.',
-            'profile' => auth()->user(),
+            'profile' => ['credits' => auth()->user()->credits, 'expired_at' => auth()->user()->expired_at],
         ], 200);
 
     }

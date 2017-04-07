@@ -32,6 +32,11 @@ class VpnServer extends Model
         return $this->hasMany('App\OnlineUser');
     }
 
+    public function online_counts()
+    {
+        return $this->online_users->count();
+    }
+
     public function users()
     {
         return $this->hasManyThrough(

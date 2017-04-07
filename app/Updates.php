@@ -18,6 +18,7 @@ class Updates extends Model
 
     protected $casts = [
         'pinned' => 'boolean',
+        'is_public' => 'boolean',
     ];
 
     public function getCreatedAtAttribute($value) {

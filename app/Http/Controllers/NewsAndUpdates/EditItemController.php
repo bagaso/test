@@ -20,22 +20,35 @@ class EditItemController extends Controller
 
     public function index($id)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
         if (!auth()->user()->isAdmin()) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
                 'profile' => auth()->user(),
                 'permission' => $permission,
             ], 403);
         }
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'Edit Post';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
         $post = Updates::findorfail($id);
 
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username],
             'permission' => $permission,
             'post' => $post,
         ], 200);
@@ -43,6 +56,14 @@ class EditItemController extends Controller
     
     public function update(Request $request, $id)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Action not allowed.',
@@ -59,6 +80,7 @@ class EditItemController extends Controller
         $post->title = $request->title;
         $post->content = $request->content;
         $post->pinned = $request->pinned;
+        $post->is_public = $request->is_public;
         $post->save();
 
         return response()->json([

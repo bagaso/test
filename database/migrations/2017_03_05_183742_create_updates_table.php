@@ -18,6 +18,7 @@ class CreateUpdatesTable extends Migration
             $table->string('title');
             $table->longText('content');
             $table->boolean('pinned');
+            $table->tinyInteger('is_public')->default(0);
             $table->timestamps();
         });
     }

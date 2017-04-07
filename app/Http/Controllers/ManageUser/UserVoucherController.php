@@ -23,28 +23,38 @@ class UserVoucherController extends Controller
 
     public function index(Request $request, $id)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
         if (auth()->user()->id == $id || Gate::denies('manage-user')) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
         if (Gate::denies('update-user-profile', $id)) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to update user profile.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
         if (Gate::denies('apply-voucher', $id)) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to apply voucher to the user.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
@@ -61,10 +71,15 @@ class UserVoucherController extends Controller
 
         $user = User::findOrFail($id);
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'User Voucher';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
         $permission['create_user'] = auth()->user()->can('create-user');
         
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id],
             'permission' => $permission,
             'user_profile' => $user,
             'model' => $data,
@@ -74,6 +89,14 @@ class UserVoucherController extends Controller
 
     public function applyVoucher(Request $request, $id)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if (auth()->user()->id == $id || Gate::denies('manage-user') || Gate::denies('update-user-profile', $id) || Gate::denies('apply-voucher', $id)) {
             return response()->json([
                 'message' => 'Action not allowed.',

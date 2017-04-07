@@ -84,13 +84,7 @@ class User extends Authenticatable
             ->orderBy($request->column, $request->direction)
             ->where(function($query) use ($request) {
                 if($request->has('search_input')) {
-                    if($request->search_operator == 'in') {
-                        $query->whereIn($request->search_column, array_map('trim', explode(',', $request->search_input)));
-                    } else if($request->search_operator == 'like') {
-                        $query->where($request->search_column, 'LIKE', '%'.trim($request->search_input).'%');
-                    } else {
-                        $query->where($request->search_column, $this->operators[$request->search_operator], trim($request->search_input));
-                    }
+                    $query->where($request->search_column, 'LIKE', '%'.trim($request->search_input).'%');
                 }
             })->paginate($request->per_page);
     }

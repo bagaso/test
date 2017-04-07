@@ -22,22 +22,35 @@ class ServerInfoController extends Controller
 
     public function index($id)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+        
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
         if (!auth()->user()->isAdmin()) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
 
         $server_info = VpnServer::findOrFail($id);
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'VPN Server : Info';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username],
             'permission' => $permission,
             'server_info' => $server_info,
         ], 200);
@@ -45,15 +58,18 @@ class ServerInfoController extends Controller
 
     public function updateServer(Request $request, $id)
     {
-        $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
-        $permission['manage_user'] = auth()->user()->can('manage-user');
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+        
 
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Action not allowed.',
-                'profile' => auth()->user(),
-                'permission' => $permission,
             ], 403);
         }
 
@@ -76,8 +92,6 @@ class ServerInfoController extends Controller
         if($server->online_users->count() > 0 && $server->server_ip <> $request->server_ip) {
             return response()->json([
                 'message' => 'Server IP cannot be change at this moment.',
-                'profile' => auth()->user(),
-                'permission' => $permission,
             ], 403);
         }
 
@@ -119,6 +133,14 @@ class ServerInfoController extends Controller
     
     public function generatekey()
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+        
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Action not allowed.',

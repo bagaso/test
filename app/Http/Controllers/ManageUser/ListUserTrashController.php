@@ -22,14 +22,22 @@ class ListUserTrashController extends Controller
 
     public function index(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
         if (!auth()->user()->isAdmin()) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
@@ -46,10 +54,15 @@ class ListUserTrashController extends Controller
         $total = User::onlyTrashed()->count();
         $new_users = User::onlyTrashed()->where([['deleted_at', '>=', Carbon::now()->startOfWeek()], ['deleted_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'User List : Deleted';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+        
         $permission['create_user'] = auth()->user()->can('create-user');
 
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id],
             'permission' => $permission,
             'model' => $data,
             'total' => $total,
@@ -60,6 +73,14 @@ class ListUserTrashController extends Controller
     
     public function restoreUser(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+        
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Action not allowed.',
@@ -104,6 +125,14 @@ class ListUserTrashController extends Controller
 
     public function forceDeleteUser(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+        
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Action not allowed.',

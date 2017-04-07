@@ -22,38 +22,53 @@ class UserCreditController extends Controller
 
     public function index($id)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
         if (auth()->user()->id == $id || Gate::denies('manage-user')) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
         if (Gate::denies('update-user-profile', $id)) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to update user profile.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
         if (Gate::denies('transfer-credits', $id)) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to transfer credits.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
 
         $user = User::findOrFail($id);
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'User Credits';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
         $permission['create_user'] = auth()->user()->can('create-user');
         
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id, 'credits' => auth()->user()->credits],
             'permission' => $permission,
             'user_profile' => $user
         ], 200);
@@ -61,6 +76,14 @@ class UserCreditController extends Controller
 
     public function updateCredits(Request $request, $id)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+        
         if (auth()->user()->id == $id || Gate::denies('manage-user') || Gate::denies('update-user-profile', $id) || Gate::denies('transfer-credits', $id)) {
             return response()->json([
                 'message' => 'Action not allowed.',
@@ -74,11 +97,11 @@ class UserCreditController extends Controller
         } else {
             if(auth()->user()->isAdmin()) {
                 $this->validate($request, [
-                    'input_credits' => 'bail|required|integer|between:-20,100',
+                    'input_credits' => 'bail|required|integer|between:-20,' . $db_settings->settings['max_transfer_credits'],
                 ]);
             } else {
                 $this->validate($request, [
-                    'input_credits' => 'bail|required|integer|between:1,100',
+                    'input_credits' => 'bail|required|integer|between:1,' . $db_settings->settings['max_transfer_credits'],
                 ]);
             }
 
@@ -106,7 +129,7 @@ class UserCreditController extends Controller
             } else {
                 if($user->vpn_session == 3) {
                     $user->expired_at = $current->addSeconds(2595600 / 2);
-                } else if($user()->vpn_session == 4) {
+                } else if($user->vpn_session == 4) {
                     $user->expired_at = $current->addSeconds(2595600 / 3);
                 } else {
                     $user->expired_at = $current->addSeconds(2595600);

@@ -23,15 +23,22 @@ class VoucherController extends Controller
 
     public function generateVoucherIndex(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
-        $permission['generate_voucher'] = auth()->user()->can('generate-voucher');
 
         if (Gate::denies('manage-user') || Gate::denies('generate-voucher')) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
@@ -46,8 +53,15 @@ class VoucherController extends Controller
             'code', 'duration', 'updated_at', 'created_at',
         ];
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'Generate Voucher';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
+        $permission['generate_voucher'] = auth()->user()->can('generate-voucher');
+
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id, 'credits' => auth()->user()->credits],
             'permission' => $permission,
             'model' => $data,
             'columns' => $columns,
@@ -56,6 +70,14 @@ class VoucherController extends Controller
 
     public function generate(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if (Gate::denies('manage-user') || Gate::denies('generate-voucher')) {
             return response()->json([
                 'message' => 'Action not allowed.',
@@ -120,9 +142,12 @@ class VoucherController extends Controller
             'code', 'duration', 'updated_at', 'created_at',
         ];
 
+        $permission['generate_voucher'] = auth()->user()->can('generate-voucher');
+
         return response()->json([
             'message' => 'Voucher generated.',
-            'profile' => auth()->user(),
+            'profile' => ['user_group_id' => auth()->user()->user_group_id, 'credits' => auth()->user()->credits],
+            'permission' => $permission,
             'voucher' => $voucher,
             'model' => $data,
             'columns' => $columns,
@@ -131,17 +156,12 @@ class VoucherController extends Controller
     
     public function applyVoucherIndex(Request $request)
     {
-        $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
-        $permission['manage_user'] = auth()->user()->can('manage-user');
-        $permission['generate_voucher'] = auth()->user()->can('generate-voucher');
+        $db_settings = \App\SiteSettings::findorfail(1);
 
-        if (Gate::denies('update-account')) {
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
             return response()->json([
-                'message' => 'Action not allowed.',
-                'profile' => auth()->user(),
-                'permission' => $permission,
-            ], 403);
+                'message' => 'Logged out.',
+            ], 401);
         }
         
         $data = VoucherCode::where('user_id', auth()->user()->id)->SearchPaginateAndOrder($request);
@@ -150,8 +170,17 @@ class VoucherController extends Controller
             'code', 'duration', 'updated_at',
         ];
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'Apply Voucher';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['generate_voucher'] = auth()->user()->can('generate-voucher');
+
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id, 'expired_at' => auth()->user()->expired_at],
             'permission' => $permission,
             'model' => $data,
             'columns' => $columns,
@@ -160,15 +189,17 @@ class VoucherController extends Controller
     
     public function applyVoucher(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if (auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Admin account cannot use voucher.',
-            ], 403);
-        }
-        
-        if (Gate::denies('update-account')) {
-            return response()->json([
-                'message' => 'Action not allowed.',
             ], 403);
         }
 
@@ -180,14 +211,14 @@ class VoucherController extends Controller
 
         if(count($voucher) == 0) {
             return response()->json([
-                'message' => 'Voucher code is invalid.',
-            ], 403);
+                'voucher_code' => ['Voucher code is invalid.'],
+            ], 422);
         }
 
         if(!is_null($voucher->user_id)) {
             return response()->json([
-                'message' => 'Voucher code is already used.',
-            ], 403);
+                'voucher_code' => ['Voucher code is already used.'],
+            ], 422);
         }
 
         $account = $request->user();
@@ -232,6 +263,14 @@ class VoucherController extends Controller
 
     public function deleteVoucher(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Action not allowed.',

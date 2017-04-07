@@ -21,22 +21,26 @@ class OnlineUsersController extends Controller
 
     public function index()
     {
-        $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
-        $permission['manage_user'] = auth()->user()->can('manage-user');
+        $db_settings = \App\SiteSettings::findorfail(1);
 
-        if (Gate::denies('update-account')) {
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
             return response()->json([
-                'message' => 'No permission to access this page.',
-                'profile' => auth()->user(),
-                'permission' => $permission,
-            ], 403);
+                'message' => 'Logged out.',
+            ], 401);
         }
 
         $data = OnlineUser::with('user', 'vpnserver')->orderBy('vpn_server_id', 'asc')->paginate(50);
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'Online Users';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username],
             'permission' => $permission,
             'model' => $data,
         ], 200);
@@ -44,6 +48,14 @@ class OnlineUsersController extends Controller
 
     public function searchOnlineUser(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         $data = OnlineUser::with(['user', 'vpnserver'])->whereHas('user', function($query) use ($request) {
             if($request->has('search_input')) {
                 $query->where('username', 'LIKE', '%'.trim($request->search_input).'%');

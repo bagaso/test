@@ -23,14 +23,22 @@ class ListUserUltimateController extends Controller
 
     public function index(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
         if (!auth()->user()->isAdmin()) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
@@ -47,6 +55,10 @@ class ListUserUltimateController extends Controller
         $total = User::where('user_group_id', 2)->count();
         $new_users = User::where([['user_group_id', 2], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'User List : Ultimate';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+        
         $permission['create_user'] = auth()->user()->can('create-user');
         $permission['delete_user'] = auth()->user()->isAdmin() || in_array('PCODE_005', json_decode(auth()->user()->roles->pluck('code')));
         $permission['update_user_group'] = auth()->user()->isAdmin() || in_array('PCODE_011', json_decode(auth()->user()->roles->pluck('code')));
@@ -54,7 +66,8 @@ class ListUserUltimateController extends Controller
         $permission['update_user_package'] =  auth()->user()->isAdmin() || in_array('PCODE_018', json_decode(auth()->user()->roles->pluck('code')));
 
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id],
             'permission' => $permission,
             'model' => $data,
             'total' => $total,
@@ -65,6 +78,14 @@ class ListUserUltimateController extends Controller
 
     public function updateUserGroup(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if(auth()->user()->user_group_id == 1) {
             $usergroups = '2,3,4,5';
         }
@@ -127,6 +148,14 @@ class ListUserUltimateController extends Controller
 
     public function updateUserStatus(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Action not allowed.',
@@ -172,6 +201,14 @@ class ListUserUltimateController extends Controller
 
     public function deleteUsers(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Action not allowed.',
@@ -216,6 +253,14 @@ class ListUserUltimateController extends Controller
 
     public function updateUserPackage(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         $this->validate($request, [
             'id' => 'bail|required|array',
             'package' => 'bail|required|integer|in:1,3,4',

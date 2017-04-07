@@ -1,6 +1,7 @@
 <?php
 
 use App\OnlineUser;
+use App\SiteSettings;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -17,21 +18,24 @@ use Illuminate\Support\Facades\Hash;
 |
 */
 
-Route::get('/wew', function() {
-    $users = \App\User::whereIn('user_group_id', [2,3,4])->where('status_id', 1)->get();
-    foreach ($users as $user) {
-        $user->roles()->sync([1,2,3,4,5,6,13,15,16,18]);
-    }
-});
+//Route::get('/wew', function() {
+//    $users = \App\User::whereIn('user_group_id', [2,3,4])->where('status_id', 1)->get();
+//    foreach ($users as $user) {
+//        $user->roles()->sync([1,2,3,4,5,6,13,15,16,18]);
+//    }
+//});
 
 Route::get('/account', function () {
     $permission['is_admin'] = auth()->user()->isAdmin();
     $permission['update_account'] = auth()->user()->can('update-account');
-    $permission['manage_user'] = auth()->user()->can('manage-user');
+
+    $db_settings = SiteSettings::findorfail(1);
+    $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+    
     return response()->json([
-        'profile'=> auth()->user(),
+        'site_options' => $site_options,
+        'profile'=> ['status_id' => auth()->user()->status_id],
         'permission' => $permission,
-        'vpn_session' => \App\OnlineUser::with('vpnserver')->where('user_id', auth()->user()->id)->get()
     ], 200);
 })->middleware('auth:api');
 
@@ -177,6 +181,8 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
     }
 });
 
+Route::get('/login_init', 'LoginController@index');
+
 Route::get('/account/profile', 'Account\AccountController@index');
 Route::post('/account/profile', 'Account\AccountController@update');
 
@@ -282,3 +288,14 @@ Route::post('/vpn-server/quick/server-access', 'VpnServer\ListServerController@s
 Route::get('/vpn-server/server-info/{id}', 'VpnServer\ServerInfoController@index');
 Route::post('/vpn-server/server-info/{id}', 'VpnServer\ServerInfoController@updateServer');
 Route::get('/vpn-server/generatekey', 'VpnServer\ServerInfoController@generatekey');
+Route::get('/vpn-server/server-status', 'VpnServer\ListServerController@serverstatus');
+
+Route::get('/admin/site-settings', 'Admin\SiteSettings@index');
+Route::post('/admin/site-settings', 'Admin\SiteSettings@updateSettings');
+
+Route::get('/public/online-users', 'PublicOnlineUsersController@index');
+Route::post('/public/distributors', 'PublicDistributorController@index');
+Route::get('/public/server-status', 'PublicServerStatusController@index');
+
+Route::get('/public/news-and-updates-list', 'NewsAndUpdates\PublicNewsAndUpdatesController@index');
+Route::post('/public/news-and-updates-item', 'NewsAndUpdates\PublicNewsAndUpdatesController@item');

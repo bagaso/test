@@ -23,37 +23,59 @@ class CreateUserController extends Controller
 
     public function index()
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
-        $permission['create_user'] = auth()->user()->can('create-user');
 
         if (Gate::denies('manage-user')) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
         if (Gate::denies('create-user')) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to create user.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
                 'permission' => $permission,
             ], 403);
         }
 
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'Create New User';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
+        $permission['create_user'] = auth()->user()->can('create-user');
         $permission['set_user_group'] = auth()->user()->can('set-user-usergroup');
         $permission['set_user_status'] = auth()->user()->can('set-user-status');
 
         return response()->json([
-            'profile' => auth()->user(),
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id],
             'permission' => $permission,
         ]);
     }
 
     public function create(Request $request)
     {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
         if (Gate::denies('is_subscribed')) {
             return response()->json([
                 'message' => 'Your account is already expired please extend your duration.',
@@ -96,10 +118,7 @@ class CreateUserController extends Controller
         ]);
 
         $current = Carbon::now();
-
-        $site_settings = SiteSettings::find(1);
-
-        //$new_user = new User::create($request->all());
+        
         $new_user = new User;
         $new_user->user_group_id = $request->user_group_id;
         $new_user->username = $request->username;
@@ -108,8 +127,8 @@ class CreateUserController extends Controller
         $new_user->fullname = $request->fullname;
         $new_user->status_id = $request->status_id;
         $new_user->parent_id = auth()->user()->id;
-        $new_user->consumable_data = $site_settings->settings['consumable_data'] * 1048576;
-        $new_user->expired_at = $current->addSeconds($site_settings->settings['trial_period']);
+        $new_user->consumable_data = $db_settings->settings['consumable_data'] * 1048576;
+        $new_user->expired_at = $current->addSeconds($db_settings->settings['trial_period'] * 3600);
         $new_user->save();
         if(in_array($new_user->user_group_id, [2,3,4])) {
             $new_user->roles()->sync([1,2,3,4,5,6,11,13,15,16,18]);
