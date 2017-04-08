@@ -111,7 +111,7 @@ class DatabaseSeeder extends Seeder
         ]);
         
         DB::table('site_settings')->insert([
-            'settings' => '{"site_name":"VPN","domain":"https://domain.com","db_cron":"0 */12 * * * *","data_reset_cron":"0 0 * * * *","trial_period":7200,"consumable_data":1024,"cf_zone":"123"}',
+            'settings' => '{"domain":"http:\/\/localhost:8080","queue_driver":"database","backup_dir":"domain.com","site_name":"VPN Panel","backup":false,"db_cron":"* *\/12 * * * *","data_reset":true,"data_reset_cron":"0 * * * * *","trial_period":"2","consumable_data":"512","cf_zone":"1234","enable_panel_login":true,"enable_vpn_login":true,"max_transfer_credits":"100","public_online_users":false,"public_credit_distributors":false,"public_server_status":false}',
         ]);
     }
 }

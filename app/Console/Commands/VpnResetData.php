@@ -40,9 +40,9 @@ class VpnResetData extends Command
      */
     public function handle()
     {
-        if(Schema::hasTable('site_settings') && SiteSettings::where('id', 1)->exists()) {
-            $site_settings = SiteSettings::find(1);
-            User::query()->update(['consumable_data' => $site_settings->settings['consumable_data'] * 1048576]);
-        }
+//        if(Schema::hasTable('site_settings') && SiteSettings::where('id', 1)->exists()) {
+//            $site_settings = SiteSettings::find(1);
+//            User::query()->update(['consumable_data' => $site_settings->settings['consumable_data'] * 1048576]);
+//        }
     }
 }
