@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\ManageUser;
 
-use App\Jobs\JobVpnDisconnectUser;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;

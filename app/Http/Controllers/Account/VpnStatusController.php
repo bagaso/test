@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Account;
 
 use App\Jobs\JobVpnDisconnectUser;
+use App\SiteSettings;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -46,9 +47,10 @@ class VpnStatusController extends Controller
     public function disconnect(Request $request)
     {
         try {
+            $db_settings = SiteSettings::find(1);
             $server_id = $request->server_id;
             $vpn_user = \App\OnlineUser::with('vpnserver')->where([['user_id', auth()->user()->id], ['vpn_server_id',$server_id]])->firstorfail();
-            $job = (new JobVpnDisconnectUser(auth()->user()->username, $vpn_user->vpnserver->server_ip, $vpn_user->vpnserver->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+            $job = (new JobVpnDisconnectUser(auth()->user()->username, $vpn_user->vpnserver->server_ip, $vpn_user->vpnserver->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
             dispatch($job);
             return response()->json(['message' => 'Request sent to the server.'], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {

@@ -2,11 +2,13 @@
 
 namespace App\Jobs;
 
+use App\SiteSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class JobVpnUpdateUsers implements ShouldQueue
 {
@@ -32,25 +34,30 @@ class JobVpnUpdateUsers implements ShouldQueue
     public function handle()
     {
         try {
-            $server = \App\VpnServer::findorfail($this->server_id);
-            $logs = $this->parseLog($server->server_ip, 'tcp', $server->web_port);
-            foreach($logs as $log)
-            {
-                try {
-                    $user = \App\User::where('username', $log['CommonName'])->firstorfail();
-                    $login_session = $user->vpn->count();
-                    if($user->isAdmin() || $login_session >= 1 && $login_session <= $user->vpn_session) {
-                        $vpn_user = $user->vpn()->where('vpn_server_id', $this->server_id);
-                        $vpn_user->update(['byte_sent' => floatval($log['BytesSent']) ? floatval($log['BytesSent']) : 0, 'byte_received' => floatval($log['BytesReceived']) ? floatval($log['BytesReceived']) : 0]);
-                        //$vpn_user->update(['byte_sent' => 0, 'byte_received' => 0]);
-                    } else {
-                        $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
+            if(Schema::hasTable('site_settings') && SiteSettings::where('id', 1)->exists()) {
+                $db_settings = SiteSettings::find(1);
+
+                $server = \App\VpnServer::findorfail($this->server_id);
+                $logs = $this->parseLog($server->server_ip, 'tcp', $server->web_port);
+                foreach($logs as $log)
+                {
+                    try {
+                        $user = \App\User::where('username', $log['CommonName'])->firstorfail();
+                        $login_session = $user->vpn->count();
+                        if($user->isAdmin() || $login_session >= 1 && $login_session <= $user->vpn_session) {
+                            $vpn_user = $user->vpn()->where('vpn_server_id', $this->server_id);
+                            $vpn_user->update(['byte_sent' => floatval($log['BytesSent']) ? floatval($log['BytesSent']) : 0, 'byte_received' => floatval($log['BytesReceived']) ? floatval($log['BytesReceived']) : 0]);
+                            //$vpn_user->update(['byte_sent' => 0, 'byte_received' => 0]);
+                        } else {
+                            $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
+                            dispatch($job);
+                        }
+                    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
+                        $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                         dispatch($job);
                     }
-                } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
-                    $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->delay(\Carbon\Carbon::now()->addSeconds(5))->onQueue('disconnectvpnuser');
-                    dispatch($job);
                 }
+
             }
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
             //
