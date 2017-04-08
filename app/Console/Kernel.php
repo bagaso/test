@@ -32,18 +32,18 @@ class Kernel extends ConsoleKernel
         $schedule->command('vpnuser')->everyMinute();
         $schedule->command('vpn:deleteidle')->everyMinute();
         $schedule->command('vpn:monitoruser')->everyMinute();
-//        if(Schema::hasTable('site_settings')) {
-//            if(SiteSettings::where('id', 1)->exists()) {
-//                $site_settings = SiteSettings::find(1);
-//                if($site_settings->settings['data_reset']) {
-//                    $schedule->command('vpn:resetdata')->cron($site_settings->settings['data_reset_cron']);
-//                }
-//                if($site_settings->settings['backup']) {
-//                    $backup_name = \Carbon\Carbon::now()->toDateString() . '_' . \Carbon\Carbon::now()->toTimeString();
-//                    $schedule->command("db:backup --database=mysql --destination=dropbox --destinationPath={$site_settings->settings['backup_dir']}/{$backup_name} --compression=gzip")->cron($site_settings->settings['db_cron']);
-//                }
-//            }
-//        }
+        if(Schema::hasTable('site_settings')) {
+            if(SiteSettings::where('id', 1)->exists()) {
+                $site_settings = SiteSettings::find(1);
+                if($site_settings->settings['data_reset']) {
+                    $schedule->command('vpn:resetdata')->cron($site_settings->settings['data_reset_cron']);
+                }
+                if($site_settings->settings['backup']) {
+                    $backup_name = \Carbon\Carbon::now()->toDateString() . '_' . \Carbon\Carbon::now()->toTimeString();
+                    $schedule->command("db:backup --database=mysql --destination=dropbox --destinationPath={$site_settings->settings['backup_dir']}/{$backup_name} --compression=gzip")->cron($site_settings->settings['db_cron']);
+                }
+            }
+        }
     }
 
     /**

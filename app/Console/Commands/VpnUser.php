@@ -3,7 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Jobs\JobVpnUpdateUsers;
+use App\SiteSettings;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Schema;
 
 class VpnUser extends Command
 {
@@ -38,17 +40,21 @@ class VpnUser extends Command
      */
     public function handle()
     {
-        $ctr = 0;
-        $vpnupdate_worker = array('log_update-1', 'log_update-2');
-        $servers = \App\VpnServer::where('is_active', 1)->get();
-        foreach ($servers as $server) {
-            $job = (new JobVpnUpdateUsers($server->id))->onConnection('database')->onQueue($vpnupdate_worker[$ctr]);
-            dispatch($job);
-            if($ctr==0)
-                $ctr=1;
-            else
-                $ctr=0;
+        if(Schema::hasTable('site_settings') && SiteSettings::where('id', 1)->exists()) {
+            $ctr = 0;
+            $logupdate_worker = array('log_update-1', 'log_update-2');
+            $db_settings = SiteSettings::find(1);
+            $servers = \App\VpnServer::where('is_active', 1)->get();
+            foreach ($servers as $server) {
+                $job = (new JobVpnUpdateUsers($server->id))->onConnection($db_settings->settings['queue_driver'])->onQueue($logupdate_worker[$ctr]);
+                dispatch($job);
+                if($ctr==0)
+                    $ctr=1;
+                else
+                    $ctr=0;
+            }
         }
+
     }
     
 }
