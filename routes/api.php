@@ -23,15 +23,6 @@ Route::get('/wew', function() {
 //    foreach ($users as $user) {
 //        $user->roles()->sync([1,2,3,4,5,6,13,15,16,18]);
 //    }
-    $socket = @fsockopen('176.126.68.43', 8000, $errno, $errstr);
-    if($socket)
-    {
-        //echo "Connected";
-        //fputs($socket, "smartyvpn\n");
-        @fputs($socket, "kill santovito78\n");
-        @fputs($socket, "quit\n");
-    }
-    @fclose($socket);
 });
 
 Route::get('/account', function () {
