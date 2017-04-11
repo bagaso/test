@@ -166,6 +166,7 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
             $user_delete->save();
         }
         $user_delete->lifetime_bandwidth = $user_delete->lifetime_bandwidth + floatval($bytes_sent);
+        $user_delete->save();
 //        $vpn_history = new \App\VpnHistory;
 //        $vpn_history->user_id = $user_delete->id;
 //        $vpn_history->server_name = $server->server_name;
