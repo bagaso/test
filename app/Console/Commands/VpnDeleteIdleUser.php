@@ -50,6 +50,7 @@ class VpnDeleteIdleUser extends Command
                 if(!is_null($online_user->user) && !$online_user->user->isAdmin() && $online_user->vpnserver->limit_bandwidth && $online_user->data_available > 0) {
                     $online_user->user->timestamps = false;
                     $data = $online_user->data_available - floatval($online_user->byte_sent);
+                    $online_user->user->lifetime_bandwidth = $online_user->user->lifetime_bandwidth + floatval($online_user->byte_sent);
                     $online_user->user->consumable_data = ($data >= 0) ? $data : 0;
                     $online_user->user->save();
                 }
