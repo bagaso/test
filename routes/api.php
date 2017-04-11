@@ -161,11 +161,11 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
         $vpn = $user_delete->vpn()->where('vpn_server_id', $server->id)->firstorfail();
         if(!$user_delete->isAdmin() && $server->limit_bandwidth && $vpn->data_available > 0) {
             $data = $vpn->data_available - floatval($bytes_sent);
-            $user_delete->lifetime_bandwidth = $user_delete->lifetime_bandwidth + floatval($bytes_sent);
             $user_delete->consumable_data = ($data >= 0) ? $data : 0;
             $user_delete->timestamps = false;
             $user_delete->save();
         }
+        $user_delete->lifetime_bandwidth = $user_delete->lifetime_bandwidth + floatval($bytes_sent);
 //        $vpn_history = new \App\VpnHistory;
 //        $vpn_history->user_id = $user_delete->id;
 //        $vpn_history->server_name = $server->server_name;
