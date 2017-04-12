@@ -47,9 +47,11 @@ class VpnDeleteIdleUser extends Command
             $delete_idle = \App\OnlineUser::with(['user', 'vpnserver'])->where('updated_at', '<=', \Carbon\Carbon::now()->subMinutes(5));
             foreach ($delete_idle->get() as $online_user) {
                 try {
-//                    $job = (new JobVpnDisconnectUser($online_user->user->username, $online_user->vpnserver->server_ip, $online_user->vpnserver->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
-//                    dispatch($job);
                     $user = User::findorfail($online_user->user_id);
+
+                    $job = (new JobVpnDisconnectUser($user->username, $online_user->vpnserver->server_ip, $online_user->vpnserver->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
+                    dispatch($job);
+
                     $user->timestamps = false;
                     if(!$user->isAdmin() && $online_user->vpnserver->limit_bandwidth && $online_user->data_available > 0) {
                         $data = doubleval($online_user->data_available) - doubleval($online_user->byte_sent);
