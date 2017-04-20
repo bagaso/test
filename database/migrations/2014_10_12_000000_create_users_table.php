@@ -21,7 +21,7 @@ class CreateUsersTable extends Migration
             $table->string('fullname');
             $table->string('contact')->nullable();
             $table->integer('credits')->default(0)->unsigned();
-            $table->integer('vpn_session')->default(1)->unsigned();
+            $table->integer('user_package_id')->default(1)->unsigned();
             $table->double('lifetime_bandwidth')->default(0)->unsigned();
             $table->double('consumable_data')->unsigned()->default(0);
             $table->integer('user_group_id')->unsigned()->default(5);

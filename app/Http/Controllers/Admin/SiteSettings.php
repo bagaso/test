@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Lang;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -30,11 +31,14 @@ class SiteSettings extends Controller
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
+        $language = Lang::all();
+
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
                 'profile' => ['username' => auth()->user()->username],
+                'language' => $language,
                 'permission' => $permission,
             ], 403);
         }
@@ -63,6 +67,7 @@ class SiteSettings extends Controller
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username],
+            'language' => $language,
             'permission' => $permission,
             'site_settings' => $site_settings,
         ], 200);

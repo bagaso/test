@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\NewsAndUpdates;
 
+use App\Lang;
 use App\Updates;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -37,9 +38,12 @@ class ItemController extends Controller
         $site_options['sub_name'] = $post->title;
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
+        $language = Lang::all();
+
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username],
+            'language' => $language,
             'permission' => $permission,
             'post' => $post,
         ], 200);

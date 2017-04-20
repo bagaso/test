@@ -30,47 +30,22 @@ class UserCreditController extends Controller
             ], 401);
         }
 
-        $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['manage_user'] = auth()->user()->can('manage-user');
-
         if (auth()->user()->id == $id || Gate::denies('manage-user')) {
             return response()->json([
-                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => ['username' => auth()->user()->username],
-                'permission' => $permission,
             ], 403);
         }
-        if (Gate::denies('update-user-profile', $id)) {
+        if (Gate::denies('update-user', $id)) {
             return response()->json([
-                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
-                'message' => 'No permission to update user profile.',
-                'profile' => ['username' => auth()->user()->username],
-                'permission' => $permission,
-            ], 403);
-        }
-        if (Gate::denies('transfer-credits', $id)) {
-            return response()->json([
-                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
-                'message' => 'No permission to transfer credits.',
-                'profile' => ['username' => auth()->user()->username],
-                'permission' => $permission,
+                'message' => 'No permission to update this user.',
             ], 403);
         }
 
         $user = User::findOrFail($id);
-
-        $site_options['site_name'] = $db_settings->settings['site_name'];
-        $site_options['sub_name'] = 'User Credits';
-        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
-
-        $permission['create_user'] = auth()->user()->can('create-user');
         
         return response()->json([
-            'site_options' => $site_options,
-            'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id, 'credits' => auth()->user()->credits],
-            'permission' => $permission,
-            'user_profile' => $user
+            'profile' => ['credits' => auth()->user()->credits],
+            'user_profile' => ['username' => $user->username, 'credits' => $user->credits, 'expired_at' => $user->expired_at]
         ], 200);
     }
 
@@ -84,18 +59,26 @@ class UserCreditController extends Controller
             ], 401);
         }
         
-        if (auth()->user()->id == $id || Gate::denies('manage-user') || Gate::denies('update-user-profile', $id) || Gate::denies('transfer-credits', $id)) {
+        if (auth()->user()->id == $id || Gate::denies('manage-user') || Gate::denies('update-user', $id)) {
             return response()->json([
                 'message' => 'Action not allowed.',
             ], 403);
         }
 
+        $user = User::with('user_package')->findOrFail($id);
+
         if ($request->top_up) {
-            $this->validate($request, [
-                'input_credits' => 'bail|required|integer|min:1|max:1',
-            ]);
+            if(auth()->user()->isAdmin() || in_array(auth()->user()->user_group->id, [2])) {
+                $this->validate($request, [
+                    'input_credits' => 'bail|required|integer|min:1|max:' . $user->user_package->user_package['max_credit'] . '',
+                ]);
+            } else {
+                $this->validate($request, [
+                    'input_credits' => 'bail|required|integer|min:' . $user->user_package->user_package['min_credit'] . '|max:' . $user->user_package->user_package['max_credit'] . '',
+                ]);
+            }
         } else {
-            if(auth()->user()->isAdmin()) {
+            if(auth()->user()->can('minus-credits')) {
                 $this->validate($request, [
                     'input_credits' => 'bail|required|integer|between:-20,' . $db_settings->settings['max_transfer_credits'],
                 ]);
@@ -107,45 +90,32 @@ class UserCreditController extends Controller
 
         }
 
-        if (!auth()->user()->isAdmin() && auth()->user()->credits < $request->input_credits) {
+        if (auth()->user()->cannot('unlimited-credits') && auth()->user()->credits < $request->input_credits) {
             return response()->json([
                 'message' => 'Input must be lower or equal to your available credits.',
             ], 403);
         }
 
-        $user = User::findOrFail($id);
+        $user = User::with('user_package')->findOrFail($id);
 
         if ($request->top_up) {
             $current = Carbon::now();
             $dt = Carbon::parse($user->getOriginal('expired_at'));
             if($current->lt($dt)) {
-                if($user->vpn_session == 3) {
-                    $user->expired_at = $dt->addSeconds(2595600 / 2);
-                } else if($user->vpn_session == 4) {
-                    $user->expired_at = $dt->addSeconds(2595600 / 3);
-                } else {
-                    $user->expired_at = $dt->addSeconds(2595600);
-                }
+                $user->expired_at = $dt->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']));
             } else {
-                if($user->vpn_session == 3) {
-                    $user->expired_at = $current->addSeconds(2595600 / 2);
-                } else if($user->vpn_session == 4) {
-                    $user->expired_at = $current->addSeconds(2595600 / 3);
-                } else {
-                    $user->expired_at = $current->addSeconds(2595600);
-                }
+                $user->expired_at = $current->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']));
             }
         } else {
-            if ($request->input_credits < 0 && ($user->credits + $request->input_credits) < 0) {
+            if ($request->input_credits < 0 && ($user->getOriginal('credits') + $request->input_credits) < 0) {
                 return response()->json(['message' => 'User credits must be a non-negative value.'], 403);
             }
-
             $user->credits += $request->input_credits;
         }
 
         $user->save();
 
-        if (!auth()->user()->isAdmin()) {
+        if (auth()->user()->cannot('unlimited-credits')) {
             $request->user()->credits -= $request->input_credits;
             $request->user()->save();
         }
@@ -158,8 +128,8 @@ class UserCreditController extends Controller
 
         return response()->json([
             'message' => $message,
-            'profile' => auth()->user(),
-            'user_profile' => $user
+            'profile' => ['credits' => auth()->user()->credits],
+            'user_profile' => ['credits' => $user->credits, 'expired_at' => $user->expired_at]
         ], 200);
     }
 }

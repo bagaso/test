@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers\ManageUser;
 
+use App\Lang;
 use App\SiteSettings;
+use App\Status;
 use App\User;
+use App\UserGroup;
+use App\UserPackage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -55,14 +59,20 @@ class CreateUserController extends Controller
         $site_options['sub_name'] = 'Create New User';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
-        $permission['create_user'] = auth()->user()->can('create-user');
-        $permission['set_user_group'] = auth()->user()->can('set-user-usergroup');
-        $permission['set_user_status'] = auth()->user()->can('set-user-status');
+        $usergroups = UserGroup::where('id', '>', auth()->user()->user_group->id)->get();
+        $userpackage = UserPackage::all();
+        $userstatus = Status::whereIn('id', [2,3])->get();
+
+        $language = Lang::all();
 
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id],
+            'language' => $language,
             'permission' => $permission,
+            'user_group_list' => $usergroups,
+            'user_package_list' => $userpackage,
+            'user_status_list' => $userstatus,
         ]);
     }
 
@@ -82,7 +92,7 @@ class CreateUserController extends Controller
             ], 403);
         }
 
-        if (Gate::denies('manage-user') || Gate::denies('create-user')) {
+        if (Gate::denies('manage-user')) {
             return response()->json([
                 'message' => 'Action not allowed.',
             ], 403);
@@ -130,7 +140,7 @@ class CreateUserController extends Controller
         $new_user->consumable_data = $db_settings->settings['consumable_data'] * 1048576;
         $new_user->expired_at = $current->addSeconds($db_settings->settings['trial_period'] * 3600);
         $new_user->save();
-        if(in_array($new_user->user_group_id, [2,3,4])) {
+        if(in_array($new_user->user_group_id, [2])) {
             $new_user->roles()->sync([1,2,3,4,5,6,11,13,15,16,18]);
         }
         return response()->json([

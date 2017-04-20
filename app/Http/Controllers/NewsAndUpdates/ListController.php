@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\NewsAndUpdates;
 
+use App\Lang;
 use App\Updates;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -35,6 +36,8 @@ class ListController extends Controller
         $site_options['sub_name'] = 'News and Updates';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
+        $language = Lang::all();
+
         $data = Updates::orderBy('pinned', 'desc')->orderBy('id', 'desc')->paginate(10);
 
         $columns = [
@@ -44,6 +47,7 @@ class ListController extends Controller
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username],
+            'language' => $language,
             'permission' => $permission,
             'model' => $data,
             'columns' => $columns,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Lang;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -41,9 +42,12 @@ class DistributorController extends Controller
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
+        $language = Lang::all();
+
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username],
+            'language' => $language,
             'permission' => $permission,
             'model' => $data,
             'columns' => $columns

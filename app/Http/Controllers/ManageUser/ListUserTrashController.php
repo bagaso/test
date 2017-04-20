@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\ManageUser;
 
+use App\Lang;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -44,10 +45,10 @@ class ListUserTrashController extends Controller
 
         $status_id = [$request->status_id];
         if($request->status_id == -1) {
-            $status_id = [0,1,2];
+            $status_id = [1,2,3];
         }
         
-        $data = User::onlyTrashed()->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
+        $data = User::onlyTrashed()->with('upline', 'status', 'user_group', 'user_package')->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
 
         $columns = User::$columns;
 
@@ -57,12 +58,13 @@ class ListUserTrashController extends Controller
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'User List : Deleted';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
-        
-        $permission['create_user'] = auth()->user()->can('create-user');
+
+        $language = Lang::all();
 
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id],
+            'language' => $language,
             'permission' => $permission,
             'model' => $data,
             'total' => $total,
@@ -107,7 +109,7 @@ class ListUserTrashController extends Controller
             $status_id = [0,1,2];
         }
 
-        $data = User::onlyTrashed()->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
+        $data = User::onlyTrashed()->with('upline', 'status', 'user_group', 'user_package')->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
 
         $columns = User::$columns;
 
@@ -162,7 +164,7 @@ class ListUserTrashController extends Controller
             $status_id = [0,1,2];
         }
 
-        $data = User::onlyTrashed()->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
+        $data = User::onlyTrashed()->with('upline', 'status', 'user_group', 'user_package')->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
 
         $columns = User::$columns;
 

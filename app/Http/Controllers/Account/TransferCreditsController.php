@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Account;
 
+use App\Lang;
 use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -38,10 +39,13 @@ class TransferCreditsController extends Controller
         $site_options['sub_name'] = 'Transfer Credits';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
+        $language = Lang::all();
+
         if(!auth()->user()->can('manage-user')) {
             return response()->json([
                 'message' => 'No permission to access this page.',
                 'profile' => ['username' => auth()->user()->username, 'credits' => auth()->user()->credits],
+                'language' => $language,
                 'permission' => $permission,
             ], 403);
         }
@@ -50,6 +54,7 @@ class TransferCreditsController extends Controller
             return response()->json([
                 'message' => 'No permission to access this page.',
                 'profile' => ['username' => auth()->user()->username, 'credits' => auth()->user()->credits],
+                'language' => $language,
                 'permission' => $permission,
             ], 403);
         }
@@ -57,6 +62,7 @@ class TransferCreditsController extends Controller
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username, 'credits' => auth()->user()->credits, 'distributor' => auth()->user()->distributor],
+            'language' => $language,
             'permission' => $permission
         ], 200);
     }

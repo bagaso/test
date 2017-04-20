@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\ManageUser;
 
+use App\Lang;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -45,160 +46,34 @@ class ListUserResellerController extends Controller
 
         $status_id = [$request->status_id];
         if($request->status_id == -1) {
-            $status_id = [0,1,2];
+            $status_id = [1,2,3];
         }
 
-        if(auth()->user()->isAdmin()) {
-            $data = User::where('user_group_id', 4)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
+        if(auth()->user()->isAdmin() || auth()->user()->isSubAdmin()) {
+            $data = User::with('upline', 'status', 'user_group', 'user_package')->where('user_group_id', 4)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
         } else {
-            $data = User::where([['parent_id', auth()->user()->id], ['user_group_id', 4]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
+            $data = User::with('status', 'user_group', 'user_package')->where([['parent_id', auth()->user()->id], ['user_group_id', 4]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
         }
 
         $columns = User::$columns;
 
-        $total = auth()->user()->isAdmin() ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
-        $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
+        $total = auth()->user()->isAdmin() || auth()->user()->isSubAdmin() ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
+
+        $new_users = auth()->user()->isAdmin() || auth()->user()->isSubAdmin() ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
-        $site_options['sub_name'] = 'User List : Reseller';
+        $site_options['sub_name'] = 'User List : Client';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
-        
-        $permission['create_user'] = auth()->user()->can('create-user');
-        $permission['delete_user'] = auth()->user()->isAdmin() || in_array('PCODE_005', json_decode(auth()->user()->roles->pluck('code')));
-        $permission['update_user_group'] = auth()->user()->isAdmin() || in_array('PCODE_011', json_decode(auth()->user()->roles->pluck('code')));
-        $permission['update_user_status'] =  auth()->user()->isAdmin() || in_array('PCODE_005', json_decode(auth()->user()->roles->pluck('code')));
-        $permission['update_user_package'] =  auth()->user()->isAdmin() || in_array('PCODE_018', json_decode(auth()->user()->roles->pluck('code')));
-        
+
+        $permission['access_duration'] = auth()->user()->isAdmin() || auth()->user()->isSubAdmin();
+
+        $language = Lang::all();
+
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id],
+            'language' => $language,
             'permission' => $permission,
-            'model' => $data,
-            'total' => $total,
-            'new_users' => $new_users,
-            'columns' => $columns,
-        ], 200);
-    }
-
-    public function updateUserGroup(Request $request)
-    {
-        $db_settings = \App\SiteSettings::findorfail(1);
-
-        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
-            return response()->json([
-                'message' => 'Logged out.',
-            ], 401);
-        }
-        
-        if(auth()->user()->user_group_id == 1) {
-            $usergroups = '2,3,4,5';
-        }
-        if(auth()->user()->user_group_id == 2) {
-            $usergroups = '3,4,5';
-        }
-        if(auth()->user()->user_group_id == 3) {
-            $usergroups = '4,5';
-        }
-        if(auth()->user()->user_group_id == 4) {
-            $usergroups = '5';
-        }
-
-        $this->validate($request, [
-            'id' => 'bail|required|array',
-            'user_group_id' => 'bail|required|integer|in:' . $usergroups,
-        ]);
-
-        foreach ($request->id as $id) {
-            if (auth()->user()->id == $id || Gate::denies('update-user-group', $id)) {
-                return response()->json([
-                    'message' => 'Action not allowed.',
-                ], 403);
-            }
-        }
-
-        foreach ($request->id as $id) {
-            $user = User::findorfail($id);
-            if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [2,3,4])) {
-                $user->roles()->sync([1,2,3,4,5,6,11,13,15,16,18]);
-            }
-            if ($user->user_group_id <> $request->user_group_id && $request->user_group_id == 5) {
-                $user->roles()->detach();
-            }
-        }
-
-        $users = User::whereIn('id', $request->id);
-        $users->update(['user_group_id' => $request->user_group_id]);
-
-        $status_id = [$request->status_id];
-        if($request->status_id == -1) {
-            $status_id = [0,1,2];
-        }
-
-        if(auth()->user()->isAdmin()) {
-            $data = User::where('user_group_id', 4)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-        } else {
-            $data = User::where([['parent_id', auth()->user()->id], ['user_group_id', 4]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-        }
-
-        $columns = User::$columns;
-
-        $total = auth()->user()->isAdmin() ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
-        $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
-
-        return response()->json([
-            'message' => 'User status updated.',
-            'model' => $data,
-            'total' => $total,
-            'new_users' => $new_users,
-            'columns' => $columns,
-        ], 200);
-    }
-
-    public function updateUserStatus(Request $request)
-    {
-        $db_settings = \App\SiteSettings::findorfail(1);
-
-        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
-            return response()->json([
-                'message' => 'Logged out.',
-            ], 401);
-        }
-        
-        $this->validate($request, [
-            'id' => 'bail|required|array',
-            'status_id_set' => 'bail|required|integer|in:0,1,2',
-        ]);
-
-        foreach ($request->id as $id) {
-            if (auth()->user()->id == $id || Gate::denies('update-user-status', $id)) {
-                return response()->json([
-                    'message' => 'Action not allowed.',
-                ], 403);
-            }
-        }
-
-        $users = User::whereIn('id', $request->id);
-        $users->update(['status_id' => $request->status_id_set]);
-
-        $status_id = [$request->status_id];
-        if($request->status_id == -1) {
-            $status_id = [0,1,2];
-        }
-
-        if(auth()->user()->isAdmin()) {
-            $data = User::where('user_group_id', 4)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-        } else {
-            $data = User::where([['parent_id', auth()->user()->id], ['user_group_id', 4]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-        }
-
-        $columns = User::$columns;
-
-        $total = auth()->user()->isAdmin() ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
-
-        $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
-
-        return response()->json([
-            'message' => 'User status updated.',
             'model' => $data,
             'total' => $total,
             'new_users' => $new_users,
@@ -215,13 +90,13 @@ class ListUserResellerController extends Controller
                 'message' => 'Logged out.',
             ], 401);
         }
-        
+
         $this->validate($request, [
             'id' => 'bail|required|array',
         ]);
 
         foreach ($request->id as $id) {
-            if (auth()->user()->id == $id || Gate::denies('delete-user', $id)) {
+            if (auth()->user()->id == $id || Gate::denies('update-user', $id)) {
                 return response()->json([
                     'message' => 'Action not allowed.',
                 ], 403);
@@ -233,149 +108,22 @@ class ListUserResellerController extends Controller
 
         $status_id = [$request->status_id];
         if($request->status_id == -1) {
-            $status_id = [0,1,2];
+            $status_id = [1,2,3];
         }
 
-        if(auth()->user()->isAdmin()) {
-            $data = User::where('user_group_id', '=', 4)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
+        if(auth()->user()->isAdmin() || auth()->user()->isSubAdmin()) {
+            $data = User::with('upline', 'status', 'user_group', 'user_package')->where('user_group_id', 4)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
         } else {
-            $data = User::where([['parent_id', '=', auth()->user()->id], ['user_group_id', '=', 4]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
+            $data = User::with('upline', 'status', 'user_group', 'user_package')->where([['parent_id', auth()->user()->id], ['user_group_id', 4]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
         }
 
         $columns = User::$columns;
 
-        $total = auth()->user()->isAdmin() ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
-
-        $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
-
-        return response()->json([
-            'message' => 'User deleted.',
-            'model' => $data,
-            'total' => $total,
-            'new_users' => $new_users,
-            'columns' => $columns,
-        ], 200);
-    }
-
-    public function updateUserPackage(Request $request)
-    {
-        $db_settings = \App\SiteSettings::findorfail(1);
-
-        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
-            return response()->json([
-                'message' => 'Logged out.',
-            ], 401);
-        }
-        
-        $this->validate($request, [
-            'id' => 'bail|required|array',
-            'package' => 'bail|required|integer|in:1,3,4',
-        ]);
-
-        foreach ($request->id as $id) {
-            if (auth()->user()->id == $id || Gate::denies('update-user-package', $id)) {
-                return response()->json([
-                    'message' => 'Action not allowed.',
-                ], 403);
-            }
-        }
-
-        foreach ($request->id as $id)
-        {
-            $user = User::findorfail($id);
-
-            $current_copy = Carbon::now();
-            $expired_at = Carbon::parse($user->getOriginal('expired_at'));
-
-            if(!auth()->user()->isAdmin()) {
-                $bronze_days_left = $current_copy->diffInSeconds($expired_at);
-                if($user->vpn_session == 3) {
-                    $bronze_days_left = $current_copy->diffInSeconds($expired_at) * 2;
-                }
-                if($user->vpn_session == 4) {
-                    $bronze_days_left = $current_copy->diffInSeconds($expired_at) * 3;
-                }
-                $dt = $current_copy->addSeconds($bronze_days_left);
-                if($request->package > 1 && $dt->diffInDays() < 30) {
-
-                    $status_id = [$request->status_id];
-                    if($request->status_id == -1) {
-                        $status_id = [0,1,2];
-                    }
-
-                    if(auth()->user()->isAdmin()) {
-                        $data = User::where('user_group_id', 4)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-                    } else {
-                        $data = User::where([['parent_id', auth()->user()->id], ['user_group_id', 4]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-                    }
-
-                    $columns = User::$columns;
-
-                    $total = auth()->user()->isAdmin() ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
-                    $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
-
-                    return response()->json([
-                        'message' => 'User must have 30 days of remaining duration.',
-                        'model' => $data,
-                        'total' => $total,
-                        'new_users' => $new_users,
-                        'columns' => $columns,
-                    ], 403);
-                }
-            }
-
-            $current = Carbon::now();
-
-            if($user->vpn_session <> $request->package && $current->lt($expired_at)) {
-                $add = 0;
-                if($user->vpn_session == 1) {
-                    if($request->package == 3) {
-                        $add = $current->diffInSeconds($expired_at) / 2;
-                    }
-                    if($request->package == 4) {
-                        $add = $current->diffInSeconds($expired_at) / 3;
-                    }
-                }
-                if($user->vpn_session == 3) {
-                    if($request->package == 1) {
-                        $add = $current->diffInSeconds($expired_at) * 2;
-                    }
-                    if($request->package == 4) {
-                        $add = ($current->diffInSeconds($expired_at) * 2) / 3;
-                    }
-                }
-                if($user->vpn_session == 4) {
-                    if($request->package == 1) {
-                        $add = $current->diffInSeconds($expired_at) * 3;
-                    }
-                    if($request->package == 3) {
-                        $add = ($current->diffInSeconds($expired_at) * 3) / 2;
-                    }
-                }
-                $user->expired_at = $current->addSeconds($add);
-            }
-            $user->vpn_session = $request->package;
-            $user->save();
-        }
-
-        $status_id = [$request->status_id];
-        if($request->status_id == -1) {
-            $status_id = [0,1,2];
-        }
-
-        if(auth()->user()->isAdmin()) {
-            $data = User::where('user_group_id', 4)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-        } else {
-            $data = User::where([['parent_id', auth()->user()->id], ['user_group_id', 4]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
-        }
-
-        $columns = User::$columns;
-
-        $total = auth()->user()->isAdmin() ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
-        $new_users = auth()->user()->isAdmin() ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
+        $total = auth()->user()->isAdmin() || auth()->user()->isSubAdmin() ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
+        $new_users = auth()->user()->isAdmin() || auth()->user()->isSubAdmin() ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
         return response()->json([
-            'message' => 'User package updated.',
+            'message' => 'Selected user deleted.',
             'model' => $data,
             'total' => $total,
             'new_users' => $new_users,
