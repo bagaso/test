@@ -79,6 +79,7 @@ class UserProfileController extends Controller
             'username' => 'bail|required|alpha_num|between:6,20|unique:users,username,' . $user->id,
             'email' => 'bail|required|email|max:50|unique:users,email,' . $user->id,
             'fullname' => 'bail|required|max:50',
+            'max_users' => 'bail|required|integer|min:' . $user->user_down_ctr->count(),
             'status_id' => 'bail|required|in:1,2,3',
         ]);
 
@@ -91,6 +92,10 @@ class UserProfileController extends Controller
                 }
                 $user->username = $request->username;
             }
+        }
+
+        if(auth()->user()->isAdmin() || auth()->user()->isSubAdmin()) {
+            $user->max_users = $request->max_users;
         }
 
         $user->email = $request->email;

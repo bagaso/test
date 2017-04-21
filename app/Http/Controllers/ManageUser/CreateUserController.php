@@ -46,14 +46,6 @@ class CreateUserController extends Controller
                 'permission' => $permission,
             ], 403);
         }
-        if (Gate::denies('create-user')) {
-            return response()->json([
-                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
-                'message' => 'No permission to create user.',
-                'profile' => ['username' => auth()->user()->username],
-                'permission' => $permission,
-            ], 403);
-        }
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Create New User';
@@ -98,7 +90,6 @@ class CreateUserController extends Controller
             ], 403);
         }
 
-        if (!auth()->user()->isAdmin() && auth()->user()->user_down_ctr->count() > 1000) {
             return response()->json([
                 'message' => 'You have reached user limit.',
             ], 403);

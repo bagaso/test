@@ -39,11 +39,6 @@ class DatabaseSeeder extends Seeder
             'code' => 'PCODE_005',
             'desc' => 'Update user duration',
         ]);
-        DB::table('roles')->insert([
-            'name' => 'Create New User',
-            'code' => 'PCODE_006',
-            'desc' => 'Create New User',
-        ]);
 
         DB::table('statuses')->insert([
             'class' => 'default',

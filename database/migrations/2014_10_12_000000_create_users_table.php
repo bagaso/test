@@ -26,6 +26,7 @@ class CreateUsersTable extends Migration
             $table->double('consumable_data')->unsigned()->default(0);
             $table->integer('user_group_id')->unsigned()->default(5);
             $table->integer('distributor')->unsigned()->default(0);
+            $table->integer('max_users')->unsigned()->default(500);
             $table->integer('status_id')->unsigned();
             $table->integer('parent_id')->default(1);
             $table->timestamp('expired_at')->useCurrent();
