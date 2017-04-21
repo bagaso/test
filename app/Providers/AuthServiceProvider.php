@@ -90,7 +90,11 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('update-username', function ($user) {
+<<<<<<< HEAD
             if(in_array($user->user_group->id, [2]) && in_array('PCODE_04', json_decode($user->roles->pluck('code')))) {
+=======
+            if(in_array($user->user_group->id, [2]) && in_array('PCODE_004', json_decode($user->roles->pluck('code')))) {
+>>>>>>> origin/master
                 return true;
             }
             return false;

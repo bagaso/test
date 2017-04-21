@@ -15,103 +15,86 @@ class DatabaseSeeder extends Seeder
         // factory(\App\User::class, 1)->create();
         // $this->call(UsersTableSeeder::class);
         DB::table('roles')->insert([
-            'name' => 'Create Account',
+            'name' => 'Unlimited Credits',
             'code' => 'PCODE_001',
-            'desc' => 'Create Account',
+            'desc' => 'Unlimited Credits',
         ]);
         DB::table('roles')->insert([
-            'name' => 'Update User Account',
+            'name' => 'Subtract Credits',
             'code' => 'PCODE_002',
-            'desc' => 'Update User Account',
+            'desc' => 'Subtract Credits',
         ]);
         DB::table('roles')->insert([
-            'name' => 'Update User Password',
+            'name' => 'Force user package upgrade',
             'code' => 'PCODE_003',
-            'desc' => 'Update User Password',
+            'desc' => 'Force user package upgrade',
         ]);
         DB::table('roles')->insert([
-            'name' => 'Set New User Status',
+            'name' => 'Change username',
             'code' => 'PCODE_004',
-            'desc' => 'Set New User Status',
+            'desc' => 'Change username',
         ]);
         DB::table('roles')->insert([
-            'name' => 'Update User Status',
+            'name' => 'Update user duration',
             'code' => 'PCODE_005',
-            'desc' => 'Update User Status',
+            'desc' => 'Update user duration',
         ]);
-        DB::table('roles')->insert([
-            'name' => 'Delete User',
-            'code' => 'PCODE_006',
-            'desc' => 'Delete User',
+
+        DB::table('statuses')->insert([
+            'class' => 'default',
+            'name_set' => 'Deactivate',
+            'name_get' => 'Deactivated',
         ]);
-        DB::table('roles')->insert([
-            'name' => 'Manage Other User Account',
-            'code' => 'PCODE_007',
-            'desc' => 'Manage Other User Account',
+        DB::table('statuses')->insert([
+            'class' => 'primary',
+            'name_set' => 'Activate',
+            'name_get' => 'Activated',
         ]);
-        DB::table('roles')->insert([
-            'name' => 'Manage Other User Password',
-            'code' => 'PCODE_008',
-            'desc' => 'Manage Other User Password',
+        DB::table('statuses')->insert([
+            'class' => 'danger',
+            'name_set' => 'Suspend',
+            'name_get' => 'Suspended',
         ]);
-        DB::table('roles')->insert([
-            'name' => 'Manage Other User Status',
-            'code' => 'PCODE_009',
-            'desc' => 'Manage Other User Status',
+
+        DB::table('user_groups')->insert([
+            'class' => 'danger',
+            'name' => 'Administrator',
         ]);
-        DB::table('roles')->insert([
-            'name' => 'Delete Other User',
-            'code' => 'PCODE_010',
-            'desc' => 'Delete Other User',
+        DB::table('user_groups')->insert([
+            'class' => 'warning',
+            'name' => 'Sub-Admin',
         ]);
-        DB::table('roles')->insert([
-            'name' => 'Update User Group',
-            'code' => 'PCODE_011',
-            'desc' => 'Update User Group',
+        DB::table('user_groups')->insert([
+            'class' => 'success',
+            'name' => 'Reseller',
         ]);
-        DB::table('roles')->insert([
-            'name' => 'Manage Other User Group',
-            'code' => 'PCODE_012',
-            'desc' => 'Manage Other User Group',
+        DB::table('user_groups')->insert([
+            'class' => 'primary',
+            'name' => 'Sub-Reseller',
         ]);
-        DB::table('roles')->insert([
-            'name' => 'Transfer Credits to User',
-            'code' => 'PCODE_013',
-            'desc' => 'Transfer Credits to User',
+        DB::table('user_groups')->insert([
+            'class' => 'info',
+            'name' => 'Client',
         ]);
-        DB::table('roles')->insert([
-            'name' => 'Transfer Credits to Other User',
-            'code' => 'PCODE_014',
-            'desc' => 'Transfer Credits to Other User',
+
+        DB::table('user_packages')->insert([
+            'class' => 'primary',
+            'name' => 'Bronze',
+            'user_package' => '{"name":"Premium","cost":"1","minimum_duration":"0","min_credit":"1","max_credit":"1","device":"1","data":"512"}'
         ]);
-        DB::table('roles')->insert([
-            'name' => 'Generate Voucher',
-            'code' => 'PCODE_015',
-            'desc' => 'Generate Voucher',
+        DB::table('user_packages')->insert([
+            'class' => 'success',
+            'name' => 'Silver',
+            'user_package' => '{"name":"VIP","cost":"2","minimum_duration":"60","min_credit":"2","max_credit":"2","device":"1","data":"1024"}'
         ]);
-        DB::table('roles')->insert([
-            'name' => 'Apply Voucher to User',
-            'code' => 'PCODE_016',
-            'desc' => 'Apply Voucher to User',
-        ]);
-        DB::table('roles')->insert([
-            'name' => 'Apply Voucher to Other User',
-            'code' => 'PCODE_017',
-            'desc' => 'Apply Voucher to Other User',
-        ]);
-        DB::table('roles')->insert([
-            'name' => 'User Package',
-            'code' => 'PCODE_018',
-            'desc' => 'User Package',
-        ]);
-        DB::table('roles')->insert([
-            'name' => 'Other User Package',
-            'code' => 'PCODE_019',
-            'desc' => 'Other User Package',
+        DB::table('user_packages')->insert([
+            'class' => 'warning',
+            'name' => 'Gold',
+            'user_package' => '{"name":"Private","cost":"3","minimum_duration":"90","min_credit":"3","max_credit":"3","device":"1","data":"1536"}'
         ]);
         
         DB::table('site_settings')->insert([
-            'settings' => '{"domain":"http:\/\/localhost:8080","queue_driver":"database","backup_dir":"domain.com","site_name":"VPN Panel","backup":false,"db_cron":"* *\/12 * * * *","data_reset":true,"data_reset_cron":"0 * * * * *","trial_period":"2","consumable_data":"512","cf_zone":"1234","enable_panel_login":true,"enable_vpn_login":true,"max_transfer_credits":"100","public_online_users":false,"public_credit_distributors":false,"public_server_status":false}',
+            'settings' => '{"domain":"http:\/\/localhost:8080","queue_driver":"database","backup_dir":"domain.com","site_name":"VPN Panel","backup":false,"db_cron":"0 *\/12 * * * *","data_reset":true,"data_reset_cron":"0 * * * * *","trial_period":"2","consumable_data":"512","cf_zone":"1234","enable_panel_login":true,"enable_vpn_login":true,"max_transfer_credits":"100","public_online_users":false,"public_credit_distributors":false,"public_server_status":false}',
         ]);
     }
 }

@@ -15,7 +15,12 @@ class CreateUserPackagesTable extends Migration
     {
         Schema::create('user_packages', function (Blueprint $table) {
             $table->increments('id');
+<<<<<<< HEAD
             $table->text('class');
+=======
+            $table->string('class');
+            $table->string('name');
+>>>>>>> origin/master
             $table->text('user_package');
             $table->timestamps();
         });
