@@ -61,7 +61,7 @@ class CreateUserController extends Controller
 
         $usergroups = UserGroup::where('id', '>', auth()->user()->user_group->id)->get();
         $userpackage = UserPackage::all();
-        $userstatus = Status::whereIn('id', [2,3])->get();
+        $userstatus = Status::all();
 
         $language = Lang::all();
 
@@ -98,7 +98,7 @@ class CreateUserController extends Controller
             ], 403);
         }
 
-        if (!auth()->user()->isAdmin() && auth()->user()->user_down_ctr->count() > 500) {
+        if (!auth()->user()->isAdmin() && auth()->user()->user_down_ctr->count() > 1000) {
             return response()->json([
                 'message' => 'You have reached user limit.',
             ], 403);
@@ -124,7 +124,8 @@ class CreateUserController extends Controller
             'password_confirmation' => 'bail|required|between:6,15',
             'email' => 'bail|required|email|max:50|unique:users,email',
             'fullname' => 'bail|required|max:50',
-            'status_id' => 'bail|required|integer|in:0,1',
+            'user_package_id' => 'bail|required|integer|in:1,2,3',
+            'status_id' => 'bail|required|integer|in:1,2,3',
         ]);
 
         $current = Carbon::now();
