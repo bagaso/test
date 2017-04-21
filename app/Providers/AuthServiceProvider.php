@@ -97,7 +97,14 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('update-user-duration', function ($user) {
-            if($user->isAdmin() || in_array($user->user_group->id, [2]) && in_array('PCODE_005', json_decode($user->roles->pluck('code')))) {
+            if(in_array($user->user_group->id, [2]) && in_array('PCODE_005', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+            return false;
+        });
+
+        Gate::define('create-new-user', function ($user) {
+            if(in_array('PCODE_006', json_decode($user->roles->pluck('code')))) {
                 return true;
             }
             return false;
