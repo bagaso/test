@@ -17,10 +17,7 @@ class CreateUserGroupsTable extends Migration
             $table->increments('id');
             $table->string('class');
             $table->string('name');
-<<<<<<< HEAD
             $table->text('lang');
-=======
->>>>>>> origin/master
             $table->timestamps();
         });
     }
