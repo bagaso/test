@@ -19,7 +19,10 @@ use Illuminate\Support\Facades\Hash;
 */
 
 Route::get('/wew', function() {
-//    $users = \App\User::whereIn('user_group_id', [2,3,4])->get();
+//    $server = \App\VpnServer::findorfail(3);
+//    foreach ($server->users as $online_user) {
+//        echo $online_user->user_package->user_package['device'];
+//    }
 //    foreach ($users as $user) {
 //        $user->roles()->sync([1,2,3,4,5,6,13,15,16,18]);
 //    }
@@ -55,7 +58,7 @@ Route::get('/vpn_auth', function (Request $request) {
 
         $account = \App\User::where('username', $username)->firstorfail();
 
-        if($server->users()->where('username', $username)->count() == 0 && Hash::check($password, $account->password)) {
+        if($server->users()->where('username', $account->username)->exists() && Hash::check($password, $account->password)) {
             return '1';
         }
         else
@@ -78,6 +81,10 @@ Route::get('/vpn_auth_connect', function (Request $request) {
         }
 
         $user = \App\User::with('status', 'user_package')->where('username', $username)->firstorfail();
+
+        if($server->users()->where('username', $user->username)->exists()) {
+            return '0';
+        }
 
         $current = Carbon::now();
         $dt = Carbon::parse($user->getOriginal('expired_at'));

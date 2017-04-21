@@ -48,16 +48,16 @@ class JobVpnMonitorUser implements ShouldQueue
                         $current = \Carbon\Carbon::now();
                         $dt = \Carbon\Carbon::parse($online_user->getOriginal('expired_at'));
                         $vpn = $online_user->vpn()->where('vpn_server_id', $this->server_id)->firstorfail();
-                        if ($online_user->vpn_session == 1 && $server->allowed_userpackage['bronze'] == 0) {
+                        if ($online_user->status->id == 1 && $server->allowed_userpackage['package_1'] == 0) {
                             $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                             dispatch($job);
-                        } else if ($online_user->vpn_session == 3 && $server->allowed_userpackage['silver'] == 0) {
+                        } else if ($online_user->status->id == 2 && $server->allowed_userpackage['package_2'] == 0) {
                             $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                             dispatch($job);
-                        } else if ($online_user->vpn_session == 4 && $server->allowed_userpackage['gold'] == 0) {
+                        } else if ($online_user->status->id == 3 && $server->allowed_userpackage['package_3'] == 0) {
                             $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                             dispatch($job);
-                        } else if(!$online_user->isActive() || $online_user->vpn->count() > $online_user->vpn_session) {
+                        } else if(!$online_user->isActive() || $online_user->vpn->count() > intval($online_user->user_package->user_package['device'])) {
                             $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                             dispatch($job);
                         } else if(in_array($server->access, [1,2]) && $current->gte($dt)) {
