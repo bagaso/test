@@ -58,7 +58,7 @@ Route::get('/vpn_auth', function (Request $request) {
 
         $account = \App\User::where('username', $username)->firstorfail();
 
-        if($server->users()->where('username', $account->username)->exists() && Hash::check($password, $account->password)) {
+        if(!$server->users()->where('username', $account->username)->exists() && Hash::check($password, $account->password)) {
             return '1';
         }
         else
