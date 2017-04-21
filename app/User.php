@@ -200,7 +200,7 @@ class User extends Authenticatable
 
     public function getCreditsAttribute($value)
     {
-        return $this->isAdmin() || $this->can('unlimited-credits') ? 'No Limit' : $value;
+        return $this->isAdmin() ? 'No Limit' : $value;
     }
 
     public function isActive() {
