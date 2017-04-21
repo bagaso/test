@@ -90,6 +90,7 @@ class CreateUserController extends Controller
             ], 403);
         }
 
+        if (!auth()->user()->isAdmin() && !auth()->user()->isSubAdmin() && auth()->user()->user_down_ctr->count() >= auth()->user()->max_users) {
             return response()->json([
                 'message' => 'You have reached user limit.',
             ], 403);
