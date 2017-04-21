@@ -91,13 +91,13 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
         if(!$user->isAdmin()) {
 
-            if ($user->user_package->id == 1 && $server->allowed_userpackage['bronze'] == 0) {
+            if ($user->user_package->id == 1 && $server->allowed_userpackage['package_1'] == 0) {
                 return '0';
             }
-            if ($user->user_package->id == 2 && $server->allowed_userpackage['silver'] == 0) {
+            if ($user->user_package->id == 2 && $server->allowed_userpackage['package_2'] == 0) {
                 return '0';
             }
-            if ($user->user_package->id == 3 && $server->allowed_userpackage['gold'] == 0) {
+            if ($user->user_package->id == 3 && $server->allowed_userpackage['package_3'] == 0) {
                 return '0';
             }
             if(!$user->isActive() || $user->vpn->count() >= intval($user->user_package->user_package['device'])) {
