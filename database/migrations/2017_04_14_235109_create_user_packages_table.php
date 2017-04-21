@@ -15,7 +15,6 @@ class CreateUserPackagesTable extends Migration
     {
         Schema::create('user_packages', function (Blueprint $table) {
             $table->increments('id');
-            $table->text('class');
             $table->string('class');
             $table->string('name');
             $table->text('user_package');
