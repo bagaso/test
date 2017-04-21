@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\VpnServer;
 
+use App\Lang;
 use App\SiteSettings;
 use App\VpnServer;
 use GuzzleHttp\Client;
@@ -33,11 +34,14 @@ class ServerInfoController extends Controller
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
+        $language = Lang::all();
+
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
                 'profile' => ['username' => auth()->user()->username],
+                'language' => $language,
                 'permission' => $permission,
             ], 403);
         }
@@ -51,6 +55,7 @@ class ServerInfoController extends Controller
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username],
+            'language' => $language,
             'permission' => $permission,
             'server_info' => $server_info,
         ], 200);

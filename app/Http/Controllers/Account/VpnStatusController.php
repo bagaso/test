@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Account;
 
 use App\Jobs\JobVpnDisconnectUser;
+use App\Lang;
 use App\SiteSettings;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -36,9 +37,12 @@ class VpnStatusController extends Controller
         $site_options['sub_name'] = 'VPN Sessions';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
+        $language = Lang::all();
+
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username, 'distributor' => auth()->user()->distributor],
+            'language' => $language,
             'permission' => $permission,
             'vpn_session' => \App\OnlineUser::with('vpnserver')->where('user_id', auth()->user()->id)->get(),
         ], 200);

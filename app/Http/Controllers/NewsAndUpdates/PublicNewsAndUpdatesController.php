@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\NewsAndUpdates;
 
+use App\Lang;
 use App\Updates;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -29,6 +30,8 @@ class PublicNewsAndUpdatesController extends Controller
         $site_options['public_credit_distributors'] = $db_settings->settings['public_credit_distributors'] && $site_options['enable_panel_login'];
         $site_options['public_server_status'] = $db_settings->settings['public_server_status'] && $site_options['enable_panel_login'];
 
+        $language = Lang::all();
+
         $data = Updates::where('is_public', 1)->orderBy('pinned', 'desc')->orderBy('id', 'desc')->paginate(10);
 
         $columns = [
@@ -37,6 +40,7 @@ class PublicNewsAndUpdatesController extends Controller
 
         return response()->json([
             'site_options' => $site_options,
+            'language' => $language,
             'model' => $data,
             'columns' => $columns,
         ], 200);

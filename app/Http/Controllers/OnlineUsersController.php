@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\JobVpnDisconnectUser;
+use App\Lang;
 use App\OnlineUser;
 use App\SiteSettings;
 use Illuminate\Http\Request;
@@ -39,9 +40,12 @@ class OnlineUsersController extends Controller
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
+        $language = Lang::all();
+
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username],
+            'language' => $language,
             'permission' => $permission,
             'model' => $data,
         ], 200);

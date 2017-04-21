@@ -31,10 +31,12 @@ Route::get('/account', function () {
 
     $db_settings = SiteSettings::findorfail(1);
     $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
+    $user = \App\User::with('status')->findorfail(auth()->user()->id);
     
     return response()->json([
         'site_options' => $site_options,
-        'profile'=> ['status_id' => auth()->user()->status_id],
+        'profile'=> ['status' => $user->status],
         'permission' => $permission,
     ], 200);
 })->middleware('auth:api');
@@ -75,23 +77,23 @@ Route::get('/vpn_auth_connect', function (Request $request) {
             return '0';
         }
 
-        $user = \App\User::where('username', $username)->firstorfail();
+        $user = \App\User::with('status', 'user_package')->where('username', $username)->firstorfail();
 
         $current = Carbon::now();
         $dt = Carbon::parse($user->getOriginal('expired_at'));
 
         if(!$user->isAdmin()) {
 
-            if ($user->vpn_session == 1 && $server->allowed_userpackage['bronze'] == 0) {
+            if ($user->user_package->id == 1 && $server->allowed_userpackage['bronze'] == 0) {
                 return '0';
             }
-            if ($user->vpn_session == 3 && $server->allowed_userpackage['silver'] == 0) {
+            if ($user->user_package->id == 2 && $server->allowed_userpackage['silver'] == 0) {
                 return '0';
             }
-            if ($user->vpn_session == 4 && $server->allowed_userpackage['gold'] == 0) {
+            if ($user->user_package->id == 3 && $server->allowed_userpackage['gold'] == 0) {
                 return '0';
             }
-            if(!$user->isActive() || $user->vpn->count() >= $user->vpn_session) {
+            if(!$user->isActive() || $user->vpn->count() >= intval($user->user_package->user_package['device'])) {
                 return '0';
             }
             if(in_array($server->access, [1,2]) && $current->gte($dt)) {
@@ -220,6 +222,13 @@ Route::post('/manage-user/profile/{id}', 'ManageUser\UserProfileController@updat
 Route::get('/manage-user/security/{id}', 'ManageUser\UserSecurityController@index');
 Route::post('/manage-user/security/{id}', 'ManageUser\UserSecurityController@updateSecurity');
 
+Route::get('/manage-user/usergroup/{id}', 'ManageUser\UserGroupController@index');
+Route::post('/manage-user/usergroup/{id}/client', 'ManageUser\UserGroupController@user_group_client');
+Route::post('/manage-user/usergroup/{id}/reseller', 'ManageUser\UserGroupController@user_group_reseller');
+Route::post('/manage-user/usergroup/{id}/premium', 'ManageUser\UserGroupController@user_group_premium');
+Route::post('/manage-user/usergroup/{id}/ultimate', 'ManageUser\UserGroupController@user_group_ultimate');
+Route::post('/manage-user/usergroup/{id}/all', 'ManageUser\UserGroupController@user_group_all');
+
 Route::get('/manage-user/permission/{id}', 'ManageUser\UserPermissionController@index');
 Route::get('/manage-user/permission/{id}/{p_code}', 'ManageUser\UserPermissionController@updatePermission');
 
@@ -228,6 +237,9 @@ Route::post('/manage-user/duration/{id}', 'ManageUser\UserDurationController@upd
 
 Route::get('/manage-user/credits/{id}', 'ManageUser\UserCreditController@index');
 Route::post('/manage-user/credits/{id}', 'ManageUser\UserCreditController@updateCredits');
+
+Route::get('/manage-user/user-package/{id}', 'ManageUser\UserPackageController@index');
+Route::post('/manage-user/user-package/{id}', 'ManageUser\UserPackageController@user_package');
 
 Route::get('/manage-user/voucher/{id}', 'ManageUser\UserVoucherController@index');
 Route::post('/manage-user/voucher/{id}', 'ManageUser\UserVoucherController@applyVoucher');

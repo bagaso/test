@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
+use App\Lang;
 use App\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
@@ -36,14 +37,18 @@ class AccountController extends Controller
         $site_options['sub_name'] = 'My Account';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
-        $user = User::with('upline')->find(auth()->user()->id);
+        $user = User::with('upline', 'status', 'user_group', 'user_package')->find(auth()->user()->id);
+
+        $language = Lang::all();
 
         return response()->json([
             'site_options' => $site_options,
-            'profile' => ['username' => $user->username, 'email' => $user->email, 'fullname' => $user->fullname, 'contact' => $user->contact, 'distributor' => $user->distributor, 'created_at' => $user->created_at, 'updated_at' => $user->updated_at, 'user_group_id' => $user->user_group_id, 'credits' => $user->credits, 'expired_at' => $user->expired_at, 'consumable_data' => $user->consumable_data, 'status_id' => $user->status_id, 'vpn_session' => $user->vpn_session],
+            'update_username' => auth()->user()->can('update-username'),
+            'profile' => ['username' => $user->username, 'email' => $user->email, 'fullname' => $user->fullname, 'contact' => $user->contact, 'distributor' => $user->distributor, 'created_at' => $user->created_at, 'updated_at' => $user->updated_at, 'user_group' => $user->user_group, 'credits' => $user->credits, 'expired_at' => $user->expired_at, 'consumable_data' => $user->consumable_data, 'status' => $user->status, 'user_package' => $user->user_package],
             'upline' => $user->upline->username,
             'permission' => $permission,
             'vpn_session' => \App\OnlineUser::where('user_id', auth()->user()->id)->count(),
+            'language' => $language,
         ], 200);
     }
 
@@ -67,7 +72,7 @@ class AccountController extends Controller
             'distributor' => 'bail|required|boolean',
         ]);
 
-        if (auth()->user()->isAdmin()) {
+        if (auth()->user()->can('update-username')) {
             $account->username = $request->username;
         }
         $account->email = $request->email;
@@ -82,9 +87,7 @@ class AccountController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully.',
-            'profile' => ['username' => $user->username, 'email' => $user->email, 'fullname' => $user->fullname, 'contact' => $user->contact, 'distributor' => $user->distributor, 'created_at' => $user->created_at, 'updated_at' => $user->updated_at, 'user_group_id' => $user->user_group_id, 'credits' => $user->credits, 'expired_at' => $user->expired_at, 'consumable_data' => $user->consumable_data, 'status_id' => $user->status_id, 'vpn_session' => $user->vpn_session],
+            'profile' => ['username' => $user->username, 'email' => $user->email, 'fullname' => $user->fullname, 'contact' => $user->contact, 'distributor' => $user->distributor, 'created_at' => $user->created_at, 'updated_at' => $user->updated_at, 'user_group' => $user->user_group, 'credits' => $user->credits, 'expired_at' => $user->expired_at, 'consumable_data' => $user->consumable_data, 'status' => $user->status, 'user_package' => $user->user_package],
         ], 200);
-
     }
-
 }

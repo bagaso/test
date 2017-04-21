@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
+use App\Lang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -36,9 +37,12 @@ class SecurityController extends Controller
         $site_options['sub_name'] = 'Security';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
+        $language = Lang::all();
+
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username, 'distributor' => auth()->user()->distributor],
+            'language' => $language,
             'permission' => $permission
         ], 200);
     }

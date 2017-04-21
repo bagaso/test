@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\NewsAndUpdates;
 
+use App\Lang;
 use App\Updates;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -31,11 +32,14 @@ class EditItemController extends Controller
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
+        $language = Lang::all();
+
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => auth()->user(),
+                'profile' => ['username' => auth()->user()->username],
+                'language' => $language,
                 'permission' => $permission,
             ], 403);
         }
@@ -49,6 +53,7 @@ class EditItemController extends Controller
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username],
+            'language' => $language,
             'permission' => $permission,
             'post' => $post,
         ], 200);

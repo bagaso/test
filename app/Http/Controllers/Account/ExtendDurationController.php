@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Account;
 
+use App\Lang;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -36,9 +37,12 @@ class ExtendDurationController extends Controller
         $site_options['sub_name'] = 'Extend Duration';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
+        $language = Lang::all();
+
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username, 'credits' => auth()->user()->credits, 'expired_at' => auth()->user()->expired_at, 'distributor' => auth()->user()->distributor],
+            'language' => $language,
             'permission' => $permission
         ], 200);
     }

@@ -24,7 +24,7 @@ class User extends Authenticatable
     ];
 
     public static $columns = [
-        'username', 'email', 'user_group_id', 'vpn_session', 'status_id', 'expired_at', 'created_at'
+        'username', 'user_group_id', 'user_package_id', 'status_id', 'credits', 'expired_at', 'created_at'
     ];
 
     protected $casts = [
@@ -89,6 +89,21 @@ class User extends Authenticatable
             })->paginate($request->per_page);
     }
 
+    public function status()
+    {
+        return $this->belongsTo('App\Status');
+    }
+
+    public function user_group()
+    {
+        return $this->belongsTo('App\UserGroup');
+    }
+
+    public function user_package()
+    {
+        return $this->belongsTo('App\UserPackage');
+    }
+    
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = bcrypt($value);
@@ -149,7 +164,12 @@ class User extends Authenticatable
 
     public function isAdmin()
     {
-        return $this->user_group_id == 1;
+        return $this->user_group->id == 1;
+    }
+
+    public function isSubAdmin()
+    {
+        return $this->user_group->id == 2;
     }
 
     public function isDownline()
@@ -175,16 +195,16 @@ class User extends Authenticatable
     }
     
     public function getStatusIdAttribute($value) {
-        return $this->isAdmin() ? 1 : $value;
+        return $this->isAdmin() ? 2 : $value;
     }
 
     public function getCreditsAttribute($value)
     {
-        return $this->isAdmin() ? 'No Limit' : $value;
+        return $this->isAdmin() || $this->can('unlimited-credits') ? 'No Limit' : $value;
     }
 
     public function isActive() {
-        return ($this->isAdmin() || $this->status_id == 1);
+        return ($this->isAdmin() || $this->status->id == 2);
     }
 
     public function getPermissionAttribute()

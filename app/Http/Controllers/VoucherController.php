@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Lang;
 use App\VoucherCode;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -34,11 +35,14 @@ class VoucherController extends Controller
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
+        $language = Lang::all();
+
         if (Gate::denies('manage-user') || Gate::denies('generate-voucher')) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
                 'profile' => ['username' => auth()->user()->username],
+                'language' => $language,
                 'permission' => $permission,
             ], 403);
         }
@@ -62,6 +66,7 @@ class VoucherController extends Controller
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id, 'credits' => auth()->user()->credits],
+            'language' => $language,
             'permission' => $permission,
             'model' => $data,
             'columns' => $columns,

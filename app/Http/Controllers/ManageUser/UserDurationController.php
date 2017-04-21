@@ -6,6 +6,7 @@ use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Gate;
 
 class UserDurationController extends Controller
 {
@@ -29,31 +30,28 @@ class UserDurationController extends Controller
             ], 401);
         }
 
-        $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['manage_user'] = auth()->user()->can('manage-user');
-
-        if (auth()->user()->id == $id || !auth()->user()->isAdmin()) {
+        if (auth()->user()->id == $id || (!auth()->user()->isAdmin() && !auth()->user()->isSubAdmin())) {
             return response()->json([
-                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => ['username' => auth()->user()->username],
-                'permission' => $permission,
+            ], 403);
+        }
+
+        if (Gate::denies('update-user', $id)) {
+            return response()->json([
+                'message' => 'No permission to update this user.',
+            ], 403);
+        }
+
+        if (Gate::denies('update-user-duration', $id)) {
+            return response()->json([
+                'message' => 'No permission to update user duration.',
             ], 403);
         }
 
         $user = User::findOrFail($id);
 
-        $site_options['site_name'] = $db_settings->settings['site_name'];
-        $site_options['sub_name'] = 'User Duration';
-        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
-
-        $permission['create_user'] = auth()->user()->can('create-user');
-
         return response()->json([
-            'site_options' => $site_options,
-            'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id],
-            'permission' => $permission,
-            'user_profile' => $user
+            'user_profile' => ['username' => $user->username, 'expired_at' => $user->expired_at]
         ], 200);
     }
 
@@ -68,27 +66,27 @@ class UserDurationController extends Controller
         }
         
         $user = User::findorfail($id);
-        if(auth()->user()->id == $id || !auth()->user()->isAdmin()) {
+        if(auth()->user()->id == $id || Gate::denies('update-user', $id) || Gate::denies('update-user-duration', $id)) {
             return response()->json(['message' => 'Action not allowed.'], 403);
         }
 
         $this->validate($request, [
-            'days' => 'bail|required|integer|between:-30,30',
-            'hours' => 'bail|required|integer|between:-24,24'
+            'input_days' => 'bail|required|integer|between:-30,30',
+            'input_hours' => 'bail|required|integer|between:-24,24'
         ]);
 
         $current = Carbon::now();
         $dt = Carbon::parse($user->getOriginal('expired_at'));
         if($current->lt($dt)) {
-            $user->expired_at = $dt->addDays($request->days)->addHours($request->hours);
+            $user->expired_at = $dt->addDays($request->input_days)->addHours($request->input_hours);
         } else {
-            $user->expired_at = $current->addDays($request->days)->addHours($request->hours);
+            $user->expired_at = $current->addDays($request->input_days)->addHours($request->input_hours);
         }
 
         $user->save();
         return response()->json([
             'message' => 'User duration updated.',
-            'user_profile' => $user
+            'user_profile' => ['expired_at' => $user->expired_at]
         ], 200);
     }
 }

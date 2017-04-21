@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Lang;
 use App\OnlineUser;
 use Illuminate\Http\Request;
 
@@ -21,10 +22,13 @@ class PublicOnlineUsersController extends Controller
     {
         $db_settings = \App\SiteSettings::findorfail(1);
 
+        $language = Lang::all();
+
         if (!$db_settings->settings['enable_panel_login']) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'Maintenance Mode.',
+                'language' => $language,
             ], 401);
         }
 
@@ -32,6 +36,7 @@ class PublicOnlineUsersController extends Controller
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error', 'public_credit_distributors' => $db_settings->settings['public_credit_distributors'], 'public_server_status' => $db_settings->settings['public_server_status']],
                 'message' => 'Please Login to access this page.',
+                'language' => $language,
             ], 403);
         }
 
@@ -46,6 +51,7 @@ class PublicOnlineUsersController extends Controller
 
         return response()->json([
             'site_options' => $site_options,
+            'language' => $language,
             'model' => $data,
         ], 200);
     }
