@@ -4,6 +4,7 @@ namespace App\Http\Controllers\VpnServer;
 
 use App\Lang;
 use App\SiteSettings;
+use App\UserPackage;
 use App\VpnServer;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -37,12 +38,15 @@ class AddServerController extends Controller
 
         $language = Lang::all();
 
+        $userpackage = UserPackage::all();
+
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
                 'profile' => ['username' => auth()->user()->username],
                 'language' => $language,
+                'user_package_list' => $userpackage->pluck('name'),
                 'permission' => $permission,
             ], 403);
         }
@@ -51,10 +55,13 @@ class AddServerController extends Controller
         $site_options['sub_name'] = 'VPN Server : Create';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
+        $userpackage = UserPackage::all();
+
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username],
             'language' => $language,
+            'user_package_list' => $userpackage->pluck('name'),
             'permission' => $permission,
         ], 200);
     }
@@ -89,9 +96,9 @@ class AddServerController extends Controller
             'server_port' => 'bail|required|integer',
             'server_access' => 'bail|required|in:0,1,2',
             'server_status' => 'bail|required|boolean',
-            'package_bronze' => 'bail|required|boolean',
-            'package_silver' => 'bail|required|boolean',
-            'package_gold' => 'bail|required|boolean',
+            'package_1' => 'bail|required|boolean',
+            'package_2' => 'bail|required|boolean',
+            'package_3' => 'bail|required|boolean',
             'limit_bandwidth' => 'bail|required|boolean',
         ]);
 
@@ -109,9 +116,9 @@ class AddServerController extends Controller
             ], 403);
         }
 
-        $allowed_userpackage['bronze'] = (int)$request->package_bronze;
-        $allowed_userpackage['silver'] = (int)$request->package_silver;
-        $allowed_userpackage['gold'] = (int)$request->package_gold;
+        $allowed_userpackage['package_1'] = (int)$request->package_1;
+        $allowed_userpackage['package_2'] = (int)$request->package_2;
+        $allowed_userpackage['package_3'] = (int)$request->package_3;
 
         $server = new VpnServer;
         $server->cf_id = $cloudflare->result->id;

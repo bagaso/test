@@ -4,6 +4,8 @@ namespace App\Http\Controllers\VpnServer;
 
 use App\Lang;
 use App\SiteSettings;
+use App\User;
+use App\UserPackage;
 use App\VpnServer;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
@@ -51,11 +53,14 @@ class ServerInfoController extends Controller
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'VPN Server : Info';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+        $userpackage = UserPackage::all();
+        
 
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username],
             'language' => $language,
+            'user_package_list' => $userpackage->pluck('name'),
             'permission' => $permission,
             'server_info' => $server_info,
         ], 200);
@@ -88,9 +93,9 @@ class ServerInfoController extends Controller
             'server_key' => 'bail|required|unique:vpn_servers,server_key,' . $server->id,
             'server_access' => 'bail|required|in:0,1,2',
             'server_status' => 'bail|required|boolean',
-            'package_bronze' => 'bail|required|boolean',
-            'package_silver' => 'bail|required|boolean',
-            'package_gold' => 'bail|required|boolean',
+            'package_1' => 'bail|required|boolean',
+            'package_2' => 'bail|required|boolean',
+            'package_3' => 'bail|required|boolean',
             'limit_bandwidth' => 'bail|required|boolean',
         ]);
 
@@ -114,9 +119,9 @@ class ServerInfoController extends Controller
             ], 403);
         }
 
-        $allowed_userpackage['bronze'] = (int)$request->package_bronze;
-        $allowed_userpackage['silver'] = (int)$request->package_silver;
-        $allowed_userpackage['gold'] = (int)$request->package_gold;
+        $allowed_userpackage['package_1'] = (int)$request->package_1;
+        $allowed_userpackage['package_2'] = (int)$request->package_2;
+        $allowed_userpackage['package_3'] = (int)$request->package_3;
 
         $server->server_name = $request->server_name;
         $server->server_ip = $request->server_ip;
