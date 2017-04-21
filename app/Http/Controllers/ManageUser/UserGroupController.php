@@ -89,9 +89,6 @@ class UserGroupController extends Controller
             'user_group_id' => 'bail|required|integer|in:' . $usergroups,
         ]);
         
-        if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [2])) {
-            $user->roles()->sync([1,2,3,4,5,6,11,13,15,16,18]);
-        }
         if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [3,4,5])) {
             $user->roles()->detach();
         }
@@ -156,10 +153,7 @@ class UserGroupController extends Controller
         $this->validate($request, [
             'user_group_id' => 'bail|required|integer|in:' . $usergroups,
         ]);
-
-        if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [2])) {
-            $user->roles()->sync([1,2,3,4,5,6,11,13,15,16,18]);
-        }
+        
         if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [3,4,5])) {
             $user->roles()->detach();
         }
@@ -224,10 +218,7 @@ class UserGroupController extends Controller
         $this->validate($request, [
             'user_group_id' => 'bail|required|integer|in:' . $usergroups,
         ]);
-
-        if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [2])) {
-            $user->roles()->sync([1,2,3,4,5,6,11,13,15,16,18]);
-        }
+        
         if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [3,4,5])) {
             $user->roles()->detach();
         }
@@ -292,10 +283,7 @@ class UserGroupController extends Controller
         $this->validate($request, [
             'user_group_id' => 'bail|required|integer|in:' . $usergroups,
         ]);
-
-        if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [2])) {
-            $user->roles()->sync([1,2,3,4,5,6,11,13,15,16,18]);
-        }
+        
         if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [3,4,5])) {
             $user->roles()->detach();
         }
@@ -356,10 +344,7 @@ class UserGroupController extends Controller
         $this->validate($request, [
             'user_group_id' => 'bail|required|integer|in:' . $usergroups,
         ]);
-
-        if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [2])) {
-            $user->roles()->sync([1,2,3,4,5,6,11,13,15,16,18]);
-        }
+        
         if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [3,4,5])) {
             $user->roles()->detach();
         }
