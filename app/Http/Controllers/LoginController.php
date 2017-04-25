@@ -29,7 +29,7 @@ class LoginController extends Controller
 
         $client_id = DB::table('oauth_clients')->where('id', 2)->first();
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
         if(parse_url(request()->headers->get('referer'), PHP_URL_HOST) == parse_url($db_settings->settings['domain'], PHP_URL_HOST)) {
             $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
