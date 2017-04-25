@@ -31,6 +31,8 @@ class ItemController extends Controller
 
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
 
         $post = Updates::findorfail($request->id);
 
@@ -38,7 +40,7 @@ class ItemController extends Controller
         $site_options['sub_name'] = $post->title;
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
         return response()->json([
             'site_options' => $site_options,

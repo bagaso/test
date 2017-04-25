@@ -31,12 +31,14 @@ class ListController extends Controller
 
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'News and Updates';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
         $data = Updates::orderBy('pinned', 'desc')->orderBy('id', 'desc')->paginate(10);
 

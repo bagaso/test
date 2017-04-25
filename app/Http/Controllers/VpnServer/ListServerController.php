@@ -34,10 +34,12 @@ class ListServerController extends Controller
         
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
         
-        if(!auth()->user()->isAdmin()) {
+        if(auth()->user()->cannot('manage-vpn-server')) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
@@ -47,7 +49,7 @@ class ListServerController extends Controller
             ], 403);
         }
         
-        $servers = VpnServer::select('id', 'server_name', 'server_ip', 'server_domain', 'access', 'limit_bandwidth', 'is_active')->withCount('online_users')->orderBy('server_name', 'asc')->get();
+        $servers = VpnServer::select('id', 'server_name', 'server_ip', 'server_domain', 'server_access_id', 'limit_bandwidth', 'is_active')->with('server_access')->withCount('online_users')->orderBy('server_name', 'asc')->get();
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'VPN Server : List';
@@ -74,14 +76,16 @@ class ListServerController extends Controller
 
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
 
-        $servers = VpnServer::select('server_name', 'access', 'limit_bandwidth', 'is_active')->withCount('online_users')->orderBy('server_name', 'asc')->get();
+        $servers = VpnServer::with(['server_access', 'user_packages'])->select('id', 'server_name', 'server_access_id', 'limit_bandwidth', 'is_active')->withCount('online_users')->orderBy('server_name', 'asc')->get();
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Server Status';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
         return response()->json([
             'site_options' => $site_options,
@@ -102,7 +106,7 @@ class ListServerController extends Controller
             ], 401);
         }
 
-        if(!auth()->user()->isAdmin()) {
+        if(auth()->user()->cannot('manage-vpn-server')) {
             return response()->json([
                 'message' => 'Action not allowed.',
             ], 403);
@@ -160,7 +164,7 @@ class ListServerController extends Controller
             ], 401);
         }
 
-        if(!auth()->user()->isAdmin()) {
+        if(auth()->user()->cannot('manage-vpn-server')) {
             return response()->json([
                 'message' => 'Action not allowed.',
             ], 403);
@@ -180,40 +184,6 @@ class ListServerController extends Controller
 
         return response()->json([
             'message' => $msg[$request->status],
-            'model' => $servers,
-        ], 200);
-    }
-
-    public function server_access(Request $request)
-    {
-        $db_settings = \App\SiteSettings::findorfail(1);
-
-        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
-            return response()->json([
-                'message' => 'Logged out.',
-            ], 401);
-        }
-
-        if(!auth()->user()->isAdmin()) {
-            return response()->json([
-                'message' => 'Action not allowed.',
-            ], 403);
-        }
-
-        $this->validate($request, [
-            'id' => 'bail|required|array',
-            'access' => 'bail|required|in:0,1,2',
-        ]);
-
-        $servers = VpnServer::whereIn('id', $request->id);
-        $servers->update(['access' => $request->access]);
-
-        $servers = VpnServer::select('id', 'server_name', 'server_ip', 'server_domain', 'access', 'limit_bandwidth', 'is_active')->withCount('online_users')->orderBy('server_name', 'asc')->get();
-
-        $msg = ['Server set to free', 'Server set to premium', 'Server set to vip'];
-
-        return response()->json([
-            'message' => $msg[$request->access],
             'model' => $servers,
         ], 200);
     }

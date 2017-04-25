@@ -34,17 +34,20 @@ class TransferCreditsController extends Controller
         
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Transfer Credits';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
         if(!auth()->user()->can('manage-user')) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => ['username' => auth()->user()->username, 'credits' => auth()->user()->credits],
+                'profile' => ['username' => auth()->user()->username],
                 'language' => $language,
                 'permission' => $permission,
             ], 403);
@@ -52,8 +55,9 @@ class TransferCreditsController extends Controller
 
         if(!auth()->user()->isAdmin() && !auth()->user()->distributor) {
             return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
-                'profile' => ['username' => auth()->user()->username, 'credits' => auth()->user()->credits],
+                'profile' => ['username' => auth()->user()->username],
                 'language' => $language,
                 'permission' => $permission,
             ], 403);
@@ -121,7 +125,7 @@ class TransferCreditsController extends Controller
         $withs = $request->credits > 1 ? ' credits' : ' credit';
         return response()->json([
             'message' => 'You have transferred ' . $request->credits . $withs . ' to ' . $request->username . '.',
-            'profile' => ['credits' => auth()->user()->credits],
+            'profile' => ['credits' => auth()->user()->credits, 'distributor' => auth()->user()->distributor],
         ], 200);
 
     }

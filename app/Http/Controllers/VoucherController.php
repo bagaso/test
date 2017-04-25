@@ -34,10 +34,12 @@ class VoucherController extends Controller
 
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
-        if (Gate::denies('manage-user') || Gate::denies('generate-voucher')) {
+        if (Gate::denies('manage-voucher')) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
@@ -47,11 +49,7 @@ class VoucherController extends Controller
             ], 403);
         }
 
-        if(auth()->user()->isAdmin()) {
-            $data = VoucherCode::SearchPaginateAndOrder($request);
-        } else {
-            $data = VoucherCode::where('created_user_id', auth()->user()->id)->SearchPaginateAndOrder($request);
-        }
+        $data = VoucherCode::SearchPaginateAndOrder($request);
 
         $columns = [
             'code', 'duration', 'updated_at', 'created_at',
@@ -60,8 +58,6 @@ class VoucherController extends Controller
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Generate Voucher';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
-
-        $permission['generate_voucher'] = auth()->user()->can('generate-voucher');
 
         return response()->json([
             'site_options' => $site_options,
@@ -83,23 +79,17 @@ class VoucherController extends Controller
             ], 401);
         }
 
-        if (Gate::denies('manage-user') || Gate::denies('generate-voucher')) {
+        if (Gate::denies('manage-voucher')) {
             return response()->json([
                 'message' => 'Action not allowed.',
             ], 403);
         }
+
+        $this->validate($request, [
+            'credits' => 'bail|required|integer|between:1,5',
+        ]);
         
-        if(auth()->user()->isAdmin()) {
-            $this->validate($request, [
-                'credits' => 'bail|required|integer|between:1,5',
-            ]);
-        } else {
-            $this->validate($request, [
-                'credits' => 'bail|required|integer|between:1,5',
-            ]);
-        }
-        
-        if(!auth()->user()->isAdmin()) {
+        if(auth()->user()->cannot('unlimited-credits')) {
             if(auth()->user()->credits < $request->credits) {
                 return response()->json([
                     'message' => 'Input must be lower or equal to your available credits.',
@@ -124,7 +114,7 @@ class VoucherController extends Controller
                 $vouchers[$i]['updated_at'] = Carbon::now();;
             }
             VoucherCode::insert($vouchers);
-            if(!auth()->user()->isAdmin()) {
+            if(auth()->user()->cannot('unlimited-credits')) {
                 $account = $request->user();
                 $account->credits -= $request->credits;
                 $account->save();
@@ -137,29 +127,22 @@ class VoucherController extends Controller
             ], 403);
         }
 
-        if(auth()->user()->isAdmin()) {
-            $data = VoucherCode::SearchPaginateAndOrder($request);
-        } else {
-            $data = VoucherCode::where('created_user_id', auth()->user()->id)->SearchPaginateAndOrder($request);
-        }
+        $data = VoucherCode::SearchPaginateAndOrder($request);
 
         $columns = [
             'code', 'duration', 'updated_at', 'created_at',
         ];
 
-        $permission['generate_voucher'] = auth()->user()->can('generate-voucher');
-
         return response()->json([
             'message' => 'Voucher generated.',
             'profile' => ['user_group_id' => auth()->user()->user_group_id, 'credits' => auth()->user()->credits],
-            'permission' => $permission,
             'voucher' => $voucher,
             'model' => $data,
             'columns' => $columns,
         ], 200);
     }
     
-    public function applyVoucherIndex(Request $request)
+    public function applyVoucherIndex()
     {
         $db_settings = \App\SiteSettings::findorfail(1);
 
@@ -168,27 +151,9 @@ class VoucherController extends Controller
                 'message' => 'Logged out.',
             ], 401);
         }
-        
-        $data = VoucherCode::where('user_id', auth()->user()->id)->SearchPaginateAndOrder($request);
-
-        $columns = [
-            'code', 'duration', 'updated_at',
-        ];
-
-        $site_options['site_name'] = $db_settings->settings['site_name'];
-        $site_options['sub_name'] = 'Apply Voucher';
-        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
-
-        $permission['is_admin'] = auth()->user()->isAdmin();
-        $permission['manage_user'] = auth()->user()->can('manage-user');
-        $permission['generate_voucher'] = auth()->user()->can('generate-voucher');
 
         return response()->json([
-            'site_options' => $site_options,
-            'profile' => ['username' => auth()->user()->username, 'user_group_id' => auth()->user()->user_group_id, 'expired_at' => auth()->user()->expired_at],
-            'permission' => $permission,
-            'model' => $data,
-            'columns' => $columns,
+            'profile' => ['expired_at' => auth()->user()->expired_at],
         ], 200);
     }
     
@@ -253,16 +218,9 @@ class VoucherController extends Controller
         $voucher->user_id = auth()->user()->id;
         $voucher->save();
 
-        $data = VoucherCode::where('user_id', auth()->user()->id)->SearchPaginateAndOrder($request);
-
-        $columns = [
-            'code', 'duration', 'updated_at',
-        ];
-
         return response()->json([
             'message' => 'Voucher code applied.',
-            'model' => $data,
-            'columns' => $columns,
+            'profile' => ['expired_at' => auth()->user()->expired_at],
         ], 200);
     }
 
@@ -276,7 +234,7 @@ class VoucherController extends Controller
             ], 401);
         }
 
-        if (!auth()->user()->isAdmin()) {
+        if (auth()->user()->cannot('manage-voucher')) {
             return response()->json([
                 'message' => 'Action not allowed.',
             ], 403);
@@ -288,11 +246,7 @@ class VoucherController extends Controller
         $vouchers = VoucherCode::whereIn('id', $request->id);
         $vouchers->delete();
 
-        if(auth()->user()->isAdmin()) {
-            $data = VoucherCode::SearchPaginateAndOrder($request);
-        } else {
-            $data = VoucherCode::where('created_user_id', auth()->user()->id)->SearchPaginateAndOrder($request);
-        }
+        $data = VoucherCode::SearchPaginateAndOrder($request);
 
         $columns = [
             'code', 'duration', 'updated_at', 'created_at',

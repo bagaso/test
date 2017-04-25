@@ -57,47 +57,79 @@ class AuthServiceProvider extends ServiceProvider
             return false;
         });
 
-        Gate::define('update-user', function ($user, $id) {
-            $data = User::findorfail($id);
-            if($data->user_group->id <= $user->user_group->id) {
-                return false;
-            }
-            if($data->isDownline() || in_array($user->user_group->id, [2])) {
-                return true;
-            }
-            return false;
-        });
-
-        Gate::define('unlimited-credits', function ($user) {
+        Gate::define('manage-all-users', function ($user) {
             if(in_array($user->user_group->id, [2]) && in_array('PCODE_001', json_decode($user->roles->pluck('code')))) {
                 return true;
             }
             return false;
         });
 
-        Gate::define('minus-credits', function ($user) {
-            if(in_array($user->user_group->id, [2]) && in_array('PCODE_002', json_decode($user->roles->pluck('code')))) {
-                return true;
+        Gate::define('update-user', function ($user, $id) {
+            $data = User::findorfail($id);
+            if($data->user_group->id <= $user->user_group->id) {
+                return false;
             }
-            return false;
-        });
-
-        Gate::define('force-package-upgrade', function ($user) {
-            if(in_array($user->user_group->id, [2]) && in_array('PCODE_003', json_decode($user->roles->pluck('code')))) {
+            if($data->isDownline() || (in_array($user->user_group->id, [2]) && in_array('PCODE_001', json_decode($user->roles->pluck('code'))))) {
                 return true;
             }
             return false;
         });
 
         Gate::define('update-username', function ($user) {
+            if(in_array($user->user_group->id, [2]) && in_array('PCODE_002', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+            return false;
+        });
+
+        Gate::define('delete-user', function ($user, $id) {
+            $data = User::findorfail($id);
+            if($data->user_group->id <= $user->user_group->id) {
+                return false;
+            }
+            if($data->isDownline() || (in_array($user->user_group->id, [2]) && in_array('PCODE_003', json_decode($user->roles->pluck('code'))))) {
+                return true;
+            }
+            return false;
+        });
+
+        Gate::define('unlimited-credits', function ($user) {
             if(in_array($user->user_group->id, [2]) && in_array('PCODE_004', json_decode($user->roles->pluck('code')))) {
                 return true;
             }
             return false;
         });
 
-        Gate::define('update-user-duration', function ($user) {
+        Gate::define('minus-credits', function ($user) {
             if(in_array($user->user_group->id, [2]) && in_array('PCODE_005', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+            return false;
+        });
+
+        Gate::define('force-package-upgrade', function ($user) {
+            if(in_array($user->user_group->id, [2]) && in_array('PCODE_006', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+            return false;
+        });
+
+        Gate::define('update-user-duration', function ($user) {
+            if(in_array($user->user_group->id, [2]) && in_array('PCODE_007', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+            return false;
+        });
+
+        Gate::define('manage-vpn-server', function ($user) {
+            if(in_array($user->user_group->id, [2]) && in_array('PCODE_008', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+            return false;
+        });
+
+        Gate::define('manage-voucher', function ($user) {
+            if(in_array($user->user_group->id, [2]) && in_array('PCODE_009', json_decode($user->roles->pluck('code')))) {
                 return true;
             }
             return false;

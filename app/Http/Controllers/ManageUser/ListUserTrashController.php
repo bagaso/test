@@ -33,12 +33,17 @@ class ListUserTrashController extends Controller
 
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
+
+        $language = Lang::all()->pluck('name');
 
         if (!auth()->user()->isAdmin()) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
                 'profile' => ['username' => auth()->user()->username],
+                'language' => $language,
                 'permission' => $permission,
             ], 403);
         }
@@ -58,8 +63,6 @@ class ListUserTrashController extends Controller
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'User List : Deleted';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
-
-        $language = Lang::all();
 
         return response()->json([
             'site_options' => $site_options,

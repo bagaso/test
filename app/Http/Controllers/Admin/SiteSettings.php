@@ -30,8 +30,10 @@ class SiteSettings extends Controller
 
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
         if (!auth()->user()->isAdmin()) {
             return response()->json([
@@ -51,7 +53,6 @@ class SiteSettings extends Controller
             'data_reset_schedule' => $db_settings->settings['data_reset_cron'],
             'data_allowance' => $db_settings->settings['consumable_data'],
             'trial_period' => $db_settings->settings['trial_period'],
-            'cloudflare_zone_id' => $db_settings->settings['cf_zone'],
             'max_transfer_credits' => $db_settings->settings['max_transfer_credits'],
             'enable_panel_login' => $db_settings->settings['enable_panel_login'],
             'enable_vpn_login' => $db_settings->settings['enable_vpn_login'],
@@ -97,7 +98,6 @@ class SiteSettings extends Controller
             'data_reset_schedule' => 'required_if:data_reset,true',
             'data_allowance' => 'required|integer',
             'trial_period' => 'required|integer',
-            'cloudflare_zone_id' => 'required|alpha_num',
             'max_transfer_credits' => 'required|integer|min:1',
             'enable_panel_login' => 'required|boolean',
             'enable_vpn_login' => 'required|boolean',
@@ -127,7 +127,6 @@ class SiteSettings extends Controller
         $site_settings['data_reset_cron'] = $request->data_reset ? $request->data_reset_schedule : $site_settings['data_reset_cron'];
         $site_settings['consumable_data'] = $request->data_allowance;
         $site_settings['trial_period'] = $request->trial_period;
-        $site_settings['cf_zone'] = $request->cloudflare_zone_id;
         $site_settings['max_transfer_credits'] = $request->max_transfer_credits;
         $site_settings['enable_panel_login'] = $request->enable_panel_login;
         $site_settings['enable_vpn_login'] = $request->enable_vpn_login;

@@ -79,8 +79,7 @@ class User extends Authenticatable
 
     public function scopeSearchDistPaginateAndOrder($query, $request)
     {
-
-        return $query->where([['user_group_id', '<>', 1]])
+        return $query->whereIn('user_group_id', [3,4])
             ->orderBy($request->column, $request->direction)
             ->where(function($query) use ($request) {
                 if($request->has('search_input')) {

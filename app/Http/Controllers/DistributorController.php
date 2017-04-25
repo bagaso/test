@@ -29,20 +29,22 @@ class DistributorController extends Controller
             ], 401);
         }
         
-        $data = User::where([['distributor', 1], ['status_id', 1], ['credits', '>', 0]])->SearchDistPaginateAndOrder($request);
+        $data = User::where([['distributor', 1], ['status_id', 2], ['credits', '>', 0]])->SearchDistPaginateAndOrder($request);
 
         $columns = [
             'fullname', 'contact', 'user_group_id', 'credits',
         ];
 
+        $language = Lang::all()->pluck('name');
+
         $site_options['site_name'] = $db_settings->settings['site_name'];
-        $site_options['sub_name'] = 'Credit Distributors';
+        $site_options['sub_name'] = $language[21];
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
-
-        $language = Lang::all();
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
 
         return response()->json([
             'site_options' => $site_options,

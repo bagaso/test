@@ -44,4 +44,14 @@ class VpnServer extends Model
             'vpn_server_id', 'id', 'id'
         );
     }
+
+    public function server_access()
+    {
+        return $this->belongsTo('App\ServerAccess');
+    }
+
+    public function user_packages()
+    {
+        return $this->belongsToMany('App\UserPackage');
+    }
 }

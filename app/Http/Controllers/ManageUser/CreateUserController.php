@@ -37,12 +37,17 @@ class CreateUserController extends Controller
 
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
+
+        $language = Lang::all()->pluck('name');
 
         if (Gate::denies('manage-user')) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
                 'profile' => ['username' => auth()->user()->username],
+                'language' => $language,
                 'permission' => $permission,
             ], 403);
         }
@@ -54,8 +59,6 @@ class CreateUserController extends Controller
         $usergroups = UserGroup::where('id', '>', auth()->user()->user_group->id)->get();
         $userpackage = UserPackage::all();
         $userstatus = Status::all();
-
-        $language = Lang::all();
 
         return response()->json([
             'site_options' => $site_options,
@@ -128,6 +131,7 @@ class CreateUserController extends Controller
         $new_user->password = $request->password;
         $new_user->email = $request->email;
         $new_user->fullname = $request->fullname;
+        $new_user->user_package_id = $request->user_package_id;
         $new_user->status_id = $request->status_id;
         $new_user->parent_id = auth()->user()->id;
         $new_user->consumable_data = $db_settings->settings['consumable_data'] * 1048576;

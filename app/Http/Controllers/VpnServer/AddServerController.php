@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\VpnServer;
 
 use App\Lang;
+use App\ServerAccess;
 use App\SiteSettings;
 use App\UserPackage;
 use App\VpnServer;
@@ -35,12 +36,14 @@ class AddServerController extends Controller
 
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
         $userpackage = UserPackage::all();
 
-        if (!auth()->user()->isAdmin()) {
+        if (auth()->user()->cannot('manage-vpn-server')) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
@@ -55,13 +58,15 @@ class AddServerController extends Controller
         $site_options['sub_name'] = 'VPN Server : Create';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
+        $serveraccess = ServerAccess::all();
         $userpackage = UserPackage::all();
 
         return response()->json([
             'site_options' => $site_options,
             'profile' => ['username' => auth()->user()->username],
             'language' => $language,
-            'user_package_list' => $userpackage->pluck('name'),
+            'server_access_list' => $serveraccess,
+            'user_package_list' => $userpackage,
             'permission' => $permission,
         ], 200);
     }
@@ -80,7 +85,7 @@ class AddServerController extends Controller
         $permission['update_account'] = auth()->user()->can('update-account');
         $permission['manage_user'] = auth()->user()->can('manage-user');
 
-        if (!auth()->user()->isAdmin()) {
+        if (auth()->user()->cannot('manage-vpn-server')) {
             return response()->json([
                 'message' => 'Action not allowed.',
             ], 403);
@@ -94,34 +99,28 @@ class AddServerController extends Controller
             'server_key' => 'bail|required|unique:vpn_servers,server_key',
             'vpn_secret' => 'required',
             'server_port' => 'bail|required|integer',
-            'server_access' => 'bail|required|in:0,1,2',
+            'server_access' => 'bail|required|in:1,2,3',
             'server_status' => 'bail|required|boolean',
-            'package_1' => 'bail|required|boolean',
-            'package_2' => 'bail|required|boolean',
-            'package_3' => 'bail|required|boolean',
+            'user_package' => 'bail|required|array',
             'limit_bandwidth' => 'bail|required|boolean',
         ]);
 
-        $site_settings = SiteSettings::find(1);
-
-        $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
-        $response = $client->request('POST', "/client/v4/zones/{$site_settings->settings['cf_zone']}/dns_records",
-            ['http_errors' => false, 'headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json'], 'json' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
-
-        $cloudflare = json_decode($response->getBody());
-
-        if(!$cloudflare->success) {
-            return response()->json([
-                'message' => 'Cloudflare: ' . $cloudflare->errors[0]->message,
-            ], 403);
-        }
-
-        $allowed_userpackage['package_1'] = (int)$request->package_1;
-        $allowed_userpackage['package_2'] = (int)$request->package_2;
-        $allowed_userpackage['package_3'] = (int)$request->package_3;
+//        $site_settings = SiteSettings::find(1);
+//
+//        $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
+//        $response = $client->request('POST', "/client/v4/zones/{$site_settings->settings['cf_zone']}/dns_records",
+//            ['http_errors' => false, 'headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json'], 'json' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
+//
+//        $cloudflare = json_decode($response->getBody());
+//
+//        if(!$cloudflare->success) {
+//            return response()->json([
+//                'message' => 'Cloudflare: ' . $cloudflare->errors[0]->message,
+//            ], 403);
+//        }
 
         $server = new VpnServer;
-        $server->cf_id = $cloudflare->result->id;
+        $server->cf_id = '11';//$cloudflare->result->id;
         $server->server_name = $request->server_name;
         $server->server_ip = $request->server_ip;
         $server->server_domain = $request->server_domain;
@@ -129,11 +128,11 @@ class AddServerController extends Controller
         $server->server_key = $request->server_key;
         $server->server_port = $request->server_port;
         $server->vpn_secret = $request->vpn_secret;
-        $server->access = $request->server_access;
+        $server->server_access_id = $request->server_access;
         $server->is_active = $request->server_status;
-        $server->allowed_userpackage = $allowed_userpackage;
         $server->limit_bandwidth = (int)$request->limit_bandwidth;
         $server->save();
+        $server->user_packages()->sync($request->user_package);
 
         return response()->json([
             'message' => 'New server added.',

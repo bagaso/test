@@ -30,7 +30,7 @@ class PublicNewsAndUpdatesController extends Controller
         $site_options['public_credit_distributors'] = $db_settings->settings['public_credit_distributors'] && $site_options['enable_panel_login'];
         $site_options['public_server_status'] = $db_settings->settings['public_server_status'] && $site_options['enable_panel_login'];
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
         $data = Updates::where('is_public', 1)->orderBy('pinned', 'desc')->orderBy('id', 'desc')->paginate(10);
 

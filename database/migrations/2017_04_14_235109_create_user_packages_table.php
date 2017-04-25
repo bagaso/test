@@ -17,8 +17,7 @@ class CreateUserPackagesTable extends Migration
             $table->increments('id');
             $table->string('class');
             $table->string('name');
-            $table->text('user_package');
-            $table->timestamps();
+            $table->json('user_package');
         });
     }
 

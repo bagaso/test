@@ -32,12 +32,14 @@ class ExtendDurationController extends Controller
 
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Extend Duration';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
         return response()->json([
             'site_options' => $site_options,
@@ -77,26 +79,15 @@ class ExtendDurationController extends Controller
             $current = Carbon::now();
             $expired_at = Carbon::parse($request->user()->getOriginal('expired_at'));
             if($current->lt($expired_at)) {
-                if($request->user()->vpn_session == 3) {
-                    $request->user()->expired_at = $expired_at->addSeconds((2595600 * $request->credits) / 2);
-                } else if($request->user()->vpn_session == 4) {
-                    $request->user()->expired_at = $expired_at->addSeconds((2595600 * $request->credits) / 3);
-                } else {
-                    $request->user()->expired_at = $expired_at->addSeconds((2595600 * $request->credits));
-                }
+                $request->user()->expired_at = $expired_at->addSeconds((2595600 * $request->credits) / intval($request->user()->user_package->user_package['cost']));
             } else {
-                if($request->user()->vpn_session == 3) {
-                    $request->user()->expired_at = $current->addSeconds((2595600 * $request->credits) / 2);
-                } else if($request->user()->vpn_session == 4) {
-                    $request->user()->expired_at = $current->addSeconds((2595600 * $request->credits) / 3);
-                } else {
-                    $request->user()->expired_at = $current->addSeconds((2595600 * $request->credits));
-                }
+                $request->user()->expired_at = $current->addSeconds((2595600 * $request->credits) / intval($request->user()->user_package->user_package['cost']));
             }
-            $request->user()->credits -= $request->credits;
+            if(auth()->user()->cannot('unlimited-credits')) {
+                $request->user()->credits -= $request->credits;
+            }
             $request->user()->save();
         }
-
 
         $withs = $request->credits > 1 ? ' credits' : ' credit';
         return response()->json([

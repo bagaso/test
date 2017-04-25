@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateLangsTable extends Migration
+class CreateUserPackageVpnServer extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,9 @@ class CreateLangsTable extends Migration
      */
     public function up()
     {
-        Schema::create('langs', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
+        Schema::create('user_package_vpn_server', function (Blueprint $table) {
+            $table->integer('vpn_server_id')->unsigned();
+            $table->integer('user_package_id')->unsigned();
         });
     }
 
@@ -26,6 +26,6 @@ class CreateLangsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('langs');
+        Schema::dropIfExists('user_package_vpn_server');
     }
 }

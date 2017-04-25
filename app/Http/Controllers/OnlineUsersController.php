@@ -31,7 +31,7 @@ class OnlineUsersController extends Controller
             ], 401);
         }
 
-        $data = OnlineUser::with('user', 'vpnserver')->orderBy('vpn_server_id', 'asc')->paginate(50);
+        $data = OnlineUser::with(['user', 'vpnserver'])->orderBy('created_at', 'desc')->paginate(50);
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Online Users';
@@ -39,8 +39,10 @@ class OnlineUsersController extends Controller
 
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
         return response()->json([
             'site_options' => $site_options,
@@ -65,7 +67,7 @@ class OnlineUsersController extends Controller
             if($request->has('search_input')) {
                 $query->where('username', 'LIKE', '%'.trim($request->search_input).'%');
             }
-        })->orderBy('vpn_server_id', 'asc')->paginate(50);
+        })->orderBy('created_at', 'desc')->paginate(50);
         
         return response()->json([
             'model' => $data,

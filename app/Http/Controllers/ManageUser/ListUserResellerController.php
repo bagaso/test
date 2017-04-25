@@ -34,12 +34,17 @@ class ListUserResellerController extends Controller
 
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
+
+        $language = Lang::all()->pluck('name');
 
         if (Gate::denies('manage-user') || !in_array(auth()->user()->user_group_id, [1,2,3])) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
                 'profile' => ['username' => auth()->user()->username],
+                'language' => $language,
                 'permission' => $permission,
             ], 403);
         }
@@ -49,7 +54,7 @@ class ListUserResellerController extends Controller
             $status_id = [1,2,3];
         }
 
-        if(auth()->user()->isAdmin() || auth()->user()->isSubAdmin()) {
+        if(auth()->user()->can('manage-all-users')) {
             $data = User::with('upline', 'status', 'user_group', 'user_package')->where('user_group_id', 4)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
         } else {
             $data = User::with('status', 'user_group', 'user_package')->where([['parent_id', auth()->user()->id], ['user_group_id', 4]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
@@ -57,17 +62,14 @@ class ListUserResellerController extends Controller
 
         $columns = User::$columns;
 
-        $total = auth()->user()->isAdmin() || auth()->user()->isSubAdmin() ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
-
-        $new_users = auth()->user()->isAdmin() || auth()->user()->isSubAdmin() ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
+        $total = auth()->user()->can('manage-all-users') ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
+        $new_users = auth()->user()->can('manage-all-users') ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'User List : Client';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
         $permission['access_duration'] = auth()->user()->isAdmin() || auth()->user()->isSubAdmin();
-
-        $language = Lang::all();
 
         return response()->json([
             'site_options' => $site_options,
@@ -111,16 +113,16 @@ class ListUserResellerController extends Controller
             $status_id = [1,2,3];
         }
 
-        if(auth()->user()->isAdmin() || auth()->user()->isSubAdmin()) {
+        if(auth()->user()->can('manage-all-users')) {
             $data = User::with('upline', 'status', 'user_group', 'user_package')->where('user_group_id', 4)->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
         } else {
-            $data = User::with('upline', 'status', 'user_group', 'user_package')->where([['parent_id', auth()->user()->id], ['user_group_id', 4]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
+            $data = User::with('status', 'user_group', 'user_package')->where([['parent_id', auth()->user()->id], ['user_group_id', 4]])->whereIn('status_id', $status_id)->SearchPaginateAndOrder($request);
         }
 
         $columns = User::$columns;
 
-        $total = auth()->user()->isAdmin() || auth()->user()->isSubAdmin() ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
-        $new_users = auth()->user()->isAdmin() || auth()->user()->isSubAdmin() ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
+        $total = auth()->user()->can('manage-all-users') ? User::where('user_group_id', 4)->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id]])->count();
+        $new_users = auth()->user()->can('manage-all-users') ? User::where([['user_group_id', 4], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', 4], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
         return response()->json([
             'message' => 'Selected user deleted.',

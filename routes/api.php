@@ -19,13 +19,10 @@ use Illuminate\Support\Facades\Hash;
 */
 
 Route::get('/wew', function() {
-//    $server = \App\VpnServer::findorfail(3);
-//    foreach ($server->users as $online_user) {
-//        echo $online_user->user_package->user_package['device'];
-//    }
-//    foreach ($users as $user) {
-//        $user->roles()->sync([1,2,3,4,5,6,13,15,16,18]);
-//    }
+    $server = \App\VpnServer::findorfail(3);
+    foreach ($server->users as $online_user) {
+        echo  $server->user_packages;
+    }
 });
 
 Route::get('/account', function () {
@@ -75,66 +72,68 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
         if($username == '' || $server_key == '') return '0';
 
-        $server = \App\VpnServer::where('server_key', $server_key)->firstorfail();
+        $server = \App\VpnServer::with('user_packages', 'server_access')->where('server_key', $server_key)->firstorfail();
         if(!$server->is_active) {
-            return '0';
+            return 'Server is currently down.';
         }
 
         $user = \App\User::with('status', 'user_package')->where('username', $username)->firstorfail();
 
         if($server->users()->where('username', $user->username)->exists()) {
-            return '0';
+            return 'You have active device on this server.';
         }
 
         $current = Carbon::now();
         $dt = Carbon::parse($user->getOriginal('expired_at'));
 
         if(!$user->isAdmin()) {
-
-            if ($user->user_package->id == 1 && $server->allowed_userpackage['package_1'] == 0) {
-                return '0';
+            if(!in_array($user->user_package->id, json_decode($server->user_packages->pluck('id')))) {
+                return 'User package is not allowed in this server.';
             }
-            if ($user->user_package->id == 2 && $server->allowed_userpackage['package_2'] == 0) {
-                return '0';
+            if(!$user->isActive()) {
+                return 'Account is not activated.';
             }
-            if ($user->user_package->id == 3 && $server->allowed_userpackage['package_3'] == 0) {
-                return '0';
+            if($user->vpn->count() >= intval($user->user_package->user_package['device'])) {
+                return 'Max paid device reached.';
             }
-            if(!$user->isActive() || $user->vpn->count() >= intval($user->user_package->user_package['device'])) {
-                return '0';
-            }
-            if(in_array($server->access, [1,2]) && $current->gte($dt)) {
-                return '0';
+            if($server->server_access->config['paid'] && $current->gte($dt)) {
+                return 'Your account is already expired.';
             }
             if($server->limit_bandwidth && $user->consumable_data < 1) {
-                return '0';
+                return 'You used all data allocated.';
             }
-            if($server->access == 0) {
+            if(!$server->server_access->config['paid']) {
                 if($current->lt($dt)) {
-                    return '0';
+                    return 'Paid user cannot enter free server.';
                 }
-                $free_sessions = \App\VpnServer::where('access', 0)->get();
+                $free_sessions = \App\VpnServer::where('server_access_id', 1)->get();
                 $free_ctr = 0;
                 foreach ($free_sessions as $free) {
                     if($free->users()->where('id', $user->id)->count() > 0) {
                         $free_ctr += 1;
                     }
                 }
-                if($free_ctr > 0) {
-                    return '0';
+                if(!$server->server_access->config['multi_device'] && $free_ctr > 0) {
+                    return 'Only one device allowed for free user.';
+                }
+                if($free_ctr >= $server->server_access->config['max_device']) {
+                    return 'Max free device reached.';
                 }
             }
 
-            if($server->access == 2) {
-                $vip_sessions = \App\VpnServer::where('access', 2)->get();
+            if($server->server_access->id == 3) {
+                $vip_sessions = \App\VpnServer::where('server_access_id', 3)->get();
                 $vip_ctr = 0;
                 foreach ($vip_sessions as $vip) {
                     if($vip->users()->where('id', $user->id)->count() > 0) {
                         $vip_ctr += 1;
                     }
                 }
-                if($vip_ctr > 0) {
-                    return '0';
+                if(!$server->server_access->config['multi_device'] && $vip_ctr > 0) {
+                    return 'Only one device allowed on ' . strtolower($server->server_access->name) . ' Server.';
+                }
+                if($vip_ctr >= $server->server_access->config['max_device']) {
+                    return 'Max device reached  on ' . strtolower($server->server_access->name) . ' Server.';
                 }
             }
         }
@@ -149,7 +148,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
             return '1';
         }
 
-        return '0';
+        return 'Server Error.';
     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
         return '0';
     }
@@ -237,7 +236,7 @@ Route::post('/manage-user/usergroup/{id}/ultimate', 'ManageUser\UserGroupControl
 Route::post('/manage-user/usergroup/{id}/all', 'ManageUser\UserGroupController@user_group_all');
 
 Route::get('/manage-user/permission/{id}', 'ManageUser\UserPermissionController@index');
-Route::get('/manage-user/permission/{id}/{p_code}', 'ManageUser\UserPermissionController@updatePermission');
+Route::post('/manage-user/permission/{id}', 'ManageUser\UserPermissionController@updatePermission');
 
 Route::get('/manage-user/duration/{id}', 'ManageUser\UserDurationController@index');
 Route::post('/manage-user/duration/{id}', 'ManageUser\UserDurationController@updateDuration');

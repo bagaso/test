@@ -22,7 +22,7 @@ class PublicServerStatusController extends Controller
     {
         $db_settings = \App\SiteSettings::findorfail(1);
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
         if (!$db_settings->settings['enable_panel_login']) {
             return response()->json([
@@ -40,7 +40,7 @@ class PublicServerStatusController extends Controller
             ], 403);
         }
 
-        $servers = VpnServer::select('server_name', 'access', 'limit_bandwidth', 'is_active')->withCount('online_users')->orderBy('server_name', 'asc')->get();
+        $servers = VpnServer::select('server_name', 'server_access_id', 'limit_bandwidth', 'is_active')->with('server_access')->withCount('online_users')->orderBy('server_name', 'asc')->get();
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Server Status';

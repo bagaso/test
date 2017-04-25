@@ -22,7 +22,7 @@ class PublicDistributorController extends Controller
     {
         $db_settings = \App\SiteSettings::findorfail(1);
 
-        $language = Lang::all();
+        $language = Lang::all()->pluck('name');
 
         if (!$db_settings->settings['enable_panel_login']) {
             return response()->json([

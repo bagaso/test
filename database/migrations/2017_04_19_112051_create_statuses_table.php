@@ -18,7 +18,6 @@ class CreateStatusesTable extends Migration
             $table->string('class');
             $table->string('name_set');
             $table->string('name_get');
-            $table->timestamps();
         });
     }
 
