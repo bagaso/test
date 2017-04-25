@@ -40,7 +40,7 @@ class PublicServerStatusController extends Controller
             ], 403);
         }
 
-        $servers = VpnServer::select('server_name', 'server_access_id', 'limit_bandwidth', 'is_active')->with('server_access')->withCount('online_users')->orderBy('server_name', 'asc')->get();
+        $servers = VpnServer::select('server_name', 'server_access_id', 'limit_bandwidth', 'is_active')->with(['server_access', 'user_packages'])->withCount('online_users')->orderBy('server_name', 'asc')->get();
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Server Status';
