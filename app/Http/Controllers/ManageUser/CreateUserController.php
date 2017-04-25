@@ -81,12 +81,6 @@ class CreateUserController extends Controller
             ], 401);
         }
 
-        if (Gate::denies('is_subscribed')) {
-            return response()->json([
-                'message' => 'Your account is already expired please extend your duration.',
-            ], 403);
-        }
-
         if (Gate::denies('manage-user')) {
             return response()->json([
                 'message' => 'Action not allowed.',
