@@ -105,19 +105,19 @@ class AddServerController extends Controller
             'limit_bandwidth' => 'bail|required|boolean',
         ]);
 
-//        $site_settings = SiteSettings::find(1);
-//
-//        $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
-//        $response = $client->request('POST', "/client/v4/zones/{$site_settings->settings['cf_zone']}/dns_records",
-//            ['http_errors' => false, 'headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json'], 'json' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
-//
-//        $cloudflare = json_decode($response->getBody());
-//
-//        if(!$cloudflare->success) {
-//            return response()->json([
-//                'message' => 'Cloudflare: ' . $cloudflare->errors[0]->message,
-//            ], 403);
-//        }
+        $site_settings = SiteSettings::find(1);
+
+        $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
+        $response = $client->request('POST', "/client/v4/zones/{$site_settings->settings['cf_zone']}/dns_records",
+            ['http_errors' => false, 'headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json'], 'json' => ['type' => 'A', 'name' => $request->server_domain, 'content' => $request->server_ip]]);
+
+        $cloudflare = json_decode($response->getBody());
+
+        if(!$cloudflare->success) {
+            return response()->json([
+                'message' => 'Cloudflare: ' . $cloudflare->errors[0]->message,
+            ], 403);
+        }
 
         $server = new VpnServer;
         $server->cf_id = '11';//$cloudflare->result->id;
