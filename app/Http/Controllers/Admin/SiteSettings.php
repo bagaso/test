@@ -118,6 +118,7 @@ class SiteSettings extends Controller
             ], 422);
         }
 
+        $db_settings->timestamp = false;
         $site_settings = $db_settings->settings;
 
         $site_settings['site_name'] = $request->site_name;
