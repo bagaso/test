@@ -17,7 +17,7 @@ class CreateServerAccessesTable extends Migration
             $table->increments('id');
             $table->string('class');
             $table->string('name');
-            $table->json('config');
+            $table->text('config');
         });
     }
 
