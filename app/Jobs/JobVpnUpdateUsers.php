@@ -7,7 +7,6 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class JobVpnUpdateUsers implements ShouldQueue
@@ -42,20 +41,17 @@ class JobVpnUpdateUsers implements ShouldQueue
                 foreach($logs as $log)
                 {
                     try {
-                        Log::info('g');
                         $user = \App\User::with('user_package')->where('username', $log['CommonName'])->firstorfail();
                         $login_session = $user->vpn->count();
-                        if($user->isAdmin() || $login_session >= 1 && $login_session <= intval($user->user_package->user_package['device'])) {
+                        if($user->isAdmin()) { //|| $login_session >= 1 && $login_session <= intval($user->user_package->user_package['device'])) {
                             $vpn_user = $user->vpn()->where('vpn_server_id', $this->server_id);
                             $vpn_user->update(['byte_sent' => floatval($log['BytesSent']) ? floatval($log['BytesSent']) : 0, 'byte_received' => floatval($log['BytesReceived']) ? floatval($log['BytesReceived']) : 0]);
                             //$vpn_user->update(['byte_sent' => 0, 'byte_received' => 0]);
                         } else {
-                            Log::info('f');
                             $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                             dispatch($job);
                         }
                     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
-                        Log::info('e');
                         $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                         dispatch($job);
                     }
