@@ -32,6 +32,7 @@ Route::get('/wew', function() {
                 if(!$server->is_active) {
                     return '0';
                 } else if(!$online_user->isAdmin()) {
+                    return 'wew';
                     $current = \Carbon\Carbon::now();
                     $dt = \Carbon\Carbon::parse($online_user->getOriginal('expired_at'));
                     $vpn = $online_user->vpn()->where('vpn_server_id', $server->id)->firstorfail();
@@ -55,12 +56,13 @@ Route::get('/wew', function() {
                             }
                         }
                         if(!$server->server_access->config['multi_device'] && $free_ctr > 1) {
-                            Log::info('a');
+                            return '6';
                         }
                         if($free_ctr > $server->server_access->config['max_device']) {
-                            Log::info('b');
+                            return '7';
                         }
                     } else if($server->server_access->id == 3) {
+                        return 'ww';
                         $vip_sessions = \App\VpnServer::where('server_access_id', 3)->get();
                         $vip_ctr = 0;
                         foreach ($vip_sessions as $vip) {
@@ -69,10 +71,10 @@ Route::get('/wew', function() {
                             }
                         }
                         if(!$server->server_access->config['multi_device'] && $vip_ctr > 1) {
-                            Log::info('c');
+                            return '8';
                         }
                         if($vip_ctr > $server->server_access->config['max_device']) {
-                            Log::info('d');
+                            return '9';
                         }
                     }
                 }
