@@ -34,7 +34,7 @@ Route::get('/wew', function() {
                 } else if(!$online_user->isAdmin()) {
                     $current = \Carbon\Carbon::now();
                     $dt = \Carbon\Carbon::parse($online_user->getOriginal('expired_at'));
-                    $vpn = $online_user->vpn()->where('vpn_server_id', $this->server_id)->firstorfail();
+                    $vpn = $online_user->vpn()->where('vpn_server_id', $server->id)->firstorfail();
                     if(!in_array($online_user->user_package->id, json_decode($server->user_packages->pluck('id')))) {
                         return '1';
                     } else if(!$online_user->isActive() || $online_user->vpn->count() > intval($online_user->user_package->user_package['device'])) {
