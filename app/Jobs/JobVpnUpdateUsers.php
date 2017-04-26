@@ -53,6 +53,7 @@ class JobVpnUpdateUsers implements ShouldQueue
                             //dispatch($job);
                         }
                     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
+                        Log::info('e');
                         $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                         dispatch($job);
                     }
