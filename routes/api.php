@@ -21,7 +21,66 @@ use Illuminate\Support\Facades\Schema;
 */
 
 Route::get('/wew', function() {
-    Log::info('e');
+    try {
+        if(Schema::hasTable('site_settings') && SiteSettings::where('id', 1)->exists()) {
+            $db_settings = SiteSettings::find(1);
+            $server = \App\VpnServer::with('server_access')->findorfail(1);
+            foreach ($server->users as $online_user) {
+                if($server->users()->where('username', $online_user->username)->count() > 1) {
+                    Log::info('Same Server Error.');
+                }
+                if(!$server->is_active) {
+                    return '0';
+                } else if(!$online_user->isAdmin()) {
+                    $current = \Carbon\Carbon::now();
+                    $dt = \Carbon\Carbon::parse($online_user->getOriginal('expired_at'));
+                    $vpn = $online_user->vpn()->where('vpn_server_id', $this->server_id)->firstorfail();
+                    if(!in_array($online_user->user_package->id, json_decode($server->user_packages->pluck('id')))) {
+                        return '1';
+                    } else if(!$online_user->isActive() || $online_user->vpn->count() > intval($online_user->user_package->user_package['device'])) {
+                        return '2';
+                    } else if($server->server_access->config['paid'] && $current->gte($dt)) {
+                        return '3';
+                    } else if($server->limit_bandwidth && $vpn->getOriginal('byte_sent') >= $vpn->data_available) {
+                        return '4';
+                    } else if(!$server->server_access->config['paid']) {
+                        if($current->lt($dt)) {
+                            return '5';
+                        }
+                        $free_sessions = \App\VpnServer::where('server_access_id', 1)->get();
+                        $free_ctr = 0;
+                        foreach ($free_sessions as $free) {
+                            if($free->users()->where('id', $online_user->id)->count() > 0) {
+                                $free_ctr += 1;
+                            }
+                        }
+                        if(!$server->server_access->config['multi_device'] && $free_ctr > 1) {
+                            Log::info('a');
+                        }
+                        if($free_ctr > $server->server_access->config['max_device']) {
+                            Log::info('b');
+                        }
+                    } else if($server->server_access->id == 3) {
+                        $vip_sessions = \App\VpnServer::where('server_access_id', 3)->get();
+                        $vip_ctr = 0;
+                        foreach ($vip_sessions as $vip) {
+                            if($vip->users()->where('id', $online_user->id)->count() > 0) {
+                                $vip_ctr += 1;
+                            }
+                        }
+                        if(!$server->server_access->config['multi_device'] && $vip_ctr > 1) {
+                            Log::info('c');
+                        }
+                        if($vip_ctr > $server->server_access->config['max_device']) {
+                            Log::info('d');
+                        }
+                    }
+                }
+            }
+        }
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
+        //
+    }
 });
 
 Route::get('/account', function () {
