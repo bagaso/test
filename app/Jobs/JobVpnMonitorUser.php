@@ -40,8 +40,8 @@ class JobVpnMonitorUser implements ShouldQueue
                 foreach ($server->users as $online_user) {
                     if($server->users()->where('username', $online_user->username)->count() > 1) {
                         Log::info('Same Server Error.');
-                        $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
-                        dispatch($job);
+                        //$job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
+                        //dispatch($job);
                     }
                     if(!$server->is_active) {
                         Log::info('Server is Down.');
