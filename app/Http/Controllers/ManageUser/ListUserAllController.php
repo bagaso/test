@@ -63,7 +63,7 @@ class ListUserAllController extends Controller
         $columns = User::$columns;
 
         $total = auth()->user()->can('manage-all-users') ? User::where('user_group_id', '>', 2)->count() : User::where([['parent_id', '=', auth()->user()->id], ['user_group_id', '>', auth()->user()->user_group_id]])->count();
-        $new_users = auth()->user()->can('manage-all-users') ? User::where([['user_group_id', '>', 2], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', '>', 2], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
+        $new_users = auth()->user()->can('manage-all-users') ? User::where([['user_group_id', '>', 2], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', '>', 2], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'User List : All';
