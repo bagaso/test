@@ -49,8 +49,8 @@ class JobVpnUpdateUsers implements ShouldQueue
                             $vpn_user->update(['byte_sent' => floatval($log['BytesSent']) ? floatval($log['BytesSent']) : 0, 'byte_received' => floatval($log['BytesReceived']) ? floatval($log['BytesReceived']) : 0]);
                             //$vpn_user->update(['byte_sent' => 0, 'byte_received' => 0]);
                         } else {
-                            $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
-                            dispatch($job);
+                            //$job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
+                            //dispatch($job);
                         }
                     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
                         $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
