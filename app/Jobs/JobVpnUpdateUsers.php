@@ -42,6 +42,7 @@ class JobVpnUpdateUsers implements ShouldQueue
                 foreach($logs as $log)
                 {
                     try {
+                        Log::info('g');
                         $user = \App\User::with('user_package')->where('username', $log['CommonName'])->firstorfail();
                         $login_session = $user->vpn->count();
                         if($user->isAdmin() || $login_session >= 1 && $login_session <= intval($user->user_package->user_package['device'])) {
