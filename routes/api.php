@@ -22,6 +22,11 @@ use Illuminate\Support\Facades\Schema;
 
 Route::get('/wew', 'PublicServerStatusController@test');
 
+Route::get('ww', function() {
+    $user = \App\User::where('username', 'admin101')->firstorfail();
+    echo  $user->user_package->user_package['device'];
+});
+
 //Route::get('/wew', function() {
 //    try {
 //        if(Schema::hasTable('site_settings') && SiteSettings::where('id', 1)->exists()) {
