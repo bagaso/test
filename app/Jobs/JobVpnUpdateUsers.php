@@ -67,7 +67,7 @@ class JobVpnUpdateUsers implements ShouldQueue
         }
     }
 
-    function availableIp($host, $port, $timeout=3) {
+    public function availableIp($host, $port, $timeout=3) {
         $fp = @fsockopen($host, $port, $errno, $errstr, $timeout);
         if($fp) {
             return true;
