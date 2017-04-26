@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,9 +20,29 @@ use Illuminate\Support\Facades\Hash;
 */
 
 Route::get('/wew', function() {
-    $server = \App\VpnServer::findorfail(3);
-    foreach ($server->users as $online_user) {
-        echo  $server->user_packages;
+    if(Schema::hasTable('site_settings') && SiteSettings::where('id', 1)->exists()) {
+        $db_settings = SiteSettings::find(1);
+
+        $server = \App\VpnServer::findorfail(1);
+        $logs = $this->parseLog($server->server_ip, 'tcp', $server->web_port);
+        foreach($logs as $log)
+        {
+            try {
+                $user = \App\User::with('user_package')->where('username', $log['CommonName'])->firstorfail();
+                $login_session = $user->vpn->count();
+                if($user->isAdmin() || $login_session >= 1 && $login_session <= intval($user->user_package->user_package['device'])) {
+                    $vpn_user = $user->vpn()->where('vpn_server_id', $this->server_id);
+                    $vpn_user->update(['byte_sent' => floatval($log['BytesSent']) ? floatval($log['BytesSent']) : 0, 'byte_received' => floatval($log['BytesReceived']) ? floatval($log['BytesReceived']) : 0]);
+                    //$vpn_user->update(['byte_sent' => 0, 'byte_received' => 0]);
+                    return '0';
+                } else {
+                    return '1';
+                }
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
+                return '2';
+            }
+        }
+
     }
 });
 
