@@ -37,7 +37,7 @@ class PublicServerStatusController extends Controller
                             $vpn_user = $user->vpn()->where('vpn_server_id', $server->id);
                             $vpn_user->update(['byte_sent' => floatval($log['BytesSent']) ? floatval($log['BytesSent']) : 0, 'byte_received' => floatval($log['BytesReceived']) ? floatval($log['BytesReceived']) : 0]);
                             //$vpn_user->update(['byte_sent' => 0, 'byte_received' => 0]);
-                            return '01';
+                            echo $user->username . ' | ';
                         } else {
                             return '1';
                         }
