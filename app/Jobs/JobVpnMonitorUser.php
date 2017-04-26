@@ -99,7 +99,7 @@ class JobVpnMonitorUser implements ShouldQueue
                                 }
                             }
                             if(!$server->server_access->config['multi_device'] && $vip_ctr > 1) {
-                                Log::info('c');
+                                Log::info('c1');
                                 $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                                 dispatch($job);
                             }
