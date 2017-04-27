@@ -146,7 +146,7 @@ class ListServerController extends Controller
         $servers = VpnServer::whereIn('id', $request->id);
         $servers->delete();
 
-        $servers = VpnServer::select('id', 'server_name', 'server_ip', 'server_domain', 'access', 'limit_bandwidth', 'is_active')->withCount('online_users')->orderBy('server_name', 'asc')->get();
+        $servers = VpnServer::select('id', 'server_name', 'server_ip', 'server_domain', 'server_access_id', 'limit_bandwidth', 'is_active')->with('server_access')->withCount('online_users')->orderBy('server_name', 'asc')->get();
 
         return response()->json([
             'message' => 'Server deleted.',
@@ -178,7 +178,7 @@ class ListServerController extends Controller
         $servers = VpnServer::whereIn('id', $request->id);
         $servers->update(['is_active' => $request->status]);
 
-        $servers = VpnServer::select('id', 'server_name', 'server_ip', 'server_domain', 'access', 'limit_bandwidth', 'is_active')->withCount('online_users')->orderBy('server_name', 'asc')->get();
+        $servers = VpnServer::select('id', 'server_name', 'server_ip', 'server_domain', 'server_access_id', 'limit_bandwidth', 'is_active')->with('server_access')->withCount('online_users')->orderBy('server_name', 'asc')->get();
 
         $msg = ['Server down.', 'Server up.'];
 
