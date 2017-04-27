@@ -120,7 +120,7 @@ class AddServerController extends Controller
         }
 
         $server = new VpnServer;
-        $server->cf_id = '11';//$cloudflare->result->id;
+        $server->cf_id = $cloudflare->result->id;
         $server->server_name = $request->server_name;
         $server->server_ip = $request->server_ip;
         $server->server_domain = $request->server_domain;
