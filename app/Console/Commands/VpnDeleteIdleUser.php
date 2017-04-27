@@ -6,7 +6,6 @@ use App\Jobs\JobVpnDisconnectUser;
 use App\SiteSettings;
 use App\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class VpnDeleteIdleUser extends Command
@@ -49,7 +48,6 @@ class VpnDeleteIdleUser extends Command
             foreach ($delete_idle->get() as $online_user) {
                 try {
                     $user = User::findorfail($online_user->user_id);
-                    Log::info('h');
                     $job = (new JobVpnDisconnectUser($user->username, $online_user->vpnserver->server_ip, $online_user->vpnserver->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                     dispatch($job);
 
