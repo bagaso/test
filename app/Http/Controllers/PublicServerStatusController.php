@@ -20,7 +20,7 @@ class PublicServerStatusController extends Controller
         $this->middleware('guest');
     }
     
-    public function test()
+    public function test1()
     {
         try {
             if(Schema::hasTable('site_settings') && SiteSettings::where('id', 1)->exists()) {
