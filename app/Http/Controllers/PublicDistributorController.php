@@ -39,8 +39,8 @@ class PublicDistributorController extends Controller
                 'language' => $language,
             ], 403);
         }
-
-        $data = User::where([['distributor', 1], ['status_id', 1], ['credits', '>', 0]])->SearchDistPaginateAndOrder($request);
+        
+        $data = User::where([['distributor', 1], ['status_id', 2], ['credits', '>', 0]])->SearchDistPaginateAndOrder($request);
 
         $columns = [
             'fullname', 'contact', 'user_group_id', 'credits',

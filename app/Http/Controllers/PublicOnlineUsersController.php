@@ -18,7 +18,7 @@ class PublicOnlineUsersController extends Controller
         $this->middleware('guest');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $db_settings = \App\SiteSettings::findorfail(1);
 
@@ -40,7 +40,7 @@ class PublicOnlineUsersController extends Controller
             ], 403);
         }
 
-        $data = OnlineUser::with('user', 'vpnserver')->orderBy('created_at', 'desc')->paginate(50);
+        $data = OnlineUser::with('user', 'vpnserver')->orderBy('created_at', 'desc')->paginate(1);
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Online Users';

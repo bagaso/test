@@ -50,6 +50,7 @@ class PublicNewsAndUpdatesController extends Controller
     {
         $db_settings = \App\SiteSettings::findorfail(1);
 
+        $language = Lang::all()->pluck('name');
         $post = Updates::findorfail($request->id);
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
@@ -68,6 +69,7 @@ class PublicNewsAndUpdatesController extends Controller
 
         return response()->json([
             'site_options' => $site_options,
+            'language' => $language,
             'post' => $post,
         ], 200);
     }

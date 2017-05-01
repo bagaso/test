@@ -100,7 +100,7 @@ class ServerInfoController extends Controller
             'server_domain' => 'bail|required|unique:vpn_servers,server_domain,' . $server->id,
             'web_port' => 'bail|required|integer',
             'server_key' => 'bail|required|unique:vpn_servers,server_key,' . $server->id,
-            'server_access' => 'bail|required|in:1,2,3',
+            'server_access' => 'bail|required|in:1,2,3,4',
             'server_status' => 'bail|required|boolean',
             'user_package' => 'bail|required|array',
             'limit_bandwidth' => 'bail|required|boolean',

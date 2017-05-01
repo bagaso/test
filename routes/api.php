@@ -310,7 +310,7 @@ Route::get('/vpn-server/server-status', 'VpnServer\ListServerController@serverst
 Route::get('/admin/site-settings', 'Admin\SiteSettings@index');
 Route::post('/admin/site-settings', 'Admin\SiteSettings@updateSettings');
 
-Route::get('/public/online-users', 'PublicOnlineUsersController@index');
+Route::post('/public/online-users', 'PublicOnlineUsersController@index');
 Route::post('/public/distributors', 'PublicDistributorController@index');
 Route::get('/public/server-status', 'PublicServerStatusController@index');
 
