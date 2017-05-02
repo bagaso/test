@@ -35,7 +35,7 @@ class JobVpnMonitorUser implements ShouldQueue
         try {
             if(Schema::hasTable('site_settings') && SiteSettings::where('id', 1)->exists()) {
                 $db_settings = SiteSettings::find(1);
-                $server = \App\VpnServer::with('server_access')->findorfail($this->server_id);
+                $server = \App\VpnServer::with(['server_access', 'user_access'])->findorfail($this->server_id);
                 foreach ($server->users as $online_user) {
                     if($server->users()->where('username', $online_user->username)->count() > 1) {
                         $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
