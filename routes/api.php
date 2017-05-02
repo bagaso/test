@@ -20,7 +20,12 @@ use Illuminate\Support\Facades\Schema;
 |
 */
 
-Route::get('/wew', 'PublicServerStatusController@test');
+//Route::get('/wew', 'PublicServerStatusController@test');
+
+Route::get('/wew', function() {
+    $server = \App\VpnServer::find(2);
+    return $server->user_access->pluck('id');
+});
 
 Route::get('/account', function () {
     $permission['is_admin'] = auth()->user()->isAdmin();
@@ -69,7 +74,7 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
         if($username == '' || $server_key == '') return '0';
 
-        $server = \App\VpnServer::with('user_packages', 'server_access')->where('server_key', $server_key)->firstorfail();
+        $server = \App\VpnServer::with(['user_packages', 'server_access', 'user_access'])->where('server_key', $server_key)->firstorfail();
         if(!$server->is_active) {
             return 'Server is currently down.';
         }
@@ -118,8 +123,24 @@ Route::get('/vpn_auth_connect', function (Request $request) {
                 }
             }
 
-            if($server->server_access->id == 3) {
-                $vip_sessions = \App\VpnServer::where('server_access_id', 3)->get();
+//            if($server->server_access->id == 3) {
+//                $vip_sessions = \App\VpnServer::where('server_access_id', 3)->get();
+//                $vip_ctr = 0;
+//                foreach ($vip_sessions as $vip) {
+//                    if($vip->users()->where('id', $user->id)->count() > 0) {
+//                        $vip_ctr += 1;
+//                    }
+//                }
+//                if(!$server->server_access->config['multi_device'] && $vip_ctr > 0) {
+//                    return 'Only one device allowed on ' . strtolower($server->server_access->name) . ' Server.';
+//                }
+//                if($vip_ctr >= $server->server_access->config['max_device']) {
+//                    return 'Max device reached  on ' . strtolower($server->server_access->name) . ' Server.';
+//                }
+//            }
+
+            if(!$server->server_access->config['multi_device']) {
+                $vip_sessions = \App\VpnServer::where('server_access_id', $server->server_access->id)->get();
                 $vip_ctr = 0;
                 foreach ($vip_sessions as $vip) {
                     if($vip->users()->where('id', $user->id)->count() > 0) {
@@ -131,6 +152,12 @@ Route::get('/vpn_auth_connect', function (Request $request) {
                 }
                 if($vip_ctr >= $server->server_access->config['max_device']) {
                     return 'Max device reached  on ' . strtolower($server->server_access->name) . ' Server.';
+                }
+            }
+
+            if($server->server_access->config['private']) {
+                if(!in_array($user->id, json_decode($server->user_access->pluck('id')))) {
+                    return 'Your account is not allowed to login to ' . strtolower($server->server_access->name) . ' server.';
                 }
             }
         }

@@ -54,4 +54,9 @@ class VpnServer extends Model
     {
         return $this->belongsToMany('App\UserPackage');
     }
+
+    public function user_access()
+    {
+        return $this->belongsToMany('App\User');
+    }
 }

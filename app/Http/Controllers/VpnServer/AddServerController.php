@@ -99,7 +99,7 @@ class AddServerController extends Controller
             'server_key' => 'bail|required|unique:vpn_servers,server_key',
             'vpn_secret' => 'required',
             'server_port' => 'bail|required|integer',
-            'server_access' => 'bail|required|in:1,2,3,4',
+            'server_access' => 'bail|required|in:1,2,3,4,5,6',
             'server_status' => 'bail|required|boolean',
             'user_package' => 'bail|required|array',
             'limit_bandwidth' => 'bail|required|boolean',

@@ -80,8 +80,13 @@ class JobVpnMonitorUser implements ShouldQueue
                                 $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                                 dispatch($job);
                             }
-                        } else if($server->server_access->id == 3) {
-                            $vip_sessions = \App\VpnServer::where('server_access_id', 3)->get();
+                        } else if($server->server_access->config['private']) {
+                            if(!in_array($online_user->id, json_decode($server->user_access->pluck('id')))) {
+                                $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
+                                dispatch($job);
+                            }
+                        } else if(!$server->server_access->config['multi_device']) {
+                            $vip_sessions = \App\VpnServer::where('server_access_id', $server->server_access->id)->get();
                             $vip_ctr = 0;
                             foreach ($vip_sessions as $vip) {
                                 if($vip->users()->where('id', $online_user->id)->count() > 0) {
