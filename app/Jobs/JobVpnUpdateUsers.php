@@ -42,10 +42,11 @@ class JobVpnUpdateUsers implements ShouldQueue
                 {
                     try {
                         $user = \App\User::where('username', $log['CommonName'])->firstorfail();
+                        $real_address = explode(":", $log['RealAddress']);
                         //$login_session = $user->vpn->count();
                         if($user->vpn->count() >= 1) {
                             $vpn_user = $user->vpn()->where('vpn_server_id', $this->server_id);
-                            $vpn_user->update(['byte_sent' => floatval($log['BytesSent']) ? floatval($log['BytesSent']) : 0, 'byte_received' => floatval($log['BytesReceived']) ? floatval($log['BytesReceived']) : 0]);
+                            $vpn_user->update(['user_ip' => $real_address[0], 'user_port' => $real_address[1], 'byte_sent' => floatval($log['BytesSent']) ? floatval($log['BytesSent']) : 0, 'byte_received' => floatval($log['BytesReceived']) ? floatval($log['BytesReceived']) : 0]);
                             //$vpn_user->update(['byte_sent' => 0, 'byte_received' => 0]);
                         } else {
                             $job = (new JobVpnDisconnectUser($log['CommonName'], $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');

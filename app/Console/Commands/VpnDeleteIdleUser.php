@@ -59,15 +59,17 @@ class VpnDeleteIdleUser extends Command
                     }
                     $user->lifetime_bandwidth = doubleval($user->lifetime_bandwidth) + doubleval($online_user->byte_sent);
                     $user->save();
-//            $vpn_history = new \App\VpnHistory;
-//            $vpn_history->user_id = $online_user->user->id;
-//            $vpn_history->server_name = $online_user->vpnserver->server_name;
-//            $vpn_history->server_ip = $online_user->vpnserver->server_ip;
-//            $vpn_history->server_domain = $online_user->vpnserver->server_domain;
-//            $vpn_history->byte_sent = floatval($online_user->byte_sent);
-//            $vpn_history->byte_received = floatval($online_user->byte_received);
-//            $vpn_history->session_start = \Carbon\Carbon::parse($online_user->getOriginal('created_at'));
-//            $vpn_history->save();
+                    $vpn_history = new \App\VpnHistory;
+                    $vpn_history->user_id = $online_user->user->id;
+                    $vpn_history->user_ip = $online_user->user_ip;
+                    $vpn_history->user_port = $online_user->user_port;
+                    $vpn_history->server_name = $online_user->vpnserver->server_name;
+                    $vpn_history->server_ip = $online_user->vpnserver->server_ip;
+                    $vpn_history->server_domain = $online_user->vpnserver->server_domain;
+                    $vpn_history->byte_sent = floatval($online_user->byte_sent);
+                    $vpn_history->byte_received = floatval($online_user->byte_received);
+                    $vpn_history->session_start = \Carbon\Carbon::parse($online_user->getOriginal('created_at'));
+                    $vpn_history->save();
                 } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
                     //
                 }
