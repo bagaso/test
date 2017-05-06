@@ -199,15 +199,17 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
         }
         $user_delete->lifetime_bandwidth = doubleval($user_delete->lifetime_bandwidth) + doubleval($bytes_sent);
         $user_delete->save();
-//        $vpn_history = new \App\VpnHistory;
-//        $vpn_history->user_id = $user_delete->id;
-//        $vpn_history->server_name = $server->server_name;
-//        $vpn_history->server_ip = $server->server_ip;
-//        $vpn_history->server_domain = $server->server_domain;
-//        $vpn_history->byte_sent = floatval($bytes_sent);
-//        $vpn_history->byte_received = floatval($bytes_received);
-//        $vpn_history->session_start = \Carbon\Carbon::parse($vpn->getOriginal('created_at'));
-//        $vpn_history->save();
+        $vpn_history = new \App\VpnHistory;
+        $vpn_history->user_id = $user_delete->id;
+        $vpn_history->user_ip = $request->trusted_ip;
+        $vpn_history->user_port = $request->trusted_port;
+        $vpn_history->server_name = $server->server_name;
+        $vpn_history->server_ip = $server->server_ip;
+        $vpn_history->server_domain = $server->server_domain;
+        $vpn_history->byte_sent = floatval($bytes_sent);
+        $vpn_history->byte_received = floatval($bytes_received);
+        $vpn_history->session_start = \Carbon\Carbon::parse($vpn->getOriginal('created_at'));
+        $vpn_history->save();
         $user_delete->vpn()->where('vpn_server_id', $server->id)->delete();
         return '1';
     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
