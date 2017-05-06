@@ -69,6 +69,7 @@ class VpnDeleteIdleUser extends Command
                     $vpn_history->byte_sent = floatval($online_user->byte_sent);
                     $vpn_history->byte_received = floatval($online_user->byte_received);
                     $vpn_history->session_start = \Carbon\Carbon::parse($online_user->getOriginal('created_at'));
+                    $vpn_history->session_end = \Carbon\Carbon::now();
                     $vpn_history->save();
                 } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
                     //

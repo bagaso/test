@@ -211,6 +211,7 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
         $vpn_history->byte_sent = floatval($bytes_sent);
         $vpn_history->byte_received = floatval($bytes_received);
         $vpn_history->session_start = \Carbon\Carbon::parse($vpn->getOriginal('created_at'));
+        $vpn_history->session_end = \Carbon\Carbon::now();
         $vpn_history->save();
         $user_delete->vpn()->where('vpn_server_id', $server->id)->delete();
         return '1';
