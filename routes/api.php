@@ -201,8 +201,8 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
         $user_delete->save();
         $vpn_history = new \App\VpnHistory;
         $vpn_history->user_id = $user_delete->id;
-        $vpn_history->user_ip = $request->trusted_ip;
-        $vpn_history->user_port = $request->trusted_port;
+        $vpn_history->user_ip = $vpn->user_ip;
+        $vpn_history->user_port = $vpn->user_port;
         $vpn_history->server_name = $server->server_name;
         $vpn_history->server_ip = $server->server_ip;
         $vpn_history->server_domain = $server->server_domain;
