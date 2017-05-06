@@ -29,7 +29,7 @@ class DistributorController extends Controller
             ], 401);
         }
         
-        $data = User::where([['distributor', 1], ['status_id', 2], ['credits', '>', 0]])->SearchDistPaginateAndOrder($request);
+        $data = User::select('fullname')->where([['distributor', 1], ['status_id', 2], ['credits', '>', 0]])->SearchDistPaginateAndOrder($request);
 
         $columns = [
             'fullname', 'contact', 'user_group_id', 'credits',

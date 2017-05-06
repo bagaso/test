@@ -48,8 +48,14 @@ class ListServerController extends Controller
                 'permission' => $permission,
             ], 403);
         }
+
+        $servers = VpnServer::select('id', 'server_name', 'server_ip', 'server_domain', 'server_access_id', 'limit_bandwidth', 'is_active')->with(['server_access' => function($q) {
+            $q->select('id', 'class', 'name');
+        }, 'user_packages' => function($q) {
+            $q->select('id', 'class', 'name')->orderBy('id');
+        }])->withCount('online_users')->orderBy('server_access_id', 'asc')->orderBy('server_name', 'asc')->get();
         
-        $servers = VpnServer::select('id', 'server_name', 'server_ip', 'server_domain', 'server_access_id', 'limit_bandwidth', 'is_active')->with('server_access')->withCount('online_users')->orderBy('server_name', 'asc')->get();
+        //$servers = VpnServer::select('id', 'server_name', 'server_ip', 'server_domain', 'server_access_id', 'limit_bandwidth', 'is_active')->with('server_access')->withCount('online_users')->orderBy('server_name', 'asc')->get();
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'VPN Server : List';
@@ -79,7 +85,11 @@ class ListServerController extends Controller
         $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
         $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
 
-        $servers = VpnServer::with(['server_access', 'user_packages'])->select('id', 'server_name', 'server_access_id', 'limit_bandwidth', 'is_active')->withCount('online_users')->orderBy('server_name', 'asc')->get();
+        $servers = VpnServer::select('id', 'server_name', 'server_access_id', 'limit_bandwidth', 'is_active')->with(['server_access' => function($q) {
+            $q->select('id', 'class', 'name');
+        }, 'user_packages' => function($q) {
+            $q->select('id', 'class', 'name')->orderBy('id');
+        }])->withCount('online_users')->orderBy('server_access_id', 'asc')->orderBy('server_name', 'asc')->get();
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Server Status';
@@ -178,7 +188,11 @@ class ListServerController extends Controller
         $servers = VpnServer::whereIn('id', $request->id);
         $servers->update(['is_active' => $request->status]);
 
-        $servers = VpnServer::select('id', 'server_name', 'server_ip', 'server_domain', 'server_access_id', 'limit_bandwidth', 'is_active')->with('server_access')->withCount('online_users')->orderBy('server_name', 'asc')->get();
+        $servers = VpnServer::select('id', 'server_name', 'server_ip', 'server_domain', 'server_access_id', 'limit_bandwidth', 'is_active')->with(['server_access' => function($q) {
+            $q->select('id', 'class', 'name');
+        }, 'user_packages' => function($q) {
+            $q->select('id', 'class', 'name')->orderBy('id');
+        }])->withCount('online_users')->orderBy('server_access_id', 'asc')->orderBy('server_name', 'asc')->get();
 
         $msg = ['Server down.', 'Server up.'];
 

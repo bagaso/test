@@ -40,7 +40,11 @@ class PublicOnlineUsersController extends Controller
             ], 403);
         }
 
-        $data = OnlineUser::with('user', 'vpnserver')->orderBy('created_at', 'desc')->paginate(50);
+        $data = OnlineUser::select('user_id', 'vpn_server_id', 'byte_sent', 'byte_received', 'created_at')->with(['user' => function($q) {
+            $q->select('id', 'username');
+        }, 'vpnserver' => function($q) {
+            $q->select('id', 'server_name');
+        }])->orderBy('created_at', 'desc')->paginate(50);
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Online Users';

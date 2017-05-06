@@ -39,7 +39,7 @@ class AccountController extends Controller
         $site_options['sub_name'] = 'My Account';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
-        $user = User::with('upline', 'status', 'user_group', 'user_package')->find(auth()->user()->id);
+        $user = User::with(['upline', 'status', 'user_group', 'user_package'])->find(auth()->user()->id);
 
         $language = Lang::all()->pluck('name');
 

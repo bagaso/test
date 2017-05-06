@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Hash;
 
 class TransferCreditsController extends Controller
 {
@@ -87,7 +86,7 @@ class TransferCreditsController extends Controller
             ], 403);
         }
 
-        if (!auth()->user()->isAdmin() && auth()->user()->credits < $request->credits) {
+        if (auth()->user()->cannot('unlimited-credits') && auth()->user()->credits < $request->credits) {
             return response()->json([
                 'message' => 'Input must be lower or equal to your available credits.',
             ], 403);
@@ -106,14 +105,20 @@ class TransferCreditsController extends Controller
                     'message' => 'Action not allowed.',
                 ], 403);
             }
-            DB::transaction(function () use ($request) {
-                $user = User::where('username', $request->username)->firstorfail();
-                if (!auth()->user()->isAdmin()) {
-                    $request->user()->credits -= $request->credits;
-                    $request->user()->save();
-                }
+
+            $user_id = $user->id;
+
+            DB::transaction(function () use ($request, $user_id) {
+                $user = User::with('user_package')->findOrFail($user_id);
+                $account = User::findorfail(auth()->user()->id);
+
                 $user->credits += $request->credits;
                 $user->save();
+
+                if (auth()->user()->cannot('unlimited-credits')) {
+                    $account->credits -= $request->credits;
+                    $account->save();
+                }
             }, 5);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
@@ -123,9 +128,11 @@ class TransferCreditsController extends Controller
         }
 
         $withs = $request->credits > 1 ? ' credits' : ' credit';
+        $account = User::findorfail(auth()->user()->id);
+
         return response()->json([
             'message' => 'You have transferred ' . $request->credits . $withs . ' to ' . $request->username . '.',
-            'profile' => ['credits' => auth()->user()->credits, 'distributor' => auth()->user()->distributor],
+            'profile' => ['credits' => $account->credits, 'distributor' => $account->distributor],
         ], 200);
 
     }

@@ -6,6 +6,7 @@ use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class UserCreditController extends Controller
@@ -65,7 +66,17 @@ class UserCreditController extends Controller
             ], 403);
         }
 
+        $this->validate($request, [
+            'top_up' => 'bail|required|boolean',
+        ]);
+
         $user = User::with('user_package')->findOrFail($id);
+
+        if ($user->can('unlimited-credits')) {
+            return response()->json([
+                'message' => 'User cannot received anymore credits.',
+            ], 403);
+        }
 
         if ($request->top_up) {
             if(auth()->user()->isAdmin() || in_array(auth()->user()->user_group->id, [2])) {
@@ -96,29 +107,34 @@ class UserCreditController extends Controller
             ], 403);
         }
 
-        $user = User::with('user_package')->findOrFail($id);
+        DB::transaction(function () use ($request, $id) {
 
-        if ($request->top_up) {
-            $current = Carbon::now();
-            $dt = Carbon::parse($user->getOriginal('expired_at'));
-            if($current->lt($dt)) {
-                $user->expired_at = $dt->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']));
+            $user = User::with('user_package')->findOrFail($id);
+            $account = User::findorfail(auth()->user()->id);
+
+            if ($request->top_up) {
+                $current = Carbon::now();
+                $expired_at = Carbon::parse($user->getOriginal('expired_at'));
+                if($current->lt($expired_at)) {
+                    $user->expired_at = $expired_at->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']));
+                } else {
+                    $user->expired_at = $current->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']));
+                }
             } else {
-                $user->expired_at = $current->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']));
+                if ($request->input_credits < 0 && ($user->getOriginal('credits') + $request->input_credits) < 0) {
+                    return response()->json(['message' => 'User credits must be a non-negative value.'], 403);
+                }
+                $user->credits += $request->input_credits;
             }
-        } else {
-            if ($request->input_credits < 0 && ($user->getOriginal('credits') + $request->input_credits) < 0) {
-                return response()->json(['message' => 'User credits must be a non-negative value.'], 403);
+
+            $user->save();
+
+            if (auth()->user()->cannot('unlimited-credits')) {
+                $account->credits -= $request->input_credits;
+                $account->save();
             }
-            $user->credits += $request->input_credits;
-        }
 
-        $user->save();
-
-        if (auth()->user()->cannot('unlimited-credits')) {
-            $request->user()->credits -= $request->input_credits;
-            $request->user()->save();
-        }
+        }, 5);
 
         if ($request->top_up) {
             $message = 'User has been successfully top-up.';
@@ -126,9 +142,12 @@ class UserCreditController extends Controller
             $message = 'Credits has been transferred successfully.';
         }
 
+        $user = User::findOrFail($id);
+        $account = User::findorfail(auth()->user()->id);
+
         return response()->json([
             'message' => $message,
-            'profile' => ['credits' => auth()->user()->credits],
+            'profile' => ['credits' => $account->credits],
             'user_profile' => ['credits' => $user->credits, 'expired_at' => $user->expired_at]
         ], 200);
     }
