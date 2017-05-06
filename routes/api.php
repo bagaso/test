@@ -164,6 +164,8 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
         $vpn = new OnlineUser;
         $vpn->user_id = $user->id;
+        $vpn->user_ip = $request->trusted_ip ? $request->trusted_ip : '0.0.0.0';
+        $vpn->user_port = $request->trusted_port ? $request->trusted_port : '0';
         $vpn->vpn_server_id = $server->id;
         $vpn->byte_sent = 0;
         $vpn->byte_received = 0;
