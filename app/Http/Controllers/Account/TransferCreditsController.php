@@ -80,11 +80,11 @@ class TransferCreditsController extends Controller
             ], 401);
         }
 
-        if(!auth()->user()->distributor && Gate::denies('manage_user')) {
+        //if(!auth()->user()->distributor && Gate::denies('manage_user')) {
             return response()->json([
                 'message' => 'Action not allowed.',
             ], 403);
-        }
+        //}
 
         if (auth()->user()->cannot('unlimited-credits') && auth()->user()->credits < $request->credits) {
             return response()->json([
