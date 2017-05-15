@@ -23,8 +23,8 @@ class CreateAdminTransferLogsTable extends Migration
             $table->string('credit_after_from');
             $table->string('credit_before_to');
             $table->string('credit_after_to');
-            $table->timestamp('duration_before');
-            $table->timestamp('duration_after');
+            $table->timestamp('duration_before')->nullable();
+            $table->timestamp('duration_after')->nullable();
             $table->string('duration');
             $table->timestamps();
         });
