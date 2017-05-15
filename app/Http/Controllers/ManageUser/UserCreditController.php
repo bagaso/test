@@ -42,7 +42,7 @@ class UserCreditController extends Controller
             ], 403);
         }
 
-        $user = User::findOrFail($id);
+        $user = User::where('id', $id)->lockForUpdate()->first();//findOrFail($id);
         
         return response()->json([
             'profile' => ['credits' => auth()->user()->credits],
@@ -112,27 +112,81 @@ class UserCreditController extends Controller
             $user = User::with('user_package')->findOrFail($id);
             $account = User::findorfail(auth()->user()->id);
 
+            $new_expired_at = Carbon::now();
+
             if ($request->top_up) {
                 $current = Carbon::now();
                 $expired_at = Carbon::parse($user->getOriginal('expired_at'));
+                //$new_expiredat = Carbon::now();
                 if($current->lt($expired_at)) {
-                    $user->expired_at = $expired_at->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']));
+                    //$user->expired_at = $expired_at->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']));
+                    $new_expired_at = $expired_at->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']));
                 } else {
-                    $user->expired_at = $current->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']));
+                    //$user->expired_at = $current->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']));
+                    $new_expired_at = $current->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']));
                 }
+                DB::table('users')->where('id', $user->id)->update(['expired_at' => $new_expired_at]);
             } else {
                 if ($request->input_credits < 0 && ($user->getOriginal('credits') + $request->input_credits) < 0) {
                     return response()->json(['message' => 'User credits must be a non-negative value.'], 403);
                 }
-                $user->credits += $request->input_credits;
+                $user_credits = $user->credits + intval($request->input_credits);
+                //$user->credits = $user_credits;
+                //$user->save();
+                DB::table('users')->where('id', $user->id)->update(['credits' => $user_credits]);
             }
-
-            $user->save();
 
             if (auth()->user()->cannot('unlimited-credits')) {
-                $account->credits -= $request->input_credits;
-                $account->save();
+                $account_credits = $account->credits - $request->input_credits;
+                //$account->credits = $account_credits;
+                DB::table('users')->where('id', $account->id)->update(['credits' => $account_credits]);
             }
+
+            $date_now = Carbon::now();
+            DB::table('user_credit_logs')->insert([
+                [
+                    'user_id' => $account->id,
+                    'user_id_related' => $user->id,
+                    'type' => $request->top_up ? 'TOP-UP' : 'TRANSFER',
+                    'direction' => 'OUT',
+                    'credit_used' => $request->input_credits,
+                    'duration' => $request->top_up ? Carbon::now()->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']))->diffInDays() . ' Days' : '',
+                    'credit_before' => $account->credits,
+                    'credit_after' => $account->credits == 'No Limit' ? $account->credits : $account->credits - $request->input_credits,
+                    'created_at' => $date_now,
+                    'updated_at' => $date_now,
+                ],
+                [
+                    'user_id' => $user->id,
+                    'user_id_related' => $account->id,
+                    'type' => $request->top_up ? 'TOP-UP' : 'TRANSFER',
+                    'direction' => 'IN',
+                    'credit_used' => $request->input_credits,
+                    'duration' => $request->top_up ? Carbon::now()->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']))->diffInDays() . ' Days' : '',
+                    'credit_before' => $user->credits,
+                    'credit_after' => $request->top_up ? $user->credits : $user->credits + $request->input_credits,
+                    'created_at' => $date_now,
+                    'updated_at' => $date_now,
+                ]
+            ]);
+
+            DB::table('admin_transfer_logs')->insert([
+                [
+                    'user_id_from' => $account->id,
+                    'user_id_to' => $user->id,
+                    'type' => $request->top_up ? 'TOP-UP' : 'TRANSFER',
+                    'credit_used' => $request->input_credits,
+                    'credit_before_from' => $account->credits,
+                    'credit_after_from' => $account->credits == 'No Limit' ? $account->credits : $account->credits - $request->input_credits,
+                    'credit_before_to' => $user->credits,
+                    'credit_after_to' => $request->top_up ? $user->credits : $user->credits + $request->input_credits,
+                    'duration' => $request->top_up ? Carbon::now()->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']))->diffInDays() . ' Days' : '',
+                    'duration_before' => Carbon::parse($user->getOriginal('expired_at')),
+                    'duration_after' => $request->top_up ? $new_expired_at : Carbon::parse($user->getOriginal('expired_at')),
+                    'created_at' => $date_now,
+                    'updated_at' => $date_now,
+                ],
+            ]);
 
         }, 5);
 

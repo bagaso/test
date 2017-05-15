@@ -122,6 +122,10 @@ class User extends Authenticatable
         return $this->hasMany('App\OnlineUser');
     }
 
+    public function credit_logs() {
+        return $this->hasMany('App\UserCreditLog');
+    }
+
     public function vouchers_applied() {
         return $this->hasMany('App\VoucherCode');
     }
@@ -180,7 +184,7 @@ class User extends Authenticatable
 
     public function upline()
     {
-        return $this->belongsTo('App\User', 'parent_id');
+        return $this->belongsTo('App\User', 'parent_id')->select('id', 'username');
     }
 
     public function user_down_ctr()

@@ -23,8 +23,8 @@ use Illuminate\Support\Facades\Schema;
 //Route::get('/wew', 'PublicServerStatusController@test');
 
 Route::get('/wew', function() {
-    $server = \App\VpnServer::find(2);
-    return $server->user_access->pluck('id');
+    $log = \App\User::with(['credit_logs.user_related'])->find(1);
+    return $log->credit_logs;
 });
 
 Route::get('/account', function () {
@@ -234,6 +234,8 @@ Route::post('/account/extend-duration', 'Account\ExtendDurationController@extend
 Route::get('/account/transfer-credits', 'Account\TransferCreditsController@index');
 Route::post('/account/transfer-credits', 'Account\TransferCreditsController@transfer');
 
+Route::get('/account/credit-transfer-logs', 'Account\UserCreditLogController@index');
+
 Route::get('/account/vpn_status', 'Account\VpnStatusController@index');
 Route::post('/account/vpn_disconnect', 'Account\VpnStatusController@disconnect');
 
@@ -341,6 +343,9 @@ Route::get('/vpn-server/server-status', 'VpnServer\ListServerController@serverst
 
 Route::get('/admin/site-settings', 'Admin\SiteSettings@index');
 Route::post('/admin/site-settings', 'Admin\SiteSettings@updateSettings');
+
+Route::get('/admin/credit-transfer-logs', 'Admin\CreditTransferLogController@index');
+Route::post('/admin/credit-transfer-logs', 'Admin\CreditTransferLogController@index');
 
 Route::post('/public/online-users', 'PublicOnlineUsersController@index');
 Route::post('/public/distributors', 'PublicDistributorController@index');
