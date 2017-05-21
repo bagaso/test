@@ -57,7 +57,7 @@ class CreateUserController extends Controller
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
         $usergroups = UserGroup::where('id', '>', auth()->user()->user_group->id)->get();
-        $userpackage = UserPackage::all();
+        $userpackage = UserPackage::where('is_active', 1)->get();
         $userstatus = Status::all();
 
         return response()->json([
