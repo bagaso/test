@@ -16,6 +16,8 @@ class CreateVpnHistoriesTable extends Migration
         Schema::create('vpn_histories', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('user_id');
+            $table->string('user_ip')->default('0.0.0.0');
+            $table->string('user_port')->default('0');
             $table->string('server_name');
             $table->string('server_ip');
             $table->string('server_domain');
