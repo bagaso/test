@@ -23,8 +23,10 @@ use Illuminate\Support\Facades\Schema;
 //Route::get('/wew', 'PublicServerStatusController@test');
 
 Route::get('/wew', function() {
-    $log = \App\User::with(['credit_logs.user_related'])->find(1);
-    return $log->credit_logs;
+    $dt = Carbon::parse('2017-05-03T16:00:00.000Z');
+    return $dt->timezone('Asia/Manila');
+//    $log = \App\User::with(['credit_logs.user_related'])->find(1);
+//    return $log->credit_logs;
 });
 
 Route::get('/account', function () {
@@ -79,6 +81,10 @@ Route::get('/vpn_auth_connect', function (Request $request) {
             return 'Server is currently down.';
         }
 
+        if(!$server->server_access->is_active) {
+            return 'Server access is inactive.';
+        }
+
         $user = \App\User::with('status', 'user_package')->where('username', $username)->firstorfail();
 
         if($server->users()->where('username', $user->username)->exists()) {
@@ -89,6 +95,9 @@ Route::get('/vpn_auth_connect', function (Request $request) {
         $dt = Carbon::parse($user->getOriginal('expired_at'));
 
         if(!$user->isAdmin()) {
+            if(!$user->user_package->is_active) {
+                return 'User package is not active.';
+            }
             if(!in_array($user->user_package->id, json_decode($server->user_packages->pluck('id')))) {
                 return 'User package is not allowed in this server.';
             }

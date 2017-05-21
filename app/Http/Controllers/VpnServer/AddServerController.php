@@ -58,8 +58,8 @@ class AddServerController extends Controller
         $site_options['sub_name'] = 'VPN Server : Create';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
-        $serveraccess = ServerAccess::all();
-        $userpackage = UserPackage::all();
+        $serveraccess = ServerAccess::where('is_active', 1)->get();
+        $userpackage = UserPackage::where('is_active', 1)->get();
 
         return response()->json([
             'site_options' => $site_options,

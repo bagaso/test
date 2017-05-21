@@ -8,5 +8,6 @@ class ServerAccess extends Model
 {
     protected $casts = [
         'config' => 'array',
+        'is_active' => 'boolean',
     ];
 }

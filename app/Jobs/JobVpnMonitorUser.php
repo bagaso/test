@@ -40,8 +40,7 @@ class JobVpnMonitorUser implements ShouldQueue
                     if($server->users()->where('username', $online_user->username)->count() > 1) {
                         $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                         dispatch($job);
-                    }
-                    if(!$server->is_active) {
+                    } else if(!$server->is_active || $server->server_access->is_active || !$online_user->user_package->is_active) {
                         $job = (new JobVpnDisconnectUser($online_user->username, $server->server_ip, $server->server_port))->onConnection($db_settings->settings['queue_driver'])->onQueue('disconnect_user');
                         dispatch($job);
                     } else if(!$online_user->isAdmin()) {
