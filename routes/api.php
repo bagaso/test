@@ -78,16 +78,19 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
         $server = \App\VpnServer::with(['user_packages', 'server_access', 'user_access'])->where('server_key', $server_key)->firstorfail();
         if(!$server->is_active) {
+            Log::info('Server is currently down: ' . $username);
             return 'Server is currently down.';
         }
 
         if(!$server->server_access->is_active) {
+            Log::info('Server access is inactive: ' . $username);
             return 'Server access is inactive.';
         }
 
         $user = \App\User::with('status', 'user_package')->where('username', $username)->firstorfail();
 
         if($server->users()->where('username', $user->username)->exists()) {
+            Log::info('You have active device on this server: ' . $username);
             return 'You have active device on this server.';
         }
 
@@ -96,25 +99,32 @@ Route::get('/vpn_auth_connect', function (Request $request) {
 
         if(!$user->isAdmin()) {
             if(!$user->user_package->is_active) {
+                Log::info('User package is not active: ' . $username);
                 return 'User package is not active.';
             }
             if(!in_array($user->user_package->id, json_decode($server->user_packages->pluck('id')))) {
+                Log::info('User package is not allowed in this server: ' . $username);
                 return 'User package is not allowed in this server.';
             }
             if(!$user->isActive()) {
+                Log::info('Account is not activated: ' . $username);
                 return 'Account is not activated.';
             }
             if($user->vpn->count() >= intval($user->user_package->user_package['device'])) {
+                Log::info('Max paid device reached: ' . $username);
                 return 'Max paid device reached.';
             }
             if($server->server_access->config['paid'] && $current->gte($dt)) {
+                Log::info('Your account is already expired: ' . $username);
                 return 'Your account is already expired.';
             }
             if($server->limit_bandwidth && $user->consumable_data < 1) {
+                Log::info('You used all data allocated: ' . $username);
                 return 'You used all data allocated.';
             }
             if(!$server->server_access->config['paid']) {
                 if($current->lt($dt)) {
+                    Log::info('Paid user cannot enter free server: ' . $username);
                     return 'Paid user cannot enter free server.';
                 }
                 $free_sessions = \App\VpnServer::where('server_access_id', 1)->get();
@@ -125,9 +135,11 @@ Route::get('/vpn_auth_connect', function (Request $request) {
                     }
                 }
                 if(!$server->server_access->config['multi_device'] && $free_ctr > 0) {
+                    Log::info('Only one device allowed for free user: ' . $username);
                     return 'Only one device allowed for free user.';
                 }
                 if($free_ctr >= $server->server_access->config['max_device']) {
+                    Log::info('Max free device reached: ' . $username);
                     return 'Max free device reached.';
                 }
             }
@@ -157,15 +169,18 @@ Route::get('/vpn_auth_connect', function (Request $request) {
                     }
                 }
                 if(!$server->server_access->config['multi_device'] && $vip_ctr > 0) {
+                    Log::info('Only one device allowed on ' . strtolower($server->server_access->name) . ' Server: ' . $username);
                     return 'Only one device allowed on ' . strtolower($server->server_access->name) . ' Server.';
                 }
                 if($vip_ctr >= $server->server_access->config['max_device']) {
+                    Log::info('Max device reached  on ' . strtolower($server->server_access->name) . ' Server: ' . $username);
                     return 'Max device reached  on ' . strtolower($server->server_access->name) . ' Server.';
                 }
             }
 
             if($server->server_access->config['private']) {
                 if(!in_array($user->id, json_decode($server->user_access->pluck('id')))) {
+                    Log::info('Your account is not allowed to login to ' . strtolower($server->server_access->name) . ' server: ' . $username);
                     return 'Your account is not allowed to login to ' . strtolower($server->server_access->name) . ' server.';
                 }
             }
