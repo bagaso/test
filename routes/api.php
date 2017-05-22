@@ -52,6 +52,7 @@ Route::get('/vpn_auth', function (Request $request) {
         $server_key = $request->server_key;
 
         if (!preg_match("/^[a-z0-9_]+$/",$username)) {
+            Log::info('AUTH_FAILED CAPS: ' . $username);
             return '0';
         }
 
@@ -62,8 +63,9 @@ Route::get('/vpn_auth', function (Request $request) {
         if(!$server->users()->where('username', $account->username)->exists() && Hash::check($password, $account->password)) {
             return '1';
         }
-        else
-            return '0';
+
+        Log::info('AUTH_FAILED: ' . $username);
+        return '0';
     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
         return '0';
     }
