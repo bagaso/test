@@ -37,14 +37,15 @@ class OnlineUsersController extends Controller
             $q->select('id', 'server_name');
         }])->orderBy('created_at', 'desc')->paginate(50);
 
-        $site_options['site_name'] = $db_settings->settings['site_name'];
-        $site_options['sub_name'] = 'Online Users';
-        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
-
         $permission['is_admin'] = auth()->user()->isAdmin();
         $permission['manage_user'] = auth()->user()->can('manage-user');
         $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
         $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
+        $permission['manage_update_json'] = auth()->user()->can('manage-update-json');
+
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'Online Users';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
         $language = Lang::all()->pluck('name');
 

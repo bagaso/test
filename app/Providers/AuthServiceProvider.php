@@ -125,6 +125,13 @@ class AuthServiceProvider extends ServiceProvider
             }
             return false;
         });
+
+        Gate::define('manage-update-json', function ($user) {
+            if(in_array($user->user_group->id, [2]) && in_array('PCODE_010', json_decode($user->roles->pluck('code')))) {
+                return true;
+            }
+            return false;
+        });
         
     }
 }

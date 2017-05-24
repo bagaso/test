@@ -33,6 +33,7 @@ class UserCreditLogController extends Controller
         $permission['manage_user'] = auth()->user()->can('manage-user');
         $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
         $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
+        $permission['manage_update_json'] = auth()->user()->can('manage-update-json');
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Credit Transfer Logs';

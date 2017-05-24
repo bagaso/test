@@ -14,3 +14,13 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/updates/android-updates.json', function() {
+    $json = \App\JsonUpdate::findorfail(1);
+    return $json->json;
+});
+
+Route::get('/updates/gui-updates.json', function() {
+    $json = \App\JsonUpdate::findorfail(2);
+    return $json->json;
+});

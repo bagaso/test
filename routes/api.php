@@ -29,6 +29,13 @@ Route::get('/wew', function() {
 //    return $log->credit_logs;
 });
 
+Route::get('/', function() {
+    $dt = Carbon::parse('2017-05-03T16:00:00.000Z');
+    return $dt->timezone('Asia/Manila');
+//    $log = \App\User::with(['credit_logs.user_related'])->find(1);
+//    return $log->credit_logs;
+});
+
 Route::get('/account', function () {
     $permission['is_admin'] = auth()->user()->isAdmin();
     $permission['update_account'] = auth()->user()->can('update-account');
@@ -372,6 +379,12 @@ Route::post('/admin/site-settings', 'Admin\SiteSettings@updateSettings');
 
 Route::get('/admin/credit-transfer-logs', 'Admin\CreditTransferLogController@index');
 Route::post('/admin/credit-transfer-logs', 'Admin\CreditTransferLogController@index');
+
+Route::get('/admin/app-update-android', 'Admin\AppUpdatesController@app_android_index');
+Route::post('/admin/app-update-android', 'Admin\AppUpdatesController@app_android_update');
+
+Route::get('/admin/app-update-gui', 'Admin\AppUpdatesController@app_gui_index');
+Route::post('/admin/app-update-gui', 'Admin\AppUpdatesController@app_gui_update');
 
 Route::post('/public/online-users', 'PublicOnlineUsersController@index');
 Route::post('/public/distributors', 'PublicDistributorController@index');

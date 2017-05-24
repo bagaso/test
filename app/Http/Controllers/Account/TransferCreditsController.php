@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Account;
 
 use App\Lang;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +36,7 @@ class TransferCreditsController extends Controller
         $permission['manage_user'] = auth()->user()->can('manage-user');
         $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
         $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
+        $permission['manage_update_json'] = auth()->user()->can('manage-update-json');
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'Transfer Credits';
@@ -80,11 +82,11 @@ class TransferCreditsController extends Controller
             ], 401);
         }
 
-        //if(!auth()->user()->distributor && Gate::denies('manage_user')) {
+        if(!auth()->user()->distributor && Gate::denies('manage_user')) {
             return response()->json([
                 'message' => 'Action not allowed.',
             ], 403);
-        //}
+        }
 
         if (auth()->user()->cannot('unlimited-credits') && auth()->user()->credits < $request->credits) {
             return response()->json([
@@ -112,13 +114,59 @@ class TransferCreditsController extends Controller
                 $user = User::with('user_package')->findOrFail($user_id);
                 $account = User::findorfail(auth()->user()->id);
 
-                $user->credits += $request->credits;
-                $user->save();
+                $user_credits = $user->credits + $request->credits;
+                DB::table('users')->where('id', $user->id)->update(['credits' => $user_credits]);
 
                 if (auth()->user()->cannot('unlimited-credits')) {
-                    $account->credits -= $request->credits;
-                    $account->save();
+                    $account_credits = $account->credits - $request->credits;
+                    DB::table('users')->where('id', $account->id)->update(['credits' => $account_credits]);
                 }
+
+                $date_now = Carbon::now();
+                DB::table('user_credit_logs')->insert([
+                    [
+                        'user_id' => $account->id,
+                        'user_id_related' => $user->id,
+                        'type' => 'TRANSFER',
+                        'direction' => 'OUT',
+                        'credit_used' => $request->credits,
+                        'duration' => '',
+                        'credit_before' => $account->credits,
+                        'credit_after' => $account->credits == 'No Limit' ? $account->credits : $account->credits - $request->credits,
+                        'created_at' => $date_now,
+                        'updated_at' => $date_now,
+                    ],
+                    [
+                        'user_id' => $user->id,
+                        'user_id_related' => $account->id,
+                        'type' => 'TRANSFER',
+                        'direction' => 'IN',
+                        'credit_used' => $request->credits,
+                        'duration' => '',
+                        'credit_before' => $user->credits,
+                        'credit_after' => $user->credits + $request->credits,
+                        'created_at' => $date_now,
+                        'updated_at' => $date_now,
+                    ]
+                ]);
+
+                DB::table('admin_transfer_logs')->insert([
+                    [
+                        'user_id_from' => $account->id,
+                        'user_id_to' => $user->id,
+                        'type' => 'TRANSFER',
+                        'credit_used' => $request->credits,
+                        'credit_before_from' => $account->credits,
+                        'credit_after_from' => $account->credits == 'No Limit' ? $account->credits : $account->credits - $request->credits,
+                        'credit_before_to' => $user->credits,
+                        'credit_after_to' => $user->credits + $request->credits,
+                        'duration' => '',
+                        'duration_before' => Carbon::parse($user->getOriginal('expired_at')),
+                        'duration_after' => Carbon::parse($user->getOriginal('expired_at')),
+                        'created_at' => $date_now,
+                        'updated_at' => $date_now,
+                    ],
+                ]);
             }, 5);
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {

@@ -36,6 +36,7 @@ class ListUserResellerController extends Controller
         $permission['manage_user'] = auth()->user()->can('manage-user');
         $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
         $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
+        $permission['manage_update_json'] = auth()->user()->can('manage-update-json');
 
         $language = Lang::all()->pluck('name');
 
