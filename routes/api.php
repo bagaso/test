@@ -380,6 +380,9 @@ Route::post('/admin/site-settings', 'Admin\SiteSettings@updateSettings');
 Route::get('/admin/credit-transfer-logs', 'Admin\CreditTransferLogController@index');
 Route::post('/admin/credit-transfer-logs', 'Admin\CreditTransferLogController@index');
 
+Route::get('/admin/vpn-history-logs', 'Admin\VpnHistoryLogController@index');
+Route::post('/admin/vpn-history-logs', 'Admin\VpnHistoryLogController@index');
+
 Route::get('/admin/app-update-android', 'Admin\AppUpdatesController@app_android_index');
 Route::post('/admin/app-update-android', 'Admin\AppUpdatesController@app_android_update');
 
