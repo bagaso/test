@@ -23,23 +23,35 @@ Route::get('/updates/gui-updates.json', function() {
     return $json->json;
 });
 
-Route::get('/pc/duration/{username}/{password}', function($username, $password) {
+Route::get('/pc/duration/{username}', function($username) {
     $account = \App\User::where('username', $username)->firstorfail();
 
-    if(Hash::check($password, $account->password)) {
-        return response()->json([
+    return response()->json([
             'duration' => $account->expired_at
-        ], 200);
-    }
+    ], 200);
+
+//    if(Hash::check($password, $account->password)) {
+//        return response()->json([
+//            'duration' => $account->expired_at
+//        ], 200);
+//    }
 });
 
-Route::get('/android/duration/{username}/{password}', function($username, $password) {
+Route::get('/android/duration/{username}', function($username) {
     $account = \App\User::where('username', $username)->firstorfail();
 
-    if(Hash::check($password, $account->password)) {
+    if($account->expired_at == 'No Limit') {
         return response()->json([
-            'premium' => $account->expired_at == 'No Limit' ? -1 : Carbon\Carbon::parse($account->getOriginal('expired_at'))->timestamp,
+            'premium' => -1,
+            'vip' => null,
+        ], 200);
+    } else {
+        return response()->json([
+            'premium' => Carbon\Carbon::now()->gte(Carbon\Carbon::parse($account->getOriginal('expired_at'))) ? 0 : Carbon\Carbon::parse($account->getOriginal('expired_at'))->diffInSeconds(Carbon\Carbon::now()),
             'vip' => null,
         ], 200);
     }
+
+//    if(Hash::check($password, $account->password)) {
+//    }
 });
