@@ -147,7 +147,7 @@ class UserCreditController extends Controller
                 [
                     'user_id' => $account->id,
                     'user_id_related' => $user->id,
-                    'type' => $request->top_up ? 'TOP-UP' : 'TRANSFER',
+                    'type' => $request->top_up ? 'TOP-UP' : 'TRANSFER-02',
                     'direction' => 'OUT',
                     'credit_used' => $request->input_credits,
                     'duration' => $request->top_up ? Carbon::now()->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']))->diffInDays() . ' Days' : '',
@@ -159,7 +159,7 @@ class UserCreditController extends Controller
                 [
                     'user_id' => $user->id,
                     'user_id_related' => $account->id,
-                    'type' => $request->top_up ? 'TOP-UP' : 'TRANSFER',
+                    'type' => $request->top_up ? 'TOP-UP' : 'TRANSFER-02',
                     'direction' => 'IN',
                     'credit_used' => $request->input_credits,
                     'duration' => $request->top_up ? Carbon::now()->addSeconds((2595600 * $request->input_credits) / intval($user->user_package->user_package['cost']))->diffInDays() . ' Days' : '',
@@ -174,7 +174,7 @@ class UserCreditController extends Controller
                 [
                     'user_id_from' => $account->id,
                     'user_id_to' => $user->id,
-                    'type' => $request->top_up ? 'TOP-UP' : 'TRANSFER',
+                    'type' => $request->top_up ? 'TOP-UP' : 'TRANSFER-02',
                     'credit_used' => $request->input_credits,
                     'credit_before_from' => $account->credits,
                     'credit_after_from' => $account->credits == 'No Limit' ? $account->credits : $account->credits - $request->input_credits,

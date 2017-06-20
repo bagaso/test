@@ -54,7 +54,7 @@ class TransferCreditsController extends Controller
             ], 403);
         }
 
-        if(!auth()->user()->isAdmin() && !auth()->user()->distributor) {
+        if(!auth()->user()->isAdmin() && (!auth()->user()->distributor && Gate::denies('manage_user'))) {
             return response()->json([
                 'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
                 'message' => 'No permission to access this page.',
@@ -82,7 +82,7 @@ class TransferCreditsController extends Controller
             ], 401);
         }
 
-        if(!auth()->user()->distributor && Gate::denies('manage_user')) {
+        if(!auth()->user()->isAdmin() && (!auth()->user()->distributor && Gate::denies('manage_user'))) {
             return response()->json([
                 'message' => 'Action not allowed.',
             ], 403);
@@ -102,7 +102,7 @@ class TransferCreditsController extends Controller
                 'credits' => 'bail|required|integer|between:1,' . $db_settings->settings['max_transfer_credits'],
             ]);
 
-            if($user->isAdmin() || auth()->user()->username == $user->username) {
+            if($user->isAdmin() || auth()->user()->id == $user->id) {
                 return response()->json([
                     'message' => 'Action not allowed.',
                 ], 403);
@@ -127,7 +127,7 @@ class TransferCreditsController extends Controller
                     [
                         'user_id' => $account->id,
                         'user_id_related' => $user->id,
-                        'type' => 'TRANSFER',
+                        'type' => 'TRANSFER-01',
                         'direction' => 'OUT',
                         'credit_used' => $request->credits,
                         'duration' => '',
@@ -139,7 +139,7 @@ class TransferCreditsController extends Controller
                     [
                         'user_id' => $user->id,
                         'user_id_related' => $account->id,
-                        'type' => 'TRANSFER',
+                        'type' => 'TRANSFER-01',
                         'direction' => 'IN',
                         'credit_used' => $request->credits,
                         'duration' => '',
@@ -154,7 +154,7 @@ class TransferCreditsController extends Controller
                     [
                         'user_id_from' => $account->id,
                         'user_id_to' => $user->id,
-                        'type' => 'TRANSFER',
+                        'type' => 'TRANSFER-01',
                         'credit_used' => $request->credits,
                         'credit_before_from' => $account->credits,
                         'credit_after_from' => $account->credits == 'No Limit' ? $account->credits : $account->credits - $request->credits,

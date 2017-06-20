@@ -51,8 +51,6 @@ class UserProfileController extends Controller
             'update_username' => auth()->user()->can('update-username'), 
             'user_profile' => $user,
             'user_status_list' => $userstatus,
-            'user_upline' => $user_upline->upline,
-            'no_of_users' => $user->user_down_ctr->count(),
             'user_vpn_session' => \App\OnlineUser::with('vpnserver')->where('user_id', $user->id)->get(),
         ], 200);
     }
@@ -80,8 +78,27 @@ class UserProfileController extends Controller
             'email' => 'bail|required|email|max:50|unique:users,email,' . $user->id,
             'fullname' => 'bail|required|max:50',
             'max_users' => 'bail|required|integer|min:' . $user->user_down_ctr->count(),
-            'status_id' => 'bail|required|in:1,2,3',
+            'status.id' => 'bail|required|in:1,2,3',
         ]);
+
+        $upline_user_id = 1;
+
+        if(auth()->user()->isAdmin() && strlen(trim($request->upline_username['username'])) > 0) {
+            try {
+                $upline = User::where('username', $request->upline_username['username'])->firstorfail();
+                if($upline->id == $user->id) {
+                    return response()->json([
+                        'message' => 'Action not allowed.',
+                    ], 403);
+                }
+                $upline_user_id = $upline->id;
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
+                return response()->json([
+                    'upline' => ['User not found.'],
+                ], 422);
+            }
+        }
+
 
         if (auth()->user()->can('update-username')) {
             if($user->username <> $request->username) {
@@ -100,7 +117,10 @@ class UserProfileController extends Controller
 
         $user->email = $request->email;
         $user->fullname = $request->fullname;
-        $user->status_id = $request->status_id;
+        $user->status_id = $request->status['id'];
+        if(auth()->user()->isAdmin()) {
+            $user->parent_id = $upline_user_id;
+        }
         $user->save();
 
         $user = User::with('status')->findOrFail($id);

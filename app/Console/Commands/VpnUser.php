@@ -42,7 +42,7 @@ class VpnUser extends Command
     {
         if(Schema::hasTable('site_settings') && SiteSettings::where('id', 1)->exists()) {
             $ctr = 0;
-            $logupdate_worker = array('log_update-1', 'log_update-2');
+            $logupdate_worker = array('log_update-1', 'log_update-2', 'log_update-3');
             $db_settings = SiteSettings::find(1);
             $servers = \App\VpnServer::where('is_active', 1)->get();
             foreach ($servers as $server) {
@@ -50,8 +50,10 @@ class VpnUser extends Command
                 dispatch($job);
                 if($ctr==0)
                     $ctr=1;
+                else if($ctr==1)
+                    $ctr=2;
                 else
-                    $ctr=0;
+                    $ctr = 0;
             }
         }
 

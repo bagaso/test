@@ -37,7 +37,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'upline', 'parent_id', 'user_group_id', 'status_id', 'user_package_id', 'user_down_ctr',
     ];
 
     protected $dates = [
@@ -196,6 +196,26 @@ class User extends Authenticatable
     {
         return $this->belongsToMany('App\Role');
     }
+
+    public function getTotalUsersAttribute()
+    {
+        return  $this->user_down_ctr->count();
+    }
+
+    public function getTotalUserResellersAttribute()
+    {
+        return  $this->user_down_ctr()->where('user_group_id', 3)->count();
+    }
+
+    public function getTotalUserSubresellersAttribute()
+    {
+        return  $this->user_down_ctr()->where('user_group_id', 4)->count();
+    }
+
+    public function getTotalUserClientsAttribute()
+    {
+        return  $this->user_down_ctr()->where('user_group_id', 5)->count();
+    }
     
     public function getStatusIdAttribute($value) {
         return $this->isAdmin() ? 2 : $value;
@@ -225,6 +245,11 @@ class User extends Authenticatable
         return $this->sizeformat($value);
     }
 
+    public function getUplineUsernameAttribute()
+    {
+        return $this->upline;
+    }
+
     public function sizeformat($bytesize)
     {
         $i=0;
@@ -239,5 +264,5 @@ class User extends Authenticatable
         return("$newsize $units[$i]");
     }
 
-    //protected $appends = ['upline1'];
+    protected $appends = ['upline_username', 'total_users', 'total_user_resellers', 'total_user_subresellers', 'total_user_clients'];
 }

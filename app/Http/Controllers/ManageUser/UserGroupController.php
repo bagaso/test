@@ -92,6 +92,9 @@ class UserGroupController extends Controller
         if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [3,4,5])) {
             $user->roles()->detach();
         }
+        if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [3,4])) {
+            $user->distributor = 0;
+        }
         $user->user_group_id = $request->user_group_id;
 
         $user->save();
@@ -156,6 +159,9 @@ class UserGroupController extends Controller
         
         if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [3,4,5])) {
             $user->roles()->detach();
+        }
+        if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [5])) {
+            $user->distributor = 0;
         }
         $user->user_group_id = $request->user_group_id;
 
@@ -222,6 +228,9 @@ class UserGroupController extends Controller
         if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [3,4,5])) {
             $user->roles()->detach();
         }
+        if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [5])) {
+            $user->distributor = 0;
+        }
         $user->user_group_id = $request->user_group_id;
 
         $user->save();
@@ -287,6 +296,9 @@ class UserGroupController extends Controller
         if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [3,4,5])) {
             $user->roles()->detach();
         }
+        if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [5])) {
+            $user->distributor = 0;
+        }
         $user->user_group_id = $request->user_group_id;
 
         $user->save();
@@ -347,6 +359,9 @@ class UserGroupController extends Controller
         
         if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [3,4,5])) {
             $user->roles()->detach();
+        }
+        if ($user->user_group_id <> $request->user_group_id && in_array($request->user_group_id, [5])) {
+            $user->distributor = 0;
         }
         $user->user_group_id = $request->user_group_id;
 
