@@ -19,6 +19,7 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\VpnDeleteIdleUser',
         'App\Console\Commands\VpnMonitorUser',
         'App\Console\Commands\VpnResetData',
+        'App\Console\Commands\VpnDeleteHistoryLogs',
     ];
 
     /**
@@ -32,6 +33,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('vpnuser')->everyMinute();
         $schedule->command('vpn:deleteidle')->everyMinute();
         $schedule->command('vpn:monitoruser')->everyMinute();
+        $schedule->command('vpn:deletehistory')->everyMinute();
         try {
             if(Schema::hasTable('site_settings')) {
                 if(SiteSettings::where('id', 1)->exists()) {
