@@ -37,7 +37,7 @@ class VpnDeleteHistoryLogs extends Command
      */
     public function handle()
     {
-        $delete_history = \App\VpnHistory::where('session_end', '>=', \Carbon\Carbon::now()->subSeconds(2592000));
+        $delete_history = \App\VpnHistory::where('session_end', '<=', \Carbon\Carbon::now()->subSeconds(2592000));
         $delete_history->delete();
     }
 }
