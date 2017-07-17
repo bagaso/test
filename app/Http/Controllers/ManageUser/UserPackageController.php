@@ -44,7 +44,11 @@ class UserPackageController extends Controller
         }
 
         $user = User::find($id);
-        $userpackage = UserPackage::where('is_active', 1)->get();
+        if(auth()->user()->isAdmin() || auth()->user()->isSubAdmin()) {
+            $userpackage = UserPackage::where([['is_active', 1]])->get();
+        } else {
+            $userpackage = UserPackage::where([['is_active', 1], ['is_public', 1]])->get();
+        }
 
         return response()->json([
             'user_profile' => ['username' => $user->username, 'user_package_id' => $user->user_package_id],

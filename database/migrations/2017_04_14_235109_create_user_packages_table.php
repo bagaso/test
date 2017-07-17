@@ -19,6 +19,7 @@ class CreateUserPackagesTable extends Migration
             $table->string('name');
             $table->text('user_package');
             $table->boolean('is_active')->unsigned()->default(0);
+            $table->boolean('is_public')->unsigned()->default(0);
         });
     }
 
