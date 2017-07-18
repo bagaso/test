@@ -119,7 +119,7 @@ class CreateUserController extends Controller
             'password_confirmation' => 'bail|required|between:6,15',
             'email' => 'bail|required|email|max:50|unique:users,email',
             'fullname' => 'bail|required|max:50',
-            'user_package_id' => 'bail|required|integer|in:1,2,3,4',
+            'user_package_id' => 'bail|required|integer|in:1,2,3,4,5',
             'status_id' => 'bail|required|integer|in:1,2,3',
         ]);
 

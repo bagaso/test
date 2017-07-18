@@ -73,7 +73,7 @@ class UserPackageController extends Controller
         }
 
         $this->validate($request, [
-            'user_package_id' => 'bail|required|integer|in:1,2,3,4',
+            'user_package_id' => 'bail|required|integer|in:1,2,3,4,5',
         ]);
 
         $user = User::findorfail($id);
