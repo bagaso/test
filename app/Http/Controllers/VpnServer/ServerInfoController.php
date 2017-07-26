@@ -60,8 +60,8 @@ class ServerInfoController extends Controller
         $site_options['sub_name'] = 'VPN Server : Info';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
-        $serveraccess = ServerAccess::where('is_active', 1)->get();
-        $userpackage = UserPackage::where('is_active', 1)->get();
+        $serveraccess = ServerAccess::where('is_active', 1)->where('is_public', 1)->get();
+        $userpackage = UserPackage::where('is_active', 1)->where('is_public', 1)->get();
         
         return response()->json([
             'site_options' => $site_options,
@@ -100,9 +100,9 @@ class ServerInfoController extends Controller
             'server_domain' => 'bail|required|unique:vpn_servers,server_domain,' . $server->id,
             'web_port' => 'bail|required|integer',
             'server_key' => 'bail|required|unique:vpn_servers,server_key,' . $server->id,
-            'server_access' => 'bail|required|in:1,2,3,4,5,6',
+            'server_access' => 'bail|required|in:1,2,3,4,5,6,7',
             'server_status' => 'bail|required|boolean',
-            'user_package' => 'bail|required|array',
+            'user_package' => 'bail|required|array|in:1,2,3,4,5',
             'limit_bandwidth' => 'bail|required|boolean',
         ]);
 
