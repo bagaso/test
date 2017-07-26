@@ -140,7 +140,7 @@ class ListServerController extends Controller
             $server = VpnServer::find($id);
 
             $site_settings = SiteSettings::find(1);
-            
+
             $client = new Client(['base_uri' => 'https://api.cloudflare.com']);
             $response = $client->request('DELETE', "/client/v4/zones/{$site_settings->settings['cf_zone']}/dns_records/{$server->cf_id}",
                 ['http_errors' => false, 'headers' => ['X-Auth-Email' => 'mp3sniff@gmail.com', 'X-Auth-Key' => 'ff245b46bd71002891e2890059b122e80b834', 'Content-Type' => 'application/json']]);
@@ -152,6 +152,8 @@ class ListServerController extends Controller
                     'message' => 'Cloudflare: ' . $cloudflare->errors[0]->message,
                 ], 403);
             }
+
+            $server->user_access()->detach();
         }
 
         $servers = VpnServer::whereIn('id', $request->id);

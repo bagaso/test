@@ -8,6 +8,7 @@ use App\Status;
 use App\User;
 use App\UserGroup;
 use App\UserPackage;
+use App\VpnServer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -137,6 +138,11 @@ class CreateUserController extends Controller
         $new_user->consumable_data = $db_settings->settings['consumable_data'] * 1048576;
         $new_user->expired_at = $current->addSeconds($db_settings->settings['trial_period'] * 3600);
         $new_user->save();
+
+        $vpn_servers = VpnServer::where('server_access_id', 5)->where('user_id', auth()->user()->id);
+        foreach ($vpn_servers->get() as $server) {
+            $server->user_access()->attach($new_user->id);
+        }
 
         return response()->json([
             'message' => 'New user created.'

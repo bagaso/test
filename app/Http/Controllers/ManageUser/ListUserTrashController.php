@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ManageUser;
 
 use App\Lang;
 use App\User;
+use App\VpnServer;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -160,7 +161,18 @@ class ListUserTrashController extends Controller
         $users = User::onlyTrashed()->whereIn('id', $request->id);
         foreach ($users->get() as $user) {
             $user->roles()->detach();
+
+            $vpn_servers = VpnServer::where('server_access_id', 5)->where('user_id', $user->id);
+            foreach ($vpn_servers->get() as $server) {
+                $server->user_access()->detach();
+            }
+
+            $vpn_servers = VpnServer::where('server_access_id', 5);
+            foreach ($vpn_servers->get() as $server) {
+                $server->user_access()->detach($user->id);
+            }
         }
+
         $users->forceDelete();
 
         $status_id = [$request->status_id];
