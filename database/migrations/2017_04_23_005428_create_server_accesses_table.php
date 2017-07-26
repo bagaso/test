@@ -19,7 +19,6 @@ class CreateServerAccessesTable extends Migration
             $table->string('name');
             $table->text('config');
             $table->boolean('is_active')->unsigned()->default(0);
-            $table->boolean('is_public')->unsigned()->default(0);
         });
     }
 

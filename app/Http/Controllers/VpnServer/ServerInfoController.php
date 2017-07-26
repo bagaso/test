@@ -60,8 +60,8 @@ class ServerInfoController extends Controller
         $site_options['sub_name'] = 'VPN Server : Info';
         $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
 
-        $serveraccess = ServerAccess::where('is_active', 1)->where('is_public', 1)->get();
-        $userpackage = UserPackage::where('is_active', 1)->where('is_public', 1)->get();
+        $serveraccess = ServerAccess::where('is_active', 1)->get();
+        $userpackage = UserPackage::where('is_active', 1)->get();
         
         return response()->json([
             'site_options' => $site_options,
