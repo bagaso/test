@@ -65,6 +65,7 @@ class ListUserAllController extends Controller
 
         $total = auth()->user()->can('manage-all-users') ? User::where('user_group_id', '>', 2)->count() : User::where([['parent_id', '=', auth()->user()->id], ['user_group_id', '>', auth()->user()->user_group_id]])->count();
         $new_users = auth()->user()->can('manage-all-users') ? User::where([['user_group_id', '>', 2], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count() : User::where([['user_group_id', '>', 2], ['parent_id', auth()->user()->id], ['created_at', '>=', Carbon::now()->startOfWeek()], ['created_at', '<=', Carbon::now()->endOfWeek()]])->count();
+        $active_duration = auth()->user()->can('manage-all-users') ? User::where([['user_group_id', '>', 2], ['expired_at', '>=', \Carbon\Carbon::now()]])->count() : User::where([['user_group_id', '>', 2], ['parent_id', auth()->user()->id], ['expired_at', '>=', \Carbon\Carbon::now()]])->count();
 
         $site_options['site_name'] = $db_settings->settings['site_name'];
         $site_options['sub_name'] = 'User List : All';
@@ -81,6 +82,7 @@ class ListUserAllController extends Controller
             'total' => $total,
             'new_users' => $new_users,
             'columns' => $columns,
+            'active_duration' => $active_duration,
         ], 200);
     }
 

@@ -25,7 +25,7 @@ class CreateVpnServersTable extends Migration
             $table->string('server_name')->unique();
             $table->tinyInteger('is_active')->unsigned();
             $table->integer('server_access_id');
-            $table->integer('user_id');
+            $table->integer('user_id')->unsigned()->default(0);
             $table->tinyInteger('limit_bandwidth')->unsigned()->default(0);
             $table->timestamps();
         });

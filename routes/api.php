@@ -153,22 +153,6 @@ Route::get('/vpn_auth_connect', function (Request $request) {
                 }
             }
 
-//            if($server->server_access->id == 3) {
-//                $vip_sessions = \App\VpnServer::where('server_access_id', 3)->get();
-//                $vip_ctr = 0;
-//                foreach ($vip_sessions as $vip) {
-//                    if($vip->users()->where('id', $user->id)->count() > 0) {
-//                        $vip_ctr += 1;
-//                    }
-//                }
-//                if(!$server->server_access->config['multi_device'] && $vip_ctr > 0) {
-//                    return 'Only one device allowed on ' . strtolower($server->server_access->name) . ' Server.';
-//                }
-//                if($vip_ctr >= $server->server_access->config['max_device']) {
-//                    return 'Max device reached  on ' . strtolower($server->server_access->name) . ' Server.';
-//                }
-//            }
-
             if(!$server->server_access->config['multi_device']) {
                 $vip_sessions = \App\VpnServer::where('server_access_id', $server->server_access->id)->get();
                 $vip_ctr = 0;
@@ -248,6 +232,137 @@ Route::get('/vpn_auth_disconnect', function (Request $request) {
         $vpn_history->save();
         $user_delete->vpn()->where('vpn_server_id', $server->id)->delete();
         return '1';
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
+        return '0';
+    }
+});
+
+Route::get('/vpn_connect', function (Request $request) {
+    try {
+        $username = trim($request->username);
+        $server_key = trim($request->server_key);
+        $dl_speed = '0kbit';
+        $up_speed = '0kbit';
+
+        if($username == '' || $server_key == '') return '0';
+
+        $server = \App\VpnServer::with(['user_packages', 'server_access', 'user_access'])->where('server_key', $server_key)->firstorfail();
+        if(!$server->is_active) {
+            Log::info('Server is currently down: ' . $username);
+            return 'Server is currently down.';
+        }
+
+        if(!$server->server_access->is_active) {
+            Log::info('Server access is inactive: ' . $username);
+            return 'Server access is inactive.';
+        }
+
+        $user = \App\User::with('status', 'user_package')->where('username', $username)->firstorfail();
+
+        if($server->users()->where('username', $user->username)->exists()) {
+            Log::info('You have active device on this server: ' . $username);
+            return 'You have active device on this server.';
+        }
+
+        $current = Carbon::now();
+        $dt = Carbon::parse($user->getOriginal('expired_at'));
+
+        if(!$user->isAdmin()) {
+            $dl_speed = $user->user_package->dl_speed;
+            $up_speed = $user->user_package->up_speed;
+            if(!$user->user_package->is_active) {
+                Log::info('User package is not active: ' . $username);
+                return 'User package is not active.';
+            }
+            if(!in_array($user->user_package->id, json_decode($server->user_packages->pluck('id')))) {
+                Log::info('User package is not allowed in this server: ' . $username);
+                return 'User package is not allowed in this server.';
+            }
+            if(!$user->isActive()) {
+                Log::info('Account is not activated: ' . $username);
+                return 'Account is not activated.';
+            }
+            if($user->vpn->count() >= intval($user->user_package->user_package['device'])) {
+                Log::info('Max paid device reached: ' . $username);
+                return 'Max paid device reached.';
+            }
+            if($server->server_access->config['paid'] && $current->gte($dt)) {
+                Log::info('Your account is already expired: ' . $username);
+                return 'Your account is already expired.';
+            }
+            if($server->limit_bandwidth && $user->consumable_data < 1) {
+                Log::info('You used all data allocated: ' . $username);
+                return 'You used all data allocated.';
+            }
+            if(!$server->server_access->config['paid']) {
+                if($current->lt($dt)) {
+                    Log::info('Paid user cannot enter free server: ' . $username);
+                    return 'Paid user cannot enter free server.';
+                }
+                $free_sessions = \App\VpnServer::where('server_access_id', 1)->get();
+                $free_ctr = 0;
+                foreach ($free_sessions as $free) {
+                    if($free->users()->where('id', $user->id)->count() > 0) {
+                        $free_ctr += 1;
+                    }
+                }
+                if(!$server->server_access->config['multi_device'] && $free_ctr > 0) {
+                    Log::info('Only one device allowed for free user: ' . $username);
+                    return 'Only one device allowed for free user.';
+                }
+                if($free_ctr >= $server->server_access->config['max_device']) {
+                    Log::info('Max free device reached: ' . $username);
+                    return 'Max free device reached.';
+                }
+            }
+
+            if(!$server->server_access->config['multi_device']) {
+                $vip_sessions = \App\VpnServer::where('server_access_id', $server->server_access->id)->get();
+                $vip_ctr = 0;
+                foreach ($vip_sessions as $vip) {
+                    if($vip->users()->where('id', $user->id)->count() > 0) {
+                        $vip_ctr += 1;
+                    }
+                }
+                if(!$server->server_access->config['multi_device'] && $vip_ctr > 0) {
+                    Log::info('Only one device allowed on ' . strtolower($server->server_access->name) . ' Server: ' . $username);
+                    return 'Only one device allowed on ' . strtolower($server->server_access->name) . ' Server.';
+                }
+                if($vip_ctr >= $server->server_access->config['max_device']) {
+                    Log::info('Max device reached  on ' . strtolower($server->server_access->name) . ' Server: ' . $username);
+                    return 'Max device reached  on ' . strtolower($server->server_access->name) . ' Server.';
+                }
+            }
+
+            if($server->server_access->config['private']) {
+                if(!in_array($user->id, json_decode($server->user_access->pluck('id')))) {
+                    Log::info('Your account is not allowed to login to ' . strtolower($server->server_access->name) . ' server: ' . $username);
+                    return 'Your account is not allowed to login to ' . strtolower($server->server_access->name) . ' server.';
+                }
+            }
+        }
+
+        $vpn = new OnlineUser;
+        $vpn->user_id = $user->id;
+        $vpn->user_ip = $request->trusted_ip ? $request->trusted_ip : '0.0.0.0';
+        $vpn->user_port = $request->trusted_port ? $request->trusted_port : '0';
+        $vpn->vpn_server_id = $server->id;
+        $vpn->byte_sent = 0;
+        $vpn->byte_received = 0;
+        $vpn->data_available = $server->limit_bandwidth ? $user->getOriginal('consumable_data') : 0;
+        if($vpn->save()) {
+            if($server->dl_speed != '0kbit' || $server->up_speed != '0kbit') {
+                $dl_speed = $server->dl_speed;
+                $up_speed = $server->up_speed;
+            }
+            if($user->dl_speed != '0kbit' || $user->up_speed != '0kbit') {
+                $dl_speed = $user->dl_speed;
+                $up_speed = $user->up_speed;
+            }
+            return '1;' . $dl_speed . ';' . $up_speed . '';
+        }
+
+        return 'Server Error.';
     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
         return '0';
     }
