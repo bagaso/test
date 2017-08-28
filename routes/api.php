@@ -23,15 +23,15 @@ use Illuminate\Support\Facades\Schema;
 //Route::get('/wew', 'PublicServerStatusController@test');
 
 Route::get('/wew', function() {
-    $dt = Carbon::parse('2017-05-03T16:00:00.000Z');
-    return $dt->timezone('Asia/Manila');
+    //$dt = Carbon::parse('2017-05-03T16:00:00.000Z');
+    //return $dt->timezone('Asia/Manila');
 //    $log = \App\User::with(['credit_logs.user_related'])->find(1);
 //    return $log->credit_logs;
 });
 
 Route::get('/', function() {
-    $dt = Carbon::parse('2017-05-03T16:00:00.000Z');
-    return $dt->timezone('Asia/Manila');
+    //$dt = Carbon::parse('2017-05-03T16:00:00.000Z');
+    //return $dt->timezone('Asia/Manila');
 //    $log = \App\User::with(['credit_logs.user_related'])->find(1);
 //    return $log->credit_logs;
 });
@@ -69,6 +69,44 @@ Route::get('/vpn_auth', function (Request $request) {
 
         if(!$server->users()->where('username', $account->username)->exists() && Hash::check($password, $account->password)) {
             return '1';
+        }
+
+        Log::info('AUTH_FAILED: ' . $username);
+        return '0';
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
+        return '0';
+    }
+});
+
+Route::get('/vpn_auth_v2', function (Request $request) {
+    try {
+        $username = $request->username;
+        $password = $request->password;
+        $server_key = $request->server_key;
+
+        if (!preg_match("/^[a-z0-9_]+$/",$username)) {
+            Log::info('AUTH_FAILED CAPS: ' . $username);
+            return '0';
+        }
+
+        $server = \App\VpnServer::with(['user_packages'])->where('server_key', $server_key)->firstorfail();
+
+        $account = \App\User::with('user_package')->where('username', $username)->firstorfail();
+
+        if(!$server->users()->where('username', $account->username)->exists() && Hash::check($password, $account->password)) {
+            $dl_speed = '0kbit';
+            $up_speed = '0kbit';
+            $dl_speed = $account->user_package->dl_speed;
+            $up_speed = $account->user_package->up_speed;
+            if($server->dl_speed != '0kbit' || $server->up_speed != '0kbit') {
+                $dl_speed = $server->dl_speed;
+                $up_speed = $server->up_speed;
+            }
+            if($account->dl_speed != '0kbit' || $account->up_speed != '0kbit') {
+                $dl_speed = $account->dl_speed;
+                $up_speed = $account->up_speed;
+            }
+            return '1;' . $dl_speed . ';' . $up_speed . '';
         }
 
         Log::info('AUTH_FAILED: ' . $username);
@@ -268,8 +306,6 @@ Route::get('/vpn_connect', function (Request $request) {
         $dt = Carbon::parse($user->getOriginal('expired_at'));
 
         if(!$user->isAdmin()) {
-            $dl_speed = $user->user_package->dl_speed;
-            $up_speed = $user->user_package->up_speed;
             if(!$user->user_package->is_active) {
                 Log::info('User package is not active: ' . $username);
                 return 'User package is not active.';
@@ -351,15 +387,7 @@ Route::get('/vpn_connect', function (Request $request) {
         $vpn->byte_received = 0;
         $vpn->data_available = $server->limit_bandwidth ? $user->getOriginal('consumable_data') : 0;
         if($vpn->save()) {
-            if($server->dl_speed != '0kbit' || $server->up_speed != '0kbit') {
-                $dl_speed = $server->dl_speed;
-                $up_speed = $server->up_speed;
-            }
-            if($user->dl_speed != '0kbit' || $user->up_speed != '0kbit') {
-                $dl_speed = $user->dl_speed;
-                $up_speed = $user->up_speed;
-            }
-            return '1;' . $dl_speed . ';' . $up_speed . '';
+            return '1';
         }
 
         return 'Server Error.';
