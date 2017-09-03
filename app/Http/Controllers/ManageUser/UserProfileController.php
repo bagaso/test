@@ -42,8 +42,8 @@ class UserProfileController extends Controller
             ], 403);
         }
 
-        $user = User::findOrFail($id);
-        $user_upline = User::with('upline')->find($id);
+        $user = User::with('user_package')->findOrFail($id);
+        //$user_upline = User::with('upline')->find($id);
 
         $userstatus = Status::all();
 

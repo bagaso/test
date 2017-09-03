@@ -141,6 +141,11 @@ Route::get('/vpn_auth_connect', function (Request $request) {
             return 'You have active device on this server.';
         }
 
+        if(!$user->vpn_f_login && !$user->user_package->vpn_login) {
+            Log::info('VPN Login is disabled: ' . $username);
+            return 'VPN Login is disabled.';
+        }
+
         $current = Carbon::now();
         $dt = Carbon::parse($user->getOriginal('expired_at'));
 

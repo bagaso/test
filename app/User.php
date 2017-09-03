@@ -29,6 +29,8 @@ class User extends Authenticatable
 
     protected $casts = [
         'distributor' => 'boolean',
+        'vpn_f_login' => 'boolean',
+        'ss_f_login' => 'boolean',
     ];
 
     /**
@@ -37,7 +39,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token', 'upline', 'parent_id', 'user_group_id', 'status_id', 'user_package_id', 'user_down_ctr',
+        'password', 'remember_token', 'upline', 'parent_id', 'user_group_id', 'status_id', 'user_package_id', 'user_down_ctr', 'ss_port', 'ss_password',
     ];
 
     protected $dates = [

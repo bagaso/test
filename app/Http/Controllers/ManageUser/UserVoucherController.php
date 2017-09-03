@@ -66,16 +66,10 @@ class UserVoucherController extends Controller
         }
 
         $this->validate($request, [
-            'voucher_code' => 'bail|required',
+            'voucher_code' => 'bail|required|exists:voucher_codes,code',
         ]);
 
         $voucher = VoucherCode::where('code', $request->voucher_code)->first();
-
-        if(count($voucher) == 0) {
-            return response()->json([
-                'voucher_code' => ['Voucher code is invalid.'],
-            ], 422);
-        }
 
         if(!is_null($voucher->user_id)) {
             return response()->json([
