@@ -14,6 +14,7 @@ class AddColumnToUserPackageShadowsocks extends Migration
     public function up()
     {
         Schema::table('user_packages', function (Blueprint $table) {
+            $table->boolean('vpn_login')->default(1);
             $table->boolean('ss_login')->default(0);
         });
     }

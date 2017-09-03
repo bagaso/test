@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\ManageUser;
 
+use App\SsPorts;
 use App\User;
 use App\UserPackage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class UserPackageController extends Controller
 {
@@ -43,15 +45,28 @@ class UserPackageController extends Controller
             ], 403);
         }
 
-        $user = User::find($id);
+        $user = User::with('user_package')->find($id);
         if(auth()->user()->isAdmin() || auth()->user()->isSubAdmin()) {
             $userpackage = UserPackage::where([['is_active', 1]])->get();
         } else {
             $userpackage = UserPackage::where([['is_active', 1], ['is_public', 1]])->get();
         }
 
+        $permission['vpn-dl-up-update'] = auth()->user()->can('vpn-dl-up-update');
+        $permission['ss-port-pass-update'] = auth()->user()->can('ss-port-pass-update');
+
         return response()->json([
-            'user_profile' => ['username' => $user->username, 'user_package_id' => $user->user_package_id],
+            'permission_userpackage_page' => $permission,
+            'user_profile' => [
+                'username' => $user->username,
+                'user_package_id' => $user->user_package_id,
+                'port_number' => auth()->user()->can('ss-port-pass-update') ? $user->port_number : '',
+                'ss_password' => auth()->user()->can('ss-port-pass-update') ? $user->ss_password : '',
+                'ss_f_login' => $user->ss_f_login,
+                'ss_login' => $user->user_package->ss_login,
+                'dl_speed' => auth()->user()->can('vpn-dl-up-update') ? $user->dl_speed : '',
+                'up_speed' => auth()->user()->can('vpn-dl-up-update') ? $user->up_speed : '',
+            ],
             'user_package_list' => $userpackage,
         ], 200);
     }
@@ -72,11 +87,21 @@ class UserPackageController extends Controller
             ], 403);
         }
 
+        $user = User::with('user_package')->findorfail($id);
+
         $this->validate($request, [
             'user_package_id' => 'bail|required|integer|in:1,2,3,4,5',
+            'port_number' => [
+                'bail',
+                auth()->user()->can('ss-port-pass-update') ? 'required' : '',
+                (auth()->user()->can('ss-port-pass-update') && $request->port_number <> 0 && ($user->ss_f_login || $user->user_package->ss_login)) ?
+                    Rule::unique('users')->ignore($id) : '',
+                (auth()->user()->can('ss-port-pass-update') && $request->port_number <> 0 && ($user->ss_f_login || $user->user_package->ss_login)) ?
+                    Rule::exists('ss_ports')->where(function ($query) use ($user, $request) {
+                        $query->where('is_reserved', 0);
+                }) : '',
+            ],
         ]);
-
-        $user = User::findorfail($id);
 
         $current_copy = Carbon::now();
         $expired_at = Carbon::parse($user->getOriginal('expired_at'));
@@ -94,39 +119,42 @@ class UserPackageController extends Controller
             }
         }
 
+        #update user Down and Up set 0kbit for no speed limit only for openvpn
+        if(auth()->user()->can('vpn-dl-up-update')) {
+            //$user->dl_speed = $request->dl_speed ? $request->dl_speed : '0kbit';
+            //$user->up_speed = $request->up_speed ? $request->up_speed : '0kbit';
+        }
+
         $current = Carbon::now();
 
+        $add = 0;
         if($user->user_package_id <> $user_package->id && $current->lt($expired_at)) {
-            $add = 0;
-            if($user->user_package->id == 1) {
-                $add = $current->diffInSeconds($expired_at) / intval($user_package->user_package['cost']);
-            }
-            if($user->user_package->id == 2) {
-                if($user_package->id == 1) {
-                    $add = $current->diffInSeconds($expired_at) * intval($user->user_package->user_package['cost']);
-                }
-                if($user_package->id == 3) {
-                    $add = ($current->diffInSeconds($expired_at) * intval($user->user_package->user_package['cost'])) / intval($user_package->user_package['cost']);
-                }
-            }
-            if($user->user_package->id == 3) {
-                if($user_package->id == 1) {
-                    $add = $current->diffInSeconds($expired_at) * intval($user->user_package->user_package['cost']);
-                }
-                if($user_package->id == 2) {
-                    $add = ($current->diffInSeconds($expired_at) * intval($user->user_package->user_package['cost'])) / intval($user_package->user_package['cost']);
-                }
-            }
-            $user->expired_at = $current->addSeconds($add);
+            $add = ($current->diffInSeconds($expired_at) * intval($user->user_package->user_package['cost'])) / intval($user_package->user_package['cost']);
         }
-        $user->user_package_id = $user_package->id;
-        $user->save();
+        User::where('id', $id)->update([
+            'user_package_id' => $user_package->id,
+            'expired_at' => $user->user_package_id <> $user_package->id ? $current->addSeconds($add) : $user->getOriginal('expired_at'),
+            'dl_speed' => auth()->user()->can('vpn-dl-up-update') ? $request->dl_speed ? $request->dl_speed : '0kbit' : $user->dl_speed,
+            'up_speed' => auth()->user()->can('vpn-dl-up-update') ? $request->up_speed ? $request->up_speed : '0kbit' : $user->up_speed,
+            'port_number' => auth()->user()->can('ss-port-pass-update') ? $request->port_number : $user->port_number,
+            'ss_password' => auth()->user()->can('ss-port-pass-update') ? $request->ss_password ? $request->ss_password : '' : $user->ss_password,
+        ]);
 
         $user = User::with('user_package')->findorfail($user->id);
 
         return response()->json([
             'message' => 'User package updated.',
-            'user_profile' => ['user_package' => $user->user_package, 'expired_at' => $user->expired_at]
+            'user_profile' => [
+                'user_package_id' => $user->user_package_id,
+                'user_package' => $user->user_package,
+                'expired_at' => $user->expired_at,
+                'port_number' => auth()->user()->can('ss-port-pass-update') ? $user->port_number : '',
+                'ss_password' => auth()->user()->can('ss-port-pass-update') ? $user->ss_password : '',
+                'ss_f_login' => $user->ss_f_login,
+                'ss_login' => $user->user_package->ss_login,
+                'dl_speed' => auth()->user()->can('vpn-dl-up-update') ? $user->dl_speed : '',
+                'up_speed' => auth()->user()->can('vpn-dl-up-update') ? $user->up_speed : '',
+            ]
         ], 200);
     }
 }

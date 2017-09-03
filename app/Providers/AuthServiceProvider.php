@@ -132,6 +132,26 @@ class AuthServiceProvider extends ServiceProvider
             }
             return false;
         });
+
+        #
+        Gate::define('vpn-dl-up-update', function ($user) {
+            return false;
+        });
+
+        #
+        Gate::define('ss-port-pass-update', function ($user) {
+            return false;
+        });
+
+        Gate::define('account-ss-port-pass-update', function ($user) {
+            if($user->ss_f_login) {
+                return true;
+            }
+            if($user->ss_login) {
+                return true;
+            }
+            return false;
+        });
         
     }
 }
