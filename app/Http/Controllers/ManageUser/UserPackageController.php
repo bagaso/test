@@ -101,6 +101,12 @@ class UserPackageController extends Controller
                         $query->where('is_reserved', 0);
                 }) : '',
             ],
+            'ss_password' => [
+                'bail',
+                auth()->user()->can('ss-port-pass-update') ? 'alpha_num' : '',
+                auth()->user()->can('ss-port-pass-update') ? 'min:8' : '',
+                auth()->user()->can('ss-port-pass-update') ? 'max:20' : '',
+            ],
         ]);
 
         $current_copy = Carbon::now();
