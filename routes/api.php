@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Schema;
 //Route::get('/wew', 'PublicServerStatusController@test');
 
 Route::get('/wew', function() {
+    $user = \App\User::find(1);
+    return $user->user_port;
     //$dt = Carbon::parse('2017-05-03T16:00:00.000Z');
     //return $dt->timezone('Asia/Manila');
 //    $log = \App\User::with(['credit_logs.user_related'])->find(1);
@@ -415,6 +417,14 @@ Route::post('/admin/app-update-android', 'Admin\AppUpdatesController@app_android
 
 Route::get('/admin/app-update-gui', 'Admin\AppUpdatesController@app_gui_index');
 Route::post('/admin/app-update-gui', 'Admin\AppUpdatesController@app_gui_update');
+
+Route::get('/admin/app-update-android-ss', 'Admin\AppUpdatesController@ss_app_android_index');
+Route::post('/admin/app-update-android-ss', 'Admin\AppUpdatesController@ss_app_android_update');
+
+Route::get('/admin/app-update-gui-ss', 'Admin\AppUpdatesController@ss_app_gui_index');
+Route::post('/admin/app-update-gui-ss', 'Admin\AppUpdatesController@ss_app_gui_update');
+
+Route::get('/ss-port/get-new/{id}', 'ManageUser\UserPackageController@get_port');
 
 Route::post('/public/online-users', 'PublicOnlineUsersController@index');
 Route::post('/public/distributors', 'PublicDistributorController@index');

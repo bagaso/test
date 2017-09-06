@@ -16,7 +16,6 @@ class AddColumnToUsersShadowsocks extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->boolean('vpn_f_login')->default(0);
             $table->boolean('ss_f_login')->default(0);
-            $table->integer('port_number')->default(0);
             $table->string('ss_password')->default('');
             $table->double('ss_dl')->default(0);
             $table->double('ss_up')->default(0);

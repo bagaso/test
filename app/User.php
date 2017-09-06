@@ -266,5 +266,10 @@ class User extends Authenticatable
         return("$newsize $units[$i]");
     }
 
+    public function user_port()
+    {
+        return $this->hasOne('App\SsPort');
+    }
+
     protected $appends = ['upline_username', 'total_users', 'total_user_resellers', 'total_user_subresellers', 'total_user_clients'];
 }

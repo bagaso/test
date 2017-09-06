@@ -140,16 +140,13 @@ class AuthServiceProvider extends ServiceProvider
 
         #
         Gate::define('ss-port-pass-update', function ($user) {
+            if(in_array($user->user_group->id, [2,3,4])) {
+                return true;
+            }
             return false;
         });
 
         Gate::define('account-ss-port-pass-update', function ($user) {
-            if($user->ss_f_login) {
-                return true;
-            }
-            if($user->ss_login) {
-                return true;
-            }
             return false;
         });
         

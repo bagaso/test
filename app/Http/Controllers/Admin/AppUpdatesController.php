@@ -162,4 +162,146 @@ class AppUpdatesController extends Controller
             'message' => 'Json file updated.',
         ], 200);
     }
+
+    public function ss_app_android_index()
+    {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
+
+        $language = Lang::all()->pluck('name');
+
+        if (Gate::denies('manage-update-json')) {
+            return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
+                'message' => 'No permission to access this page.',
+                'profile' => ['username' => auth()->user()->username],
+                'language' => $language,
+                'permission' => $permission,
+            ], 403);
+        }
+
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'ShadowSocks Android Updates';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
+        $json = JsonUpdate::findorfail(3);
+
+        return response()->json([
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username],
+            'json' => $json->json,
+            'language' => $language,
+            'permission' => $permission
+        ], 200);
+    }
+
+    public function ss_app_android_update(Request $request)
+    {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
+        if (Gate::denies('manage-update-json')) {
+            return response()->json([
+                'message' => 'Action not allowed.'
+            ], 403);
+        }
+
+        $this->validate($request, [
+            'json' => 'bail|required|json',
+        ]);
+
+        $json = JsonUpdate::findorfail(3);
+        $json->json = $request->json;
+        $json->save();
+
+        return response()->json([
+            'message' => 'Json file updated.',
+        ], 200);
+    }
+
+    public function ss_app_gui_index()
+    {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
+        $permission['is_admin'] = auth()->user()->isAdmin();
+        $permission['manage_user'] = auth()->user()->can('manage-user');
+        $permission['manage_vpn_server'] = auth()->user()->can('manage-vpn-server');
+        $permission['manage_voucher'] = auth()->user()->can('manage-voucher');
+
+        $language = Lang::all()->pluck('name');
+
+        if (Gate::denies('manage-update-json')) {
+            return response()->json([
+                'site_options' => ['site_name' => $db_settings->settings['site_name'], 'sub_name' => 'Error'],
+                'message' => 'No permission to access this page.',
+                'profile' => ['username' => auth()->user()->username],
+                'language' => $language,
+                'permission' => $permission,
+            ], 403);
+        }
+
+        $site_options['site_name'] = $db_settings->settings['site_name'];
+        $site_options['sub_name'] = 'ShadowSocks GUI Updates';
+        $site_options['enable_panel_login'] = $db_settings->settings['enable_panel_login'];
+
+        $json = JsonUpdate::findorfail(4);
+
+        return response()->json([
+            'site_options' => $site_options,
+            'profile' => ['username' => auth()->user()->username],
+            'json' => $json->json,
+            'language' => $language,
+            'permission' => $permission
+        ], 200);
+    }
+
+    public function ss_app_gui_update(Request $request)
+    {
+        $db_settings = \App\SiteSettings::findorfail(1);
+
+        if (auth()->user()->cannot('update-account') || !auth()->user()->isAdmin() && !$db_settings->settings['enable_panel_login']) {
+            return response()->json([
+                'message' => 'Logged out.',
+            ], 401);
+        }
+
+        if (Gate::denies('manage-update-json')) {
+            return response()->json([
+                'message' => 'Action not allowed.'
+            ], 403);
+        }
+
+        $this->validate($request, [
+            'json' => 'bail|required|json',
+        ]);
+
+        $json = JsonUpdate::findorfail(4);
+        $json->json = $request->json;
+        $json->save();
+
+        return response()->json([
+            'message' => 'Json file updated.',
+        ], 200);
+    }
 }

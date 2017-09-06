@@ -15,7 +15,7 @@ class CreateSsPortsTable extends Migration
     {
         Schema::create('ss_ports', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('port_number');
+            $table->integer('user_id');
             $table->boolean('is_reserved')->default(0);
             $table->timestamps();
         });
