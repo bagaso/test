@@ -23,6 +23,16 @@ Route::get('/updates/gui-updates.json', function() {
     return $json->json;
 });
 
+Route::get('/updates/android-ss-updates.json', function() {
+    $json = \App\JsonUpdate::findorfail(3);
+    return $json->json;
+});
+
+Route::get('/updates/gui-ss-updates.json', function() {
+    $json = \App\JsonUpdate::findorfail(4);
+    return $json->json;
+});
+
 Route::get('/pc/duration/{username}', function($username) {
     $account = \App\User::where('username', $username)->firstorfail();
 
