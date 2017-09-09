@@ -99,7 +99,7 @@ class AccountController extends Controller
                 'bail',
                 auth()->user()->can('ss-port-pass-update') ? 'required' : '',
                 (auth()->user()->can('ss-port-pass-update') && $request->port_number <> 0) ?
-                    ($request->port_number != (count(auth()->user()->user_port) ? auth()->user()->user_port->id : 0)) ?
+                    ($request->port_number != (auth()->user()->user_port ? auth()->user()->user_port->id : 0)) ?
                         Rule::exists('ss_ports', 'id')->where(function ($query) {
                             $query->where([['is_reserved', 0],['user_id', 0]]);
                         })
@@ -124,7 +124,6 @@ class AccountController extends Controller
             'fullname' => $request->fullname,
             'contact' => $request->contact,
             'distributor' => in_array(auth()->user()->user_group_id, [2,3,4]) ? $request->distributor : 0,
-            'port_number' => auth()->user()->can('account-ss-port-pass-update') ? $request->port_number : auth()->user()->user_port->id,
             'ss_password' => auth()->user()->can('account-ss-port-pass-update') ? $request->ss_password ? $request->ss_password : '' : auth()->user()->ss_password,
         ]);
         // set new port
