@@ -124,7 +124,7 @@ class AccountController extends Controller
             'fullname' => $request->fullname,
             'contact' => $request->contact,
             'distributor' => in_array(auth()->user()->user_group_id, [2,3,4]) ? $request->distributor : 0,
-            'port_number' => auth()->user()->can('account-ss-port-pass-update') ? $request->port_number : auth()->user()->port_number,
+            'port_number' => auth()->user()->can('account-ss-port-pass-update') ? $request->port_number : auth()->user()->user_port->id,
             'ss_password' => auth()->user()->can('account-ss-port-pass-update') ? $request->ss_password ? $request->ss_password : '' : auth()->user()->ss_password,
         ]);
         // set new port
