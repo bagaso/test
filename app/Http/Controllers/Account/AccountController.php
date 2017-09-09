@@ -108,6 +108,7 @@ class AccountController extends Controller
             ],
             'ss_password' => [
                 'bail',
+                'required',
                 'alpha_num',
                 'min:8',
                 'max:20',
