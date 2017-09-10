@@ -15,7 +15,7 @@ class CreateJsonUpdatesTable extends Migration
     {
         Schema::create('json_updates', function (Blueprint $table) {
             $table->increments('id');
-            $table->longText('json')->default('{"": ""}');
+            $table->longText('json');
             $table->timestamps();
         });
     }
