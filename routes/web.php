@@ -65,3 +65,14 @@ Route::get('/android/duration/{username}', function($username) {
 //    if(Hash::check($password, $account->password)) {
 //    }
 });
+
+Route::get('/android/upline/{username}', function($username) {
+    $account = \App\User::where('username', $username)->firstorfail();
+
+    return response()->json([
+        'upline' => $account->upline->username,
+        'contact' => $account->upline->contact,
+    ], 200);
+});
+
+

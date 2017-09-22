@@ -39,7 +39,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token', 'upline', 'parent_id', 'user_group_id', 'status_id', 'user_package_id', 'user_down_ctr', 'ss_port', 'ss_password',
+        'password', 'remember_token', 'upline', 'parent_id', 'user_group_id', 'status_id', 'user_package_id', 'user_down_ctr', 'ss_port', 'ss_password', 'ssh_password',
     ];
 
     protected $dates = [
