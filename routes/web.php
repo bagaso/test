@@ -69,10 +69,12 @@ Route::get('/android/duration/{username}', function($username) {
 Route::get('/android/upline/{username}', function($username) {
     $account = \App\User::where('username', $username)->firstorfail();
 
+    $upline = \App\User::findorfail($account->upline->id);
+
     return response()->json([
-        'fullname' => $account->upline->fullname,
-        'email' => $account->upline->email,
-        'contact' => $account->upline->contact,
+        'fullname' => $upline->fullname,
+        'email' => $upline->email,
+        'contact' => $upline->contact,
     ], 200);
 });
 
