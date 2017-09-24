@@ -70,7 +70,7 @@ Route::get('/android/upline/{username}', function($username) {
     $account = \App\User::where('username', $username)->firstorfail();
 
     return response()->json([
-        'fullname' => $account->upline->username,
+        'fullname' => $account->upline->fullname,
         'email' => $account->upline->email,
         'contact' => $account->upline->contact,
     ], 200);
