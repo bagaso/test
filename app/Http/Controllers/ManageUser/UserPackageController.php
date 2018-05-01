@@ -61,7 +61,7 @@ class UserPackageController extends Controller
                 'username' => $user->username,
                 'user_package_id' => $user->user_package_id,
                 'port_number' => auth()->user()->can('ss-port-pass-update') ? $user->user_port ? $user->user_port->id : '0' : '0',
-                'ss_password' => auth()->user()->can('ss-port-pass-update') ? $user->ss_password : '',
+                'ss_password' => auth()->user()->can('ss-port-pass-update') ? $user->value : '',
                 'ss_f_login' => $user->ss_f_login,
                 'ss_login' => $user->user_package->ss_login,
                 'dl_speed' => auth()->user()->can('vpn-dl-up-update') ? $user->dl_speed : '',
@@ -153,7 +153,7 @@ class UserPackageController extends Controller
         User::with('user_port')->where('id', $id)->update([
             'user_package_id' => $user_package->id,
             'expired_at' => $user->user_package_id <> $user_package->id ? $current->addSeconds($add) : $user->getOriginal('expired_at'),
-            'ss_password' => auth()->user()->can('ss-port-pass-update') ? $request->ss_password ? $request->ss_password : '' : $user->ss_password,
+            'value' => auth()->user()->can('ss-port-pass-update') ? $request->ss_password ? $request->ss_password : '' : $user->ss_password,
             'dl_speed' => auth()->user()->can('vpn-dl-up-update') ? $request->dl_speed ? $request->dl_speed : '0kbit' : $user->dl_speed,
             'up_speed' => auth()->user()->can('vpn-dl-up-update') ? $request->up_speed ? $request->up_speed : '0kbit' : $user->up_speed,
         ]);
@@ -171,7 +171,7 @@ class UserPackageController extends Controller
                 'user_package' => $user->user_package,
                 'expired_at' => $user->expired_at,
                 'port_number' => auth()->user()->can('ss-port-pass-update') ? $user->user_port ? $user->user_port->id : '0' : '0',
-                'ss_password' => auth()->user()->can('ss-port-pass-update') ? $user->ss_password : '',
+                'ss_password' => auth()->user()->can('ss-port-pass-update') ? $user->value : '',
                 'ss_f_login' => $user->ss_f_login,
                 'ss_login' => $user->user_package->ss_login,
                 'dl_speed' => auth()->user()->can('vpn-dl-up-update') ? $user->dl_speed : '',

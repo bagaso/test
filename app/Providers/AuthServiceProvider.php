@@ -147,7 +147,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('account-ss-port-pass-update', function ($user) {
-            return false;
+            return true;
         });
         
     }

@@ -68,7 +68,7 @@ class AccountController extends Controller
                 'user_package' => $user->user_package,
                 'ss_f_login' => $user->ss_f_login,
                 'port_number' => $user->user_port ? $user->user_port->id : '0',
-                'ss_password' => $user->ss_password,
+                'ss_password' => $user->value,
             ],
             'upline' => $user->upline->username,
             'permission' => $permission,
@@ -117,7 +117,7 @@ class AccountController extends Controller
 
         // unset previous port
         if(count(auth()->user()->user_port)) {
-            SsPort::find(auth()->user()->user_port->id)->update(['user_id' => 0]);
+            //SsPort::find(auth()->user()->user_port->id)->update(['user_id' => 0]);
         }
         User::where('id', auth()->user()->id)->update([
             'username' => auth()->user()->can('update-username') ? $request->username : auth()->user()->username,
@@ -125,11 +125,12 @@ class AccountController extends Controller
             'fullname' => $request->fullname,
             'contact' => $request->contact,
             'distributor' => in_array(auth()->user()->user_group_id, [2,3,4]) ? $request->distributor : 0,
-            'ss_password' => auth()->user()->can('account-ss-port-pass-update') ? $request->ss_password ? $request->ss_password : '' : auth()->user()->ss_password,
+            //'ss_password' => auth()->user()->can('account-ss-port-pass-update') ? $request->ss_password ? $request->ss_password : '' : auth()->user()->ss_password,
+            'value' => auth()->user()->can('account-ss-port-pass-update') ? $request->ss_password ? $request->ss_password : '' : auth()->user()->ss_password,
         ]);
         // set new port
         if($request->port_number != 0) {
-            SsPort::find($request->port_number)->update(['user_id' => auth()->user()->id]);
+            //SsPort::find($request->port_number)->update(['user_id' => auth()->user()->id]);
         }
 
         $account = User::findorfail(auth()->user()->id);
@@ -152,7 +153,7 @@ class AccountController extends Controller
                 'user_package' => $account->user_package,
                 'ss_f_login' => $account->ss_f_login,
                 'port_number' => $account->user_port ? $account->user_port->id : '0',
-                'ss_password' => $account->ss_password
+                'ss_password' => $account->value
             ],
         ], 200);
     }
